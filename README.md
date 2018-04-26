@@ -23,11 +23,14 @@ ZUI-Control (js2uix-zui)
 - ex) zui(callback) : callback function 일 경우 html load 완료 후 callback 을 실행할 수 있다.
 </code></pre>
 
+
 ### 2. zui('selector).method().method() : 메소드 체이닝
 - zui selector 는 기본적으로 내장 기능을 메소드 체이닝을 통해 사용할 수 있다.
 <pre><code>
 - ex) zui('div').addClass('test1').removeClass('test1')
 </code></pre>
+
+
 
 ## 2. 기능
 <pre><code>
