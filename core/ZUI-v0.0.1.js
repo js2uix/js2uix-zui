@@ -18,6 +18,20 @@
     var DOC = window.document,
         SetProtoType = Object.setPrototypeOf,
         GetProtoType = Object.getPrototypeOf;
+    var newArrayNode = function(arg){
+        var i, j;
+        var item = [];
+        for ( i = 0; i < arg.length; i++ ){
+            if( arg[i].name === ModuleName ){
+                for( j = 0; j < arg[i].length; j++ ){
+                    item.push(arg[i][j]);
+                }
+            } else if ( arg[i].nodeType ){
+                item.push(arg[i])
+            }
+        }
+        return item;
+    };
     /** --------------------------------------------------------------- */
     /** zui-control create object ( zui control 을 정의한다 )
      * TODO : 가장 기본적인 기능을 먼저 활성화 하며, 추후 ui 기능을 확장한다.
@@ -36,7 +50,6 @@
         constructor : zui,
         query : function ( select, result ){
             var argArray = Array.prototype.slice.call(arguments);
-            var i = 0;
             var newNode = zui.extend([], argArray.shift());
             newNode.name = ModuleName;
             if ( SetProtoType ){
@@ -44,7 +57,7 @@
             } else {
                 newNode.__proto__ = GetProtoType( result );
             }
-            for (; i < newNode.length; i++ ){
+            for (var i=0; i < newNode.length; i++ ){
                 if ( !newNode[i][ModuleName] ){
                     newNode[i][ModuleName] = { events : {}, data : {} };
                 }
@@ -416,6 +429,34 @@
         },
         hasChild : function ( name ){
             return this.find(name).length > 0 && name && typeof name === 'string';
+        },
+        append : function(){
+            var arg = arguments;
+            if( arg.length > 0 ){
+                var i;
+                var item = newArrayNode(arg);
+                for ( i = 0; i < item.length; i++ ){
+                    this[0].appendChild(item[i]);
+                }
+            }
+            return this;
+        },
+        prepend : function(){
+            var arg = arguments;
+            if( arg.length > 0 ){
+                var i;
+                var firstChild;
+                var item = newArrayNode(arg);
+                for ( i = 0; i < item.length; i++ ){
+                    firstChild = this[0].firstChild;
+                    if( firstChild ){
+                        this[0].insertBefore(item[i], firstChild);
+                    } else {
+                        this[0].appendChild(item[i]);
+                    }
+                }
+            }
+            return this;
         }
     });
     /** --------------------------------------------------------------- */
