@@ -337,7 +337,7 @@
         }
     });
     zui.fx.extend({
-        /** control basic method */
+        /** control basic method - utility */
         loop : function ( callback ){
             return zui.loop( this, callback );
         },
@@ -346,6 +346,7 @@
                 zui.loaded( this, callback );
             }
         },
+        /** control basic query - dom */
         find : function ( name ){
             var result = [];
             if( name && typeof name === 'string' ){
@@ -430,7 +431,14 @@
         hasChild : function ( name ){
             return this.find(name).length > 0 && name && typeof name === 'string';
         },
-        append : function(){
+        next : function (){
+            return this[0].nextElementSibling?zui(this[0].nextElementSibling):undefined;
+        },
+        prev : function(){
+            return this[0].previousElementSibling?zui(this[0].previousElementSibling):undefined;
+        },
+        /** control basic method - insert */
+        append : function (){
             var arg = arguments;
             if( arg.length > 0 ){
                 var i;
@@ -441,7 +449,7 @@
             }
             return this;
         },
-        prepend : function(){
+        prepend : function (){
             var arg = arguments;
             if( arg.length > 0 ){
                 var i;
@@ -454,6 +462,36 @@
                     } else {
                         this[0].appendChild(item[i]);
                     }
+                }
+            }
+            return this;
+        },
+        after : function (){
+            var arg = arguments;
+            if( arg.length > 0 ){
+                var i;
+                var parent = this[0].parentNode;
+                var item = newArrayNode(arg);
+                var sibling =this[0].nextSibling;
+                for ( i = 0; i < item.length; i++ ){
+                    if( sibling ){
+                        parent.insertBefore(item[i], sibling);
+                    } else {
+                        parent.appendChild(item[i]);
+                    }
+                    sibling = (sibling)?sibling.nextSibling:null;
+                }
+            }
+            return this;
+        },
+        before : function (){
+            var arg = arguments;
+            if( arg.length > 0 ){
+                var i;
+                var parent = this[0].parentNode;
+                var item = newArrayNode(arg);
+                for ( i = 0; i < item.length; i++ ){
+                    parent.insertBefore(item[i], this[0]);
                 }
             }
             return this;
