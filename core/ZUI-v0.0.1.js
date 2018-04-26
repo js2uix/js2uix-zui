@@ -18,7 +18,6 @@
     var DOC = window.document,
         SetProtoType = Object.setPrototypeOf,
         GetProtoType = Object.getPrototypeOf;
-    if ( window.zui ){ window.zui = null; }
     /** --------------------------------------------------------------- */
     /** zui-control create object ( zui control 을 정의한다 )
      * TODO : 가장 기본적인 기능을 먼저 활성화 하며, 추후 ui 기능을 확장한다.
@@ -29,15 +28,12 @@
     zui = function (select){
         return new zui.fx.init(select);
     };
+    /** TODO : extend prototype, 상속을 구현한다.
+     * Object.setPrototypeOf 기본 사용 / 불가능 : __proto__ 를 이용하여 상속.
+     * */
     zui.fx = zui.prototype = {
         zui : ModuleVersion,
         constructor : zui,
-        loop : function ( callback ){
-            return zui.loop( this, callback );
-        },
-        /** TODO : extend prototype, 상속을 구현한다.
-         * Object.setPrototypeOf 기본 사용 / 불가능 : __proto__ 를 이용하여 상속.
-         * */
         query : function ( select, result ){
             var argArray = Array.prototype.slice.call(arguments);
             var i = 0;
@@ -54,11 +50,6 @@
                 }
             }
             return newNode;
-        },
-        loaded : function ( callback ) {
-            if ( callback && typeof callback === 'function' ){
-                zui.loaded( this, callback );
-            }
         }
     };
     zui.fx.init = function (select){
@@ -100,7 +91,7 @@
             } else if ( select['name'] && select['name'] === ModuleName ){
                 return select;
             } else if ( typeof select === 'function' ){
-                return zui.loaded( select, this );
+                return zui.loaded( this, select );
             }
         }
         return zui.fx.query( select, this );
@@ -171,6 +162,7 @@
      * 추가기능은 단계적으로 control 에 필요한 기능을 추가한다.
      * */
     /** --------------------------------------------------------------- */
+    /** control attribute */
     zui.extend({
         /** control attribute[id] name */
         addId : function ( item, name ){
@@ -293,8 +285,57 @@
         getAttr : function ( name ){
             if( this.length === 0 ){ return undefined; }
             return zui.getAttr(this[0], name);
-        },
+        }
     });
+    /** --------------------------------------------------------------- */
+    /** control basic method */
+    zui.extend({
+        /** control basic method */
+        loop : function( item, callback ){
+            var length, i = 0;
+            if ( zui.isArray( item ) ) {
+                length = item.length;
+                for (; i < length; i++ ) {
+                    if ( callback.call( item[i], i, item[i] ) === false ) {
+                        break;
+                    }
+                }
+            } else {
+                for ( i in item ) {
+                    if ( callback.call( item[i], i, item[i] ) === false ) {
+                        break;
+                    }
+                }
+            }
+            return item;
+        },
+        loaded : function( item, callback ){
+            var allowDom = ['document','window','html','body'];
+            if( typeof item === "object" && ( item.hasOwnProperty('name') && item.name === ModuleName && allowDom.indexOf(item[0].nodeName.toLowerCase()) === -1 ) ){
+                item = item[item.length-1];
+                callback = callback.bind(item);
+            }
+            if (DOC.attachEvent ? DOC.readyState === "complete" : DOC.readyState !== "loading"){
+                callback();
+            } else {
+                DOC.addEventListener('DOMContentLoaded', callback);
+            }
+            return zui(item);
+        }
+    });
+    zui.fx.extend({
+        /** control basic method */
+        loop : function ( callback ){
+            return zui.loop( this, callback );
+        },
+        loaded : function ( callback ) {
+            if ( callback && typeof callback === 'function' ){
+                zui.loaded( this, callback );
+            }
+        }
+    });
+    /** --------------------------------------------------------------- */
+
     window.zui = zui;
 }(window, function(){
     /** TODO : 개발 완료후 모듈화 진행을 위해 비움 */
