@@ -291,7 +291,7 @@
     /** control basic method */
     zui.extend({
         /** control basic method */
-        loop : function( item, callback ){
+        loop : function ( item, callback ){
             var length, i = 0;
             if ( zui.isArray( item ) ) {
                 length = item.length;
@@ -309,7 +309,7 @@
             }
             return item;
         },
-        loaded : function( item, callback ){
+        loaded : function ( item, callback ){
             var allowDom = ['document','window','html','body'];
             if( typeof item === "object" && ( item.hasOwnProperty('name') && item.name === ModuleName && allowDom.indexOf(item[0].nodeName.toLowerCase()) === -1 ) ){
                 item = item[item.length-1];
@@ -328,10 +328,94 @@
         loop : function ( callback ){
             return zui.loop( this, callback );
         },
-        loaded : function ( callback ) {
+        loaded : function ( callback ){
             if ( callback && typeof callback === 'function' ){
                 zui.loaded( this, callback );
             }
+        },
+        find : function ( name ){
+            var result = [];
+            if( name && typeof name === 'string' ){
+                result = this[0].querySelectorAll(name);
+            }
+            return zui(result);
+        },
+        parent : function ( name ){
+            var result = [];
+            if( name && typeof name === 'string' ){
+                var parent;
+                var parents = this[0].parentNode.parentNode;
+                if( parents ){
+                    parent = parents.querySelectorAll(name);
+                    for ( var i=0; i < parent.length; i++ ){
+                        if( this[0].parentNode === parent[i] ){
+                            result.push(parent[i]);
+                        }
+                    }
+                }
+            } else {
+                result = this[0].parentNode;
+            }
+            return zui(result);
+        },
+        parents : function ( name ){
+            var result = [];
+            if( name && typeof name === 'string'){
+                var parent = this[0].parentNode;
+                var isIdOrClassType = name.match(/^#|^\./gi);
+                if( isIdOrClassType ){
+                    while ( parent && parent.nodeName.toLowerCase() !== 'html' ){
+                        var findName = name.substr(1, name.length);
+                        if( zui.hasClass(parent, findName) || zui.hasId(parent, findName) ){
+                            result = parent;
+                            break;
+                        } else {
+                            parent = parent.parentNode;
+                        }
+                    }
+                }
+            }
+            return zui(result);
+        },
+        hasParents : function ( name ){
+            var result = false;
+            if( name && typeof name === 'string'){
+                var parent = this[0].parentNode;
+                var isIdOrClassType = name.match(/^#|^\./gi);
+                if( isIdOrClassType ){
+                    while ( parent && parent.nodeName.toLowerCase() !== 'html' ){
+                        var findName = name.substr(1, name.length);
+                        if( zui.hasClass(parent, findName) || zui.hasId(parent, findName) ){
+                            result = true;
+                            break;
+                        } else {
+                            parent = parent.parentNode;
+                        }
+                    }
+                }
+            }
+            return result;
+        },
+        children : function ( name ){
+            var i;
+            var result = [];
+            var children = this[0].children;
+            if( name && typeof name === 'string' ){
+                var findName = name.substr(1, name.length);
+                for (i = 0; i < children.length; i++ ){
+                    if( zui.hasClass(children[i], findName) || zui.hasId(children[i], findName) ){
+                        result.push(children[i]);
+                    }
+                }
+            } else if ( !name ) {
+                for (i = 0; i < children.length; i++ ){
+                    result.push(children[i]);
+                }
+            }
+            return zui(result);
+        },
+        hasChild : function ( name ){
+            return this.find(name).length > 0 && name && typeof name === 'string';
         }
     });
     /** --------------------------------------------------------------- */
