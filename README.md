@@ -11,7 +11,6 @@ ZUI-Control (js2uix-zui)
  3. 기본 기능 완료 후 javascript component 기능 추가.
 
 
-
 ## 1. 기본사용
 ### 1. zui('selector') : 기본 셀렉터
 - zui(param) : 파라미터의 값은 'string', 'object', 'function'
@@ -29,7 +28,6 @@ ZUI-Control (js2uix-zui)
 <pre><code>
 - ex) zui('div').addClass('test1').removeClass('test1')
 </code></pre>
-
 
 
 ## 2. 기능
