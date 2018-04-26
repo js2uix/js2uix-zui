@@ -15,8 +15,8 @@ ZUI-Control (js2uix-zui)
 
 ## 1. 기본사용
 ### 1. zui('selector') : 기본 셀렉터
-<pre><code>
 - zui(param) : 파라미터의 값은 'string', 'object', 'function'
+<pre><code>
 - ex) zui('div') : div 태그 전체를 select 한다.
 - ex) zui('.class') : class 명을 가진 Node 를 select 한다.
 - ex) zui('#id') : id 명을 가진 Npde 를 select 한다.
@@ -25,10 +25,9 @@ ZUI-Control (js2uix-zui)
 </code></pre>
 
 ### 2. zui('selector).method().method() : 메소드 체이닝
-<pre><code>
 - zui selector 는 기본적으로 내장 기능을 메소드 체이닝을 통해 사용할 수 있다.
+<pre><code>
 - ex) zui('div').addClass('test1').removeClass('test1')
 </code></pre>
-
 
 ## 2. 기능
