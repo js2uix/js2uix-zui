@@ -25,3 +25,6 @@ ZUI-Control (js2uix-zui)
 ### 2. zui('selector).method().method() : 메소드 체이닝
 - zui selector 는 기본적으로 내장 기능을 메소드 체이닝을 통해 사용할 수 있다.
 - ex) zui('div').addClass('test1').removeClass('test1')
+
+
+## 2. 기능
