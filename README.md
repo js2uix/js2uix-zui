@@ -1,6 +1,11 @@
 # ZUI
 ZUI-Control (js2uix-zui)
 
+ModuleName  : ZUI-Control(js2uix-zui)
+Developer   : YJH-js2uix(clayrj2004@daum.net)
+DevLanguage : Javascript(ES5)
+BuildStart  : 2018.01.01
+
 Create Dom Control Module (html 의 dom 을 컨트롤 할 수 있는 모듈을 제작)
 단계적으로 아래와 같은 기능을 개발한다.
 1. ES5 를 이용한 Dom Select 및 Control 기능 구현.
