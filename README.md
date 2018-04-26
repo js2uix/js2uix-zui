@@ -19,5 +19,5 @@ ZUI-Control (js2uix-zui)
 - ex) zui('div') : div 태그 전체를 select 한다.
 - ex) zui('.class') : class 명을 가진 Node 를 select 한다.
 - ex) zui('#id') : id 명을 가진 Npde 를 select 한다.
-- ex) zui('<div></div>') : 새로운 div 태그를 생성한다.
+- ex) zui('&lt;div&gt;&lt;/div&gt;') : 새로운 div 태그를 생성한다.
 - ex) zui(callback) : callback function 일 경우 html load 완료 후 callback 을 실행할 수 있다.
