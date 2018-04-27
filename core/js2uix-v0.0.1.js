@@ -1,10 +1,13 @@
 /** ------------------------------------------------------------------------------------- /
  * ModuleName  : zui-dom-control(js2uix-zui)
+ * GitHub      : https://github.com/js2uix/ZUI
  * Developer   : YJH-js2uix
  * Email       : deshineplus@icloud.com
- * DevLanguage : Javascript(ES5)
- * BuildStart  : 2018.01.01
- * GitHub      : https://github.com/js2uix/ZUI
+ * language    : Javascript(ES5)
+ * StartDate   : 2018.02.01
+ * BuildDate   : 2018.04.27
+ * Copyright   : YJH-js2uix
+ * License     : Released under the MIT license
  * -------------------------------------------------------------------------------------- /
  * Information : Create Dom Control Module (html 의 dom 을 컨트롤 할 수 있는 모듈을 제작)
  *               단계적으로 아래와 같은 기능을 개발한다.
