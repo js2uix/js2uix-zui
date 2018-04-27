@@ -1,6 +1,6 @@
 js2uix - zui
 ===
-**zui-dom-control (js2uix-zui)**
+###zui-dom-control (js2uix-zui)
 <pre>
  * ModuleName  : zui-dom-control(js2uix-zui)
  * GitHub      : https://github.com/js2uix/ZUI
