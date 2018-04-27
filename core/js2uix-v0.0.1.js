@@ -34,7 +34,7 @@
     var DOC = window.document,
         SetProtoType = Object.setPrototypeOf,
         GetProtoType = Object.getPrototypeOf;
-    var newArrayNode = function (arg){
+    var js2uixNewArrayNode = function (arg){
         var i, j;
         var item = [];
         for ( i = 0; i < arg.length; i++ ){
@@ -48,7 +48,7 @@
         }
         return item;
     };
-    var checkValidation = function (select){
+    var js2uixCheckValidation = function (select){
         var isEmptyString = select.replace(/\s/gi, "");
         var isIdOrClassType = isEmptyString.match(/^#|^\./gi);
         var isTagStringType = select.match(/(<([^>]+)>)/gi);
@@ -67,7 +67,7 @@
             spType : isSpStringType
         }
     };
-    var domStyleParse = function (name, value){
+    var js2uixDomStyleParse = function (name, value){
         var i;
         var type;
         var styleObject;
@@ -93,7 +93,7 @@
             strArray = null;
         }
     };
-    var domStyleApply = function (item, name, value){
+    var js2uixDomStyleApply = function (item, name, value){
         if( value === 0 || typeof value === 'number' ){
             item.css(name, value);
             return this;
@@ -144,7 +144,7 @@
             // TODO : id or class 타입의 string - 보완 필요
             var tagName;
             var virtualDom;
-            var isType = checkValidation(select);
+            var isType = js2uixCheckValidation(select);
             var isString = isType.full;
             var isIdOrClassType = isType.idClass;
             var isTagStringType = isType.tagType;
@@ -174,6 +174,10 @@
                 return select;
             } else if ( typeof select === 'function' ){
                 return zui.loaded( this, select );
+            } else if ( select === window ){
+                select = [window];
+            } else {
+                return undefined;
             }
         }
         return zui.fx.query( select, this );
@@ -520,7 +524,7 @@
             var arg = arguments;
             if( arg.length > 0 ){
                 var i;
-                var item = newArrayNode(arg);
+                var item = js2uixNewArrayNode(arg);
                 for ( i = 0; i < item.length; i++ ){
                     this[0].appendChild(item[i]);
                 }
@@ -532,7 +536,7 @@
             if( arg.length > 0 ){
                 var i;
                 var firstChild;
-                var item = newArrayNode(arg);
+                var item = js2uixNewArrayNode(arg);
                 for ( i = 0; i < item.length; i++ ){
                     firstChild = this[0].firstChild;
                     if( firstChild ){
@@ -549,7 +553,7 @@
             if( arg.length > 0 ){
                 var i;
                 var parent = this[0].parentNode;
-                var item = newArrayNode(arg);
+                var item = js2uixNewArrayNode(arg);
                 var sibling =this[0].nextSibling;
                 for ( i = 0; i < item.length; i++ ){
                     if( sibling ){
@@ -567,7 +571,7 @@
             if( arg.length > 0 ){
                 var i;
                 var parent = this[0].parentNode;
-                var item = newArrayNode(arg);
+                var item = js2uixNewArrayNode(arg);
                 for ( i = 0; i < item.length; i++ ){
                     parent.insertBefore(item[i], this[0]);
                 }
@@ -580,7 +584,7 @@
             var parent = target.parentNode;
             if( item && ( typeof item === 'string' || typeof item === 'object') ){
                 if ( typeof item === 'string' ){
-                    var stringType = checkValidation(item);
+                    var stringType = js2uixCheckValidation(item);
                     if( stringType.idClass || stringType.spType || stringType.tagType ){
                         result = zui(item);
                     } else {
@@ -619,14 +623,16 @@
             if( arg && length > 0 && length <= 2 ){
                 var styleObject = [];
                 if ( length === 1 && typeof arg[0] === 'string' ){
-                    var getValue = window.getComputedStyle(this[0] ,null).getPropertyValue(arg[0]) || this[0].style[arg[0]];
-                    return isNaN(parseInt(getValue))?getValue:parseInt(getValue);
+                    if ( this[0] !== DOC && this[0] !== window  ){
+                        var getValue = window.getComputedStyle(this[0] ,null).getPropertyValue(arg[0]) || this[0].style[arg[0]];
+                        return isNaN(parseInt(getValue))?getValue:parseInt(getValue);
+                    }
                 } else if ( length === 1 && typeof arg[0] === 'object' ){
                     for ( var name in arg[0] ){
-                        styleObject.push( domStyleParse(name, arg[0][name]) );
+                        styleObject.push( js2uixDomStyleParse(name, arg[0][name]) );
                     }
                 } else if ( length === 2 && typeof arg[0] === 'string' && (typeof arg[1] === "string" || typeof arg[1] === "number") ){
-                    styleObject.push( domStyleParse(arg[0], arg[1]) );
+                    styleObject.push( js2uixDomStyleParse(arg[0], arg[1]) );
                 }
                 for( var i = 0; i < this.length; i++ ){
                     for( var j = 0; j <styleObject.length; j++ ){
@@ -637,16 +643,16 @@
             return this;
         },
         top : function (value){
-            return domStyleApply(this, 'top', value);
+            return js2uixDomStyleApply(this, 'top', value);
         },
         left : function (value){
-            return domStyleApply(this, 'left', value);
+            return js2uixDomStyleApply(this, 'left', value);
         },
         width : function (value){
-            return domStyleApply(this, 'width', value);
+            return js2uixDomStyleApply(this, 'width', value);
         },
         height : function (value){
-            return domStyleApply(this, 'height', value);
+            return js2uixDomStyleApply(this, 'height', value);
         },
         offset : function () {
             if ( !this[0] ) {return;}
@@ -664,6 +670,111 @@
             return (!this[0].getClientRects().length)?undefined:result;
         }
     });
+
+    /** control event method */
+    var js2uixFxAddEventHandler = function (item, param){
+        var eventNameArray = param[0].split('.');
+        var eventKeyName = eventNameArray[1];
+        zui.loop(item, function(){
+            var eventName = eventNameArray[0];
+            if ( !this[ModuleName]['events'][eventName] ) {
+                this[ModuleName]['events'][eventName] = [];
+            }
+            this.addEventListener(eventNameArray[0], param[param.length-1], false);
+            this[ModuleName]['events'][eventName].push({
+                eventName : eventName,
+                eventKey : eventKeyName || null,
+                handler : param[param.length-1]
+            });
+        });
+    };
+    var js2uixFxRemoveEventHandler = function (item, param){
+        /** document node event remove */
+        zui.loop(item, function(){
+            var key;
+            var i;
+            var eventData = this[ModuleName]['events'];
+            if( !param ){
+                for ( key in eventData ){
+                    for ( i = 0; i < eventData[key].length; i++ ){
+                        this.removeEventListener(key, eventData[key][i]['handler']);
+                        eventData[key][i]['removed'] = true;
+                    }
+                }
+            } else {
+                var crtEvent;
+                var length = param.length;
+                var first = param[0];
+                var last = param[param.length-1];
+                var eventNameArray = param[0].split('.');
+                var eventName = eventNameArray[0];
+                var eventKeyName = eventNameArray[1] || null;
+                if ( length === 1 && typeof first === 'string' ){
+                    for( i = 0; i < eventData[eventName].length; i++ ){
+                        crtEvent = eventData[eventName][i];
+                        if( crtEvent.eventKey === eventKeyName ){
+                            this.removeEventListener(eventName, eventData[eventName][i]['handler']);
+                            eventData[eventName][i]['removed'] = true;
+                        }
+                    }
+                } else if ( length === 2 && typeof first === 'string' && (typeof last === 'function' || typeof last === 'object') ){
+                    for( i = 0; i < eventData[eventName].length; i++ ){
+                        crtEvent = eventData[eventName][i];
+                        if( crtEvent.eventKey === eventKeyName && last === eventData[eventName][i]['handler'] ){
+                            this.removeEventListener(eventName, eventData[eventName][i]['handler']);
+                            eventData[eventName][i]['removed'] = true;
+                        }
+                    }
+                }
+            }
+        });
+        /** module node event remove */
+        zui.loop(item, function(){
+            var key;
+            var i;
+            var eventData = this[ModuleName]['events'];
+            for (key in eventData) {
+                for (i = eventData[key].length-1; i >= 0; i--) {
+                    if( eventData[key][i]['removed'] ){
+                        eventData[key].splice(i,1);
+                    }
+                }
+            }
+        });
+    };
+    zui.fx.extend({
+        addEvent : function (){
+            var arg = arguments;
+            var length = arg.length;
+            if ( length > 0 ){
+                var firstType = typeof arg[0];
+                var lastType = typeof arg[arg.length-1];
+                if ( firstType === 'object' ){
+                    for ( var name in arg[0] ){
+                        js2uixFxAddEventHandler(this, [name, arg[0][name]]);
+                    }
+                } else {
+                    if( firstType === 'string' && (lastType === 'function' || lastType === 'object') ){
+                        if( length === 2 ){
+                            js2uixFxAddEventHandler(this, arg);
+                        } else if ( length === 3 ){
+                            /** TODO : 개발 예정 */
+                        }
+                    }
+                }
+            }
+        },
+        removeEvent : function (){
+            var arg = arguments;
+            var length = arg.length;
+            if( length < 1 ){
+                js2uixFxRemoveEventHandler(this);
+            } else {
+                js2uixFxRemoveEventHandler(this, arg);
+            }
+        }
+    });
+
     /** --------------------------------------------------------------- */
     /** ZUI Set Define For Module */
     if ( typeof define === "function" && define.amd ) {
