@@ -45,7 +45,25 @@
         }
         return item;
     };
-
+    var checkValidation = function(select){
+        var isEmptyString = select.replace(/\s/gi, "");
+        var isIdOrClassType = isEmptyString.match(/^#|^\./gi);
+        var isTagStringType = select.match(/(<([^>]+)>)/gi);
+        var isSpStringType = select.match(/[`~!@#$%^&*|\\\'\";:\/?]/gi);
+        if( isIdOrClassType && isSpStringType ){
+            var selectArray = select.split(' ');
+            for( var i = 0; i < selectArray.length; i++ ){
+                var reCheck = selectArray[i].match(/[`~!@#$%^&*|\\\'\";:\/?]/gi);
+                if(!reCheck || reCheck.length > 1){ isIdOrClassType = null; }
+            }
+        }
+        return {
+            full : isEmptyString,
+            idClass : isIdOrClassType,
+            tagType : isTagStringType,
+            spType : isSpStringType
+        }
+    };
 
     /** --------------------------------------------------------------- */
     /** zui-control create object ( zui control 을 정의한다 )
@@ -62,7 +80,6 @@
     /** TODO : extend prototype, 상속을 구현한다.
      * Object.setPrototypeOf 기본 사용 / 불가능 : __proto__ 를 이용하여 상속.
      * */
-
     zui.fx = zui.prototype = {
         zui : ModuleVersion,
         constructor : zui,
@@ -81,6 +98,37 @@
                 }
             }
             return newNode;
+        },
+        loop : function ( item, callback ){
+            var length, i = 0;
+            if ( zui.isArray( item ) ) {
+                length = item.length;
+                for (; i < length; i++ ) {
+                    if ( callback.call( item[i], i, item[i] ) === false ) {
+                        break;
+                    }
+                }
+            } else {
+                for ( i in item ) {
+                    if ( callback.call( item[i], i, item[i] ) === false ) {
+                        break;
+                    }
+                }
+            }
+            return item;
+        },
+        loaded : function ( item, callback ){
+            var allowDom = ['document','window','html','body'];
+            if( typeof item === "object" && ( item.hasOwnProperty('name') && item.name === ModuleName && allowDom.indexOf(item[0].nodeName.toLowerCase()) === -1 ) ){
+                item = item[item.length-1];
+                callback = callback.bind(item);
+            }
+            if (DOC.attachEvent ? DOC.readyState === "complete" : DOC.readyState !== "loading"){
+                callback();
+            } else {
+                DOC.addEventListener('DOMContentLoaded', callback);
+            }
+            return zui(item);
         }
     };
     zui.fx.init = function (select){
@@ -90,30 +138,30 @@
          * 예외처리를 통해 Error 상황에 대응한다.
          * */
         if ( typeof select === 'string' ){
+            // TODO : id or class 타입의 string - 보완 필요
             var tagName;
-            var isEmptyString = select.replace(/\s/gi, "");
-            var isIdOrClassType = isEmptyString.match(/^#|^\./gi);
-            var isTagStringType = select.match(/(<([^>]+)>)/gi);
-            var isSpStringType = select.match(/[`~!@#$%^&*|\\\'\";:\/?]/gi);
-            /** step.1 : type check */
-            if ( isEmptyString && isEmptyString.length > 0 ){
-                if ( isIdOrClassType && isIdOrClassType.length > 0 ){
-                    /** TODO : id or class 타입의 string - 보완 필요 */
+            var virtualDom;
+            var isType = checkValidation(select);
+            var isString = isType.full;
+            var isIdOrClassType = isType.idClass;
+            var isTagStringType = isType.tagType;
+            var isSpecialType = isType.spType;
+            if ( isString ){
+                if ( isString.length > 1 && (isIdOrClassType && isIdOrClassType.length > 0) ){
+                    select = DOC.querySelectorAll( select );
+                } else if ( !isIdOrClassType && (isTagStringType && isTagStringType.length > 0) ){
+                    tagName = isTagStringType[0].replace(/^<(.+?)>/g, function(match, key) { return key; });
+                    if( isTagStringType.length === 1 ){
+                        select = [DOC.createElement( tagName )];
+                    } else {
+                        virtualDom = DOC.createElement( ModuleName );
+                        virtualDom.innerHTML = select;
+                        select = [virtualDom.firstChild];
+                    }
+                } else if ( !isIdOrClassType && !isSpecialType && !isTagStringType ){
                     select = DOC.querySelectorAll( select );
                 } else {
-                    if ( isTagStringType && isTagStringType.length > 0 ){
-                        tagName = isTagStringType[0].replace(/^<(.+?)>/g, function(match, key) { return key; });
-                        if( isTagStringType.length === 1 ){
-                            select = [DOC.createElement( tagName )];
-                        } else {
-                            var virtualDom = DOC.createElement( ModuleName );
-                            virtualDom.innerHTML = select;
-                            select = [virtualDom.firstChild];
-                        }
-                    } else {
-                        /** TODO : 특수한 경우 예외처리. */
-                        select = ( !isSpStringType )?DOC.querySelectorAll( select ):[];
-                    }
+                    select = [DOC.createTextNode( select )];
                 }
             }
         } else {
@@ -324,41 +372,6 @@
     /** --------------------------------------------------------------- */
 
     /** control basic method */
-    zui.extend({
-        /** control basic method */
-        loop : function ( item, callback ){
-            var length, i = 0;
-            if ( zui.isArray( item ) ) {
-                length = item.length;
-                for (; i < length; i++ ) {
-                    if ( callback.call( item[i], i, item[i] ) === false ) {
-                        break;
-                    }
-                }
-            } else {
-                for ( i in item ) {
-                    if ( callback.call( item[i], i, item[i] ) === false ) {
-                        break;
-                    }
-                }
-            }
-            return item;
-        },
-        loaded : function ( item, callback ){
-            var allowDom = ['document','window','html','body'];
-            if( typeof item === "object" && ( item.hasOwnProperty('name') && item.name === ModuleName && allowDom.indexOf(item[0].nodeName.toLowerCase()) === -1 ) ){
-                item = item[item.length-1];
-                callback = callback.bind(item);
-            }
-            if (DOC.attachEvent ? DOC.readyState === "complete" : DOC.readyState !== "loading"){
-                callback();
-            } else {
-                DOC.addEventListener('DOMContentLoaded', callback);
-            }
-            return zui(item);
-        }
-    });
-
     zui.fx.extend({
         /** control basic method - utility */
         loop : function ( callback ){
@@ -518,6 +531,30 @@
                 }
             }
             return this;
+        },
+        replace : function ( item ){
+            var result = this;
+            var target = this[0];
+            var parent = target.parentNode;
+            if( item && ( typeof item === 'string' || typeof item === 'object') ){
+                if ( typeof item === 'string' ){
+                    var stringType = checkValidation(item);
+                    if( stringType.idClass || stringType.spType || stringType.tagType ){
+                        result = zui(item);
+                    } else {
+                        result = zui(DOC.createTextNode(item));
+                    }
+                } else {
+                    if ( item.name && item.name === ModuleName ){
+                        result = item;
+                    } else if ( item.nodeName ){
+                        result = zui[item];
+                    }
+                }
+                zui(target).after(result);
+                parent.removeChild(target);
+            }
+            return result;
         }
     });
     /** --------------------------------------------------------------- */
