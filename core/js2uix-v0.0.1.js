@@ -18,6 +18,7 @@
 
 (function( global, factory ){
     "use strict";
+
     if ( typeof module === "object" && typeof module.exports === "object" ) {
         module.exports = factory( global, true );
         if( !global.document ){
