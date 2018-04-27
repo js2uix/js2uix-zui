@@ -665,7 +665,6 @@
         }
     });
     /** --------------------------------------------------------------- */
-
     /** ZUI Set Define For Module */
     if ( typeof define === "function" && define.amd ) {
         define( "zui", [], function() {
