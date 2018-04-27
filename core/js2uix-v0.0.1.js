@@ -90,6 +90,14 @@
             strArray = null;
         }
     };
+    var domStyleApply = function (item, name, value){
+        if( value === 0 || typeof value === 'number' ){
+            item.css(name, value);
+            return this;
+        } else if ( !value || value === null ){
+            return item.css(name);
+        }
+    };
 
     /** --------------------------------------------------------------- */
     /** zui-control create object ( zui control 을 정의한다 )
@@ -626,36 +634,31 @@
             return this;
         },
         top : function (value){
-            if( value === 0 || typeof value === 'number' ){
-                this.css('top', value);
-                return this;
-            } else if ( !value || value === null ){
-                return this.css('top');
-            }
+            return domStyleApply(this, 'top', value);
         },
         left : function (value){
-            if( value === 0 || typeof value === 'number' ){
-                this.css('left', value);
-                return this;
-            } else if ( !value || value === null ){
-                return this.css('left' );
-            }
+            return domStyleApply(this, 'left', value);
         },
         width : function (value){
-            if( value === 0 || typeof value === 'number' ){
-                this.css('width', value);
-                return this;
-            } else if ( !value || value === null ){
-                return this.css('width');
-            }
+            return domStyleApply(this, 'width', value);
         },
         height : function (value){
-            if( value === 0 || typeof value === 'number' ){
-                this.css('height', value);
-                return this;
-            } else if ( !value || value === null ){
-                return this.css('height');
-            }
+            return domStyleApply(this, 'height', value);
+        },
+        offset : function () {
+            if ( !this[0] ) {return;}
+            var rectInfo = this[0].getBoundingClientRect();
+            var result = {
+                x : rectInfo.x,
+                y : rectInfo.y,
+                top : rectInfo.top,
+                bottom : rectInfo.bottom,
+                left : rectInfo.left,
+                right : rectInfo.right,
+                width : rectInfo.width,
+                height : rectInfo.height
+            };
+            return (!this[0].getClientRects().length)?undefined:result;
         }
     });
 
