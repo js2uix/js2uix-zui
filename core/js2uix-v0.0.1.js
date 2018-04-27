@@ -31,7 +31,7 @@
     var DOC = window.document,
         SetProtoType = Object.setPrototypeOf,
         GetProtoType = Object.getPrototypeOf;
-    var newArrayNode = function(arg){
+    var newArrayNode = function (arg){
         var i, j;
         var item = [];
         for ( i = 0; i < arg.length; i++ ){
@@ -45,7 +45,7 @@
         }
         return item;
     };
-    var checkValidation = function(select){
+    var checkValidation = function (select){
         var isEmptyString = select.replace(/\s/gi, "");
         var isIdOrClassType = isEmptyString.match(/^#|^\./gi);
         var isTagStringType = select.match(/(<([^>]+)>)/gi);
@@ -62,6 +62,32 @@
             idClass : isIdOrClassType,
             tagType : isTagStringType,
             spType : isSpStringType
+        }
+    };
+    var domStyleParse = function (name, value){
+        var i;
+        var type;
+        var styleObject;
+        var styleName = "";
+        var strArray = (name.replace(/^-/gi,"")).split("-");
+        for(i = 0; i<strArray.length; i++){
+            if( i === 0 ){
+                styleName += strArray[i];
+            } else {
+                styleName += strArray[i].charAt(0).toUpperCase() + strArray[i].slice(1)
+            }
+        }
+        if( styleName !== "zIndex" && styleName !== "opacity" && !isNaN(parseInt(value)) ){
+            type = (typeof value === 'string' && value.indexOf('%') !== -1)?'%':'px';
+            value = parseInt(value)+type;
+        }
+        styleObject = [styleName,value];
+        try {
+            return styleObject;
+        } finally {
+            styleObject = null;
+            styleName = null;
+            strArray = null;
         }
     };
 
@@ -95,37 +121,6 @@
                 }
             }
             return newNode;
-        },
-        loop : function ( item, callback ){
-            var length, i = 0;
-            if ( zui.isArray( item ) ) {
-                length = item.length;
-                for (; i < length; i++ ) {
-                    if ( callback.call( item[i], i, item[i] ) === false ) {
-                        break;
-                    }
-                }
-            } else {
-                for ( i in item ) {
-                    if ( callback.call( item[i], i, item[i] ) === false ) {
-                        break;
-                    }
-                }
-            }
-            return item;
-        },
-        loaded : function ( item, callback ){
-            var allowDom = ['document','window','html','body'];
-            if( typeof item === "object" && ( item.hasOwnProperty('name') && item.name === ModuleName && allowDom.indexOf(item[0].nodeName.toLowerCase()) === -1 ) ){
-                item = item[item.length-1];
-                callback = callback.bind(item);
-            }
-            if (DOC.attachEvent ? DOC.readyState === "complete" : DOC.readyState !== "loading"){
-                callback();
-            } else {
-                DOC.addEventListener('DOMContentLoaded', callback);
-            }
-            return zui(item);
         }
     };
     zui.fx.init = function (select){
@@ -369,6 +364,39 @@
     /** --------------------------------------------------------------- */
 
     /** control basic method */
+    zui.extend({
+        loop : function ( item, callback ){
+            var length, i = 0;
+            if ( zui.isArray( item ) ) {
+                length = item.length;
+                for (; i < length; i++ ) {
+                    if ( callback.call( item[i], i, item[i] ) === false ) {
+                        break;
+                    }
+                }
+            } else {
+                for ( i in item ) {
+                    if ( callback.call( item[i], i, item[i] ) === false ) {
+                        break;
+                    }
+                }
+            }
+            return item;
+        },
+        loaded : function ( item, callback ){
+            var allowDom = ['document','window','html','body'];
+            if( typeof item === "object" && ( item.hasOwnProperty('name') && item.name === ModuleName && allowDom.indexOf(item[0].nodeName.toLowerCase()) === -1 ) ){
+                item = item[item.length-1];
+                callback = callback.bind(item);
+            }
+            if (DOC.attachEvent ? DOC.readyState === "complete" : DOC.readyState !== "loading"){
+                callback();
+            } else {
+                DOC.addEventListener('DOMContentLoaded', callback);
+            }
+            return zui(item);
+        }
+    });
     zui.fx.extend({
         /** control basic method - utility */
         loop : function ( callback ){
@@ -571,6 +599,67 @@
             }
         }
     });
+
+    /** control style method */
+    zui.fx.extend({
+        css : function (){
+            var arg = arguments;
+            var length = arg.length;
+            if( arg && length > 0 && length <= 2 ){
+                var styleObject = [];
+                if ( length === 1 && typeof arg[0] === 'string' ){
+                    var getValue = window.getComputedStyle(this[0] ,null).getPropertyValue(arg[0]) || this[0].style[arg[0]];
+                    return isNaN(parseInt(getValue))?getValue:parseInt(getValue);
+                } else if ( length === 1 && typeof arg[0] === 'object' ){
+                    for ( var name in arg[0] ){
+                        styleObject.push( domStyleParse(name, arg[0][name]) );
+                    }
+                } else if ( length === 2 && typeof arg[0] === 'string' && (typeof arg[1] === "string" || typeof arg[1] === "number") ){
+                    styleObject.push( domStyleParse(arg[0], arg[1]) );
+                }
+                for( var i = 0; i < this.length; i++ ){
+                    for( var j = 0; j <styleObject.length; j++ ){
+                        this[i].style[styleObject[j][0]] = styleObject[j][1];
+                    }
+                }
+            }
+            return this;
+        },
+        top : function (value){
+            if( value === 0 || typeof value === 'number' ){
+                this.css('top', value);
+                return this;
+            } else if ( !value || value === null ){
+                return this.css('top');
+            }
+        },
+        left : function (value){
+            if( value === 0 || typeof value === 'number' ){
+                this.css('left', value);
+                return this;
+            } else if ( !value || value === null ){
+                return this.css('left' );
+            }
+        },
+        width : function (value){
+            if( value === 0 || typeof value === 'number' ){
+                this.css('width', value);
+                return this;
+            } else if ( !value || value === null ){
+                return this.css('width');
+            }
+        },
+        height : function (value){
+            if( value === 0 || typeof value === 'number' ){
+                this.css('height', value);
+                return this;
+            } else if ( !value || value === null ){
+                return this.css('height');
+            }
+        }
+    });
+
+
     /** --------------------------------------------------------------- */
 
     /** ZUI Set Define For Module */
