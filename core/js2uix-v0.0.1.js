@@ -1,6 +1,7 @@
 /** ------------------------------------------------------------------------------------- /
- * ModuleName  : ZUI-Control(js2uix-zui)
- * Developer   : YJH-js2uix(clayrj2004@daum.net)
+ * ModuleName  : zui-dom-control(js2uix-zui)
+ * Developer   : YJH-js2uix
+ * Email       : deshineplus@icloud.com
  * DevLanguage : Javascript(ES5)
  * BuildStart  : 2018.01.01
  * Information : Create Dom Control Module (html 의 dom 을 컨트롤 할 수 있는 모듈을 제작)
@@ -9,8 +10,20 @@
  *               2. 간단한 Dom Select/Control 을 통해 기능 확장.
  *               3. 기본 기능 완료 후 javascript component 기능 추가.
  * -------------------------------------------------------------------------------------- */
-
-(function(window, module){
+(function( global, factory ){
+    "use strict";
+    if ( typeof module === "object" && typeof module.exports === "object" ) {
+        module.exports = factory( global, true );
+        if( !global.document ){
+            module.exports = function(win) {
+                if ( !win.document ) { throw new Error( "ZUI is not support this browser!" ); }
+                return factory(win);
+            }
+        }
+    } else {
+        factory( global );
+    }
+})( typeof window !== "undefined" ? window : this, function( window, noGlobal ){
     'use strict';
     var zui,
         ModuleName = 'js2uix',
@@ -32,6 +45,8 @@
         }
         return item;
     };
+
+
     /** --------------------------------------------------------------- */
     /** zui-control create object ( zui control 을 정의한다 )
      * TODO : 가장 기본적인 기능을 먼저 활성화 하며, 추후 ui 기능을 확장한다.
@@ -39,12 +54,15 @@
      *       새로운 Node 객체를 만들고 기능을 확장/상속 시킨다.
      * */
     /** --------------------------------------------------------------- */
+
     zui = function (select){
         return new zui.fx.init(select);
     };
+
     /** TODO : extend prototype, 상속을 구현한다.
      * Object.setPrototypeOf 기본 사용 / 불가능 : __proto__ 를 이용하여 상속.
      * */
+
     zui.fx = zui.prototype = {
         zui : ModuleVersion,
         constructor : zui,
@@ -170,11 +188,13 @@
             return typeof number === 'number';
         }
     });
+
     /** --------------------------------------------------------------- */
     /** TODO : 추가적인 기능을 확장한다
      * 추가기능은 단계적으로 control 에 필요한 기능을 추가한다.
      * */
     /** --------------------------------------------------------------- */
+
     /** control attribute */
     zui.extend({
         /** control attribute[id] name */
@@ -253,6 +273,7 @@
             }
         }
     });
+
     zui.fx.extend({
         /** control attribute[id] name */
         addId : function ( name ){
@@ -301,6 +322,7 @@
         }
     });
     /** --------------------------------------------------------------- */
+
     /** control basic method */
     zui.extend({
         /** control basic method */
@@ -336,6 +358,7 @@
             return zui(item);
         }
     });
+
     zui.fx.extend({
         /** control basic method - utility */
         loop : function ( callback ){
@@ -498,7 +521,15 @@
         }
     });
     /** --------------------------------------------------------------- */
-    window.zui = zui;
-}(window, function(){
-    /** TODO : 개발 완료후 모듈화 진행을 위해 비움 */
-}));
+
+    /** ZUI Set Define For Module */
+    if ( typeof define === "function" && define.amd ) {
+        define( "zui", [], function() {
+            return zui;
+        });
+    }
+    if ( !noGlobal ) {
+        window.zui = zui;
+    }
+    return zui;
+});
