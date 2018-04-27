@@ -16,6 +16,7 @@
  *               3. 기본 기능 완료 후 javascript component 기능 추가.
  * -------------------------------------------------------------------------------------- */
 
+
 (function( global, factory ){
     "use strict";
     if ( typeof module === "object" && typeof module.exports === "object" ) {
@@ -68,40 +69,6 @@
             idClass : isIdOrClassType,
             tagType : isTagStringType,
             spType : isSpStringType
-        }
-    };
-    var js2uixDomStyleParse = function (name, value){
-        var i;
-        var type;
-        var styleObject;
-        var styleName = "";
-        var strArray = (name.replace(/^-/gi,"")).split("-");
-        for(i = 0; i<strArray.length; i++){
-            if( i === 0 ){
-                styleName += strArray[i];
-            } else {
-                styleName += strArray[i].charAt(0).toUpperCase() + strArray[i].slice(1)
-            }
-        }
-        if( styleName !== "zIndex" && styleName !== "opacity" && !isNaN(parseInt(value)) ){
-            type = (typeof value === 'string' && value.indexOf('%') !== -1)?'%':'px';
-            value = parseInt(value)+type;
-        }
-        styleObject = [styleName,value];
-        try {
-            return styleObject;
-        } finally {
-            styleObject = null;
-            styleName = null;
-            strArray = null;
-        }
-    };
-    var js2uixDomStyleApply = function (item, name, value){
-        if( value === 0 || typeof value === 'number' ){
-            item.css(name, value);
-            return this;
-        } else if ( !value || value === null ){
-            return item.css(name);
         }
     };
 
@@ -619,6 +586,40 @@
     });
 
     /** control style method */
+    var js2uixDomStyleParse = function (name, value){
+        var i;
+        var type;
+        var styleObject;
+        var styleName = "";
+        var strArray = (name.replace(/^-/gi,"")).split("-");
+        for(i = 0; i<strArray.length; i++){
+            if( i === 0 ){
+                styleName += strArray[i];
+            } else {
+                styleName += strArray[i].charAt(0).toUpperCase() + strArray[i].slice(1)
+            }
+        }
+        if( styleName !== "zIndex" && styleName !== "opacity" && !isNaN(parseInt(value)) ){
+            type = (typeof value === 'string' && value.indexOf('%') !== -1)?'%':'px';
+            value = parseInt(value)+type;
+        }
+        styleObject = [styleName,value];
+        try {
+            return styleObject;
+        } finally {
+            styleObject = null;
+            styleName = null;
+            strArray = null;
+        }
+    };
+    var js2uixDomStyleApply = function (item, name, value){
+        if( value === 0 || typeof value === 'number' ){
+            item.css(name, value);
+            return this;
+        } else if ( !value || value === null ){
+            return item.css(name);
+        }
+    };
     zui.fx.extend({
         css : function (){
             var arg = arguments;
