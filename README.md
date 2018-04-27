@@ -1,6 +1,7 @@
-ZUI
+js2uix - zui
 ===
-ZUI-Control (js2uix-zui)
+**zui-dom-control (js2uix-zui)**
+<pre>
 - ModuleName  : ZUI-Control(js2uix-zui)
 - Developer   : YJH-js2uix
 - DevLanguage : Javascript(ES5)
@@ -9,6 +10,7 @@ ZUI-Control (js2uix-zui)
  1. ES5 를 이용한 Dom Select 및 Control 기능 구현.
  2. 간단한 Dom Select/Control 을 통해 기능 확장.
  3. 기본 기능 완료 후 javascript component 기능 추가.
+</pre>
 
 
 ## 1. 기본사용
