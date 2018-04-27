@@ -73,13 +73,10 @@
      * */
     /** --------------------------------------------------------------- */
 
-    zui = function (select){
-        return new zui.fx.init(select);
-    };
-
     /** TODO : extend prototype, 상속을 구현한다.
      * Object.setPrototypeOf 기본 사용 / 불가능 : __proto__ 를 이용하여 상속.
      * */
+    zui = function (select){return new zui.fx.init(select);};
     zui.fx = zui.prototype = {
         zui : ModuleVersion,
         constructor : zui,
@@ -382,7 +379,7 @@
                 zui.loaded( this, callback );
             }
         },
-        /** control basic query - dom */
+        /** control basic query - dom select */
         find : function ( name ){
             var result = [];
             if( name && typeof name === 'string' ){
@@ -467,13 +464,19 @@
         hasChild : function ( name ){
             return this.find(name).length > 0 && name && typeof name === 'string';
         },
-        next : function (){
+        nextNode : function (){
             return this[0].nextElementSibling?zui(this[0].nextElementSibling):undefined;
         },
-        prev : function(){
+        prevNode : function (){
             return this[0].previousElementSibling?zui(this[0].previousElementSibling):undefined;
         },
-        /** control basic method - insert */
+        firstNode : function (){
+            return (this.length < 2)?this:zui(this[0]);
+        },
+        lastINode : function (){
+            return (this.length < 2)?this:zui(this[this.length-1]);
+        },
+        /** control basic method - dom change */
         append : function (){
             var arg = arguments;
             if( arg.length > 0 ){
@@ -555,6 +558,17 @@
                 parent.removeChild(target);
             }
             return result;
+        },
+        remove : function (){
+            for ( var i = this.length-1; i >= 0; i-- ){
+                var current = this[i];
+                if( current ){
+                    var parent = this[i].parentNode;
+                    if( parent ){
+                        parent.removeChild( current );
+                    }
+                }
+            }
         }
     });
     /** --------------------------------------------------------------- */
