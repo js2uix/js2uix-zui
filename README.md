@@ -26,20 +26,60 @@ ZUI-Control (js2uix-zui)
 <pre><code>
 - ex) zui('div').addClass('test1').removeClass('test1')
 </code></pre>
-######
+
 ## 2. 기능
-######
-1. addAttr : Dom attribute 설정.
+
+1. addAttr : 선택된 Dom 의 attribute 설정.
 <pre><code>
-zui(select).addAttr('data-name', test );
+zui(select).addAttr( 'data-name', test );
 zui(select).addAttr({
     'data-name' : test,
     'data-value' : 100
 });
 </code></pre>
-######
-2. addAttr : Dom class name 설정.
+
+2. addAttr : 선택된 Dom 의 class name 설정.
 <pre><code>
-zui(select).addClass('test');
-zui(select).addClass('test1 test2 test3');
+zui('div').addClass( 'test' );
+zui('div').addClass( 'test1 test2 test3' );
+</code></pre>
+
+3. addId : 선택된 Dom 의 id name 설정.
+<pre><code>
+zui('div').addId( 'test' );
+</code></pre>
+
+4. after : 선택된 Dom 다음에 Dom 삽입.
+<pre><code>
+zui('div').after( zui('.test1') );
+zui('div').after( '&lt;div&gt;test&lt;/div&gt;' );
+zui('div').after( 'test' );
+</code></pre>
+
+5. append : 선택된 Dom 안의 마지막에 Dom 삽입.
+<pre><code>
+zui('div').append( zui('.test1') );
+zui('div').append( '&lt;div&gt;test&lt;/div&gt;' );
+</code></pre>
+
+6. before : 선택된 Dom 이전에 Dom 삽입.
+<pre><code>
+zui('div').before( zui('.test1') );
+zui('div').before( '&lt;div&gt;test&lt;/div&gt;' );
+zui('div').before( 'test' );
+</code></pre>
+
+7. append : 선택된 Dom 안의 자식 Dom 확인.
+<pre><code>
+zui('div').children( );
+zui('div').children( '.child' );
+</code></pre>
+
+8. css : 선택된 Dom 의 style 설정
+<pre><code>
+zui('div').css( 'color', 'red' );
+zui('div').css({
+    'color' : 'red',
+    'z-index' : 1
+});
 </code></pre>
