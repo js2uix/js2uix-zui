@@ -4,7 +4,7 @@ js2uix - zui
 ## zui-dom-control (js2uix-zui)
 <pre>
  * ModuleName  : zui-dom-control(js2uix-zui)
- * GitHub      : https://github.com/js2uix/ZUI
+ * GitHub      : https://github.com/js2uix/js2uix-zui
  * Developer   : YJH-js2uix
  * Email       : deshineplus@icloud.com
  * language    : Javascript(ES5)
