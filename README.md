@@ -87,10 +87,29 @@ zui('div').before('&lt;div&gt;test&lt;/div&gt;');
 zui('div').before('test');
 </code></pre>
 
-**append : 선택된 Dom 안의 자식 Dom 확인.**
+**children : 선택된 Dom 안의 자식 Dom 확인.**
 <pre>code ex :<code>
 zui('div').children();
 zui('div').children('.child');
+</code></pre>
+
+**createDom : 새로운 Dom 생성.**
+<pre>code ex :<code>
+var newNode = zui.createDom('div', {
+    className : 'test',
+    idName : 'ids',
+    attributes : {
+        'data-id' : 'test11',
+        'data-name' : 'testName'
+    },
+    styles : {
+        'width' : 100,
+        'height' : 200,
+        'backgroundColor' : 'red'
+    },
+    content : 'hello world'
+});
+console.log( newNode ); //div node
 </code></pre>
 
 **css : 선택된 Dom 의 style 설정**
