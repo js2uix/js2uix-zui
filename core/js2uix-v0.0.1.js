@@ -37,6 +37,22 @@
     var DOC = window.document,
         SetProtoType = Object.setPrototypeOf,
         GetProtoType = Object.getPrototypeOf;
+    var js2uixConstModule = function(){
+        this.module = {};
+        this.setModule = function(name, data){
+            this.module[name] = data;
+        };
+        this.getModule = function(name){
+            setTimeout(function(){
+                delete this.module[name];
+            }.bind(this), 1000);
+            return this.module[name];
+        };
+        return {
+            setModule : this.setModule.bind(this),
+            getModule : this.getModule.bind(this)
+        }
+    };
     var js2uixNewArrayNode = function (arg){
         var i, j;
         var item = [];
@@ -79,7 +95,6 @@
             spType : isSpStringType
         }
     };
-
     /** --------------------------------------------------------------- */
     /** zui-control create object ( zui control 을 정의한다 )
      * TODO : 가장 기본적인 기능을 먼저 활성화 하며, 추후 ui 기능을 확장한다.
@@ -87,7 +102,6 @@
      *       새로운 Node 객체를 만들고 기능을 확장/상속 시킨다.
      * */
     /** --------------------------------------------------------------- */
-
     /** TODO : extend prototype, 상속을 구현한다.
      * Object.setPrototypeOf 기본 사용 / 불가능 : __proto__ 를 이용하여 상속.
      * */
@@ -221,14 +235,12 @@
             return typeof number === 'number';
         }
     });
-
     /** --------------------------------------------------------------- */
     /** TODO : 추가적인 기능을 확장한다
      * 추가기능은 단계적으로 control 에 필요한 기능을 추가한다.
      * */
     /** --------------------------------------------------------------- */
-
-    /** control attribute */
+    /** js2uix-control-attribute method */
     zui.extend({
         /** control attribute[id] name */
         addId : function ( item, name ){
@@ -306,7 +318,6 @@
             }
         }
     });
-
     zui.fx.extend({
         /** control attribute[id] name */
         addId : function ( name ){
@@ -355,8 +366,7 @@
         }
     });
     /** --------------------------------------------------------------- */
-
-    /** control basic method */
+    /** js2uix-control-basic method */
     zui.extend({
         loop : function ( item, callback ){
             var length, i = 0;
@@ -423,7 +433,8 @@
                 }
             }
             return (typeof Boolean(zuiObject) && zuiObject)?zui(dom):dom;
-        }
+        },
+        uiComponent : new js2uixConstModule()
     });
     zui.fx.extend({
         /** control basic method - utility */
@@ -634,8 +645,7 @@
             }
         }
     });
-
-    /** control style method */
+    /** js2uix-control-style method */
     var js2uixDomStyleParse = function (name, value){
         var i;
         var type;
@@ -724,8 +734,7 @@
             return (!this[0].getClientRects().length)?undefined:result;
         }
     });
-
-    /** control event method */
+    /** js2uix-control-event method */
     var js2uixFxAddEventHandler = function (item, param){
         var eventNameArray = param[0].split('.');
         var eventKeyName = eventNameArray[1];
@@ -832,7 +841,280 @@
             }
         }
     });
-
+    /** js2uix-component method */
+    var js2uixRouter = function(){
+        this.location = null;
+        this.hash = null;
+        this.router = {};
+        this.setRouter = function(){
+            var arg = arguments;
+            var url = (arg.length > 1)?arg[0]:null;
+            var data = (arg.length > 1)?arg[1]:null;
+            if( arg.length === 1 ){
+                url = '/all';
+                data = arg[0];
+            }
+            if( url ){
+                if( url.indexOf('/') === 0 ){
+                    var parseUrl = url.substr(1, url.length-1);
+                    var routerName = (!parseUrl)?'index':parseUrl;
+                    this.router[routerName] = data;
+                }
+            }
+        };
+        this.getHash = function(){
+            var location = this.location = window.location;
+            var searchPage = location.hash;
+            var hashName = 'index';
+            if( searchPage ){
+                if( searchPage.indexOf('#') === 0 ){
+                    hashName = searchPage.substr(2,searchPage.length-1);
+                }
+            }
+            this.hash = hashName;
+            return hashName;
+        };
+        this.checkRouter = function(){
+            var urlString = this.getHash();
+            var result = {
+                location : this.location,
+                urlString : this.hash
+            };
+            if( typeof this.router['all'] === 'function' ){
+                this.router['all'](result);
+            }
+            if( typeof this.router[urlString] === 'function' ){
+                this.router[urlString](result);
+            }
+        };
+        this.setControl = function(){
+            window.addEventListener('load', this.checkRouter.bind(this));
+            window.addEventListener('hashchange', this.checkRouter.bind(this));
+        };
+        this.init = function(){
+            this.getHash();
+            this.setControl();
+        };
+        this.init();
+        return {
+            on : this.setRouter.bind(this)
+        }
+    };
+    var js2uixComponent = function (obj){
+        this.state = {};
+        this.props = {};
+        this.domState = {
+            parent : null,
+            render : null,
+            virtual : null,
+            isMount : false,
+            uniqueId : Date.now()
+        };
+        if ( obj.construct ){
+            obj.construct.call(this);
+        }
+        Object.defineProperty(this, 'state', {writable : false});
+    };
+    js2uixComponent.prototype = {
+        setState : function (state, value){
+            if (state && typeof state === 'object' && !Array.isArray(state)){
+                zui.loop(state, function(name, value){
+                    this.state[name] = value;
+                }.bind(this));
+            } else if (state && value && typeof state === 'string'){
+                this.state[state] = value;
+            }
+            this.setUpdateState();
+        },
+        setUpdateState : function (){
+            /** TODO : 추가적인 개발 필요 */
+            this.setRender();
+            if (typeof this.onStateWillChange === 'function' ){
+                this.onStateWillChange();
+            }
+        },
+        setProps : function (props){
+            if (props && typeof props === 'object' && !Array.isArray(props)){
+                zui.loop(props, function(name, value){
+                    this.props[name] = value;
+                }.bind(this));
+            }
+            if (typeof this.onPropsWillChange === 'function'){
+                this.onPropsWillChange();
+            }
+        },
+        setPropsState : function (props){
+            this.setProps(props);
+            return this.setRender(props);
+        },
+        setRender : function (){
+            if (this.render && typeof this.render === 'function' ){
+                var renderDom = zui(this.render());
+                this.setForceUpdate(renderDom);
+                if (renderDom && this.domState.virtual){
+                    return {
+                        $$Dom : this.domState.virtual,
+                        props : this.setPropsState.bind(this),
+                        setRenderState : this.setRenderState.bind(this)
+                    }
+                }
+            }
+        },
+        setRenderState : function (param){
+            zui.loop(param, function(name, value){
+                this.domState[name] = value;
+            }.bind(this));
+        },
+        /** TODO : component 기능 임시 모듈 */
+        setForceUpdate : function (isRenderObject){
+            if (this.render && typeof this.render === 'function'){
+                if (isRenderObject && isRenderObject[0]){
+                    isRenderObject[0][ModuleName]['componentId'] = ModuleName+this.domState.uniqueId;
+                    this.domState.virtual = isRenderObject[0];
+                    if (!this.domState.render){ this.domState.render = isRenderObject[0]; }
+                    if (this.domState.isMount){
+                        var current = this.domState.render;
+                        var virtual = this.domState.virtual;
+                        var removeNode = function (parent, targetNode){
+                            if (targetNode){
+                                parent.removeChild(targetNode);
+                            }
+                        };
+                        var insertBeforeNode = function (parent, newNode, beforeNode){
+                            parent.insertBefore(newNode, beforeNode);
+                        };
+                        var insertRemoveNode = function (parent, maxChild, minChild, addNodeType){
+                            var findWillRemoveNode = [];
+                            zui.loop(maxChild, function(num){
+                                var copy;
+                                var targetNode = minChild[num];
+                                if (!targetNode){
+                                    if (addNodeType){
+                                        copy = this.cloneNode(true);
+                                        this.parentNode.insertBefore(copy, this);
+                                        insertBeforeNode(parent, this, targetNode);
+                                    } else {
+                                        findWillRemoveNode.push(this);
+                                    }
+                                } else {
+                                    var vName = this.nodeName;
+                                    var vType = this.nodeType;
+                                    var rName = targetNode.nodeName;
+                                    var rType = targetNode.nodeType;
+                                    if (rName !== vName || rType !== vType){
+                                        if (addNodeType){
+                                            copy = this.cloneNode(true);
+                                            this.parentNode.insertBefore(copy, this);
+                                            insertBeforeNode(parent, this, targetNode);
+                                        } else {
+                                            findWillRemoveNode.push(this);
+                                        }
+                                    }
+                                }
+                            });
+                            if (findWillRemoveNode.length > 0){
+                                zui.loop(findWillRemoveNode, function(){
+                                    removeNode(this.parentNode, this);
+                                });
+                            }
+                        };
+                        var checkNode = function (real, virtual){
+                            if (real.nodeType === 1 && virtual.nodeType === 1){
+                                var rNodeName = real.nodeName.toLowerCase();
+                                var vNodeName = virtual.nodeName.toLowerCase();
+                                var rChild = real.childNodes;
+                                var vChild = virtual.childNodes;
+                                var vAttr = virtual.attributes;
+                                for ( var i = 0; i < vAttr.length; i++ ){
+                                    real.setAttribute(vAttr[i]['name'], vAttr[i]['value']);
+                                }
+                                if (
+                                    (rNodeName === 'input' && vNodeName === 'input') ||
+                                    (rNodeName === 'textarea' && vNodeName === 'textarea') ||
+                                    (rNodeName === 'select' && vNodeName === 'select')
+                                ){
+                                    if (real.value !== virtual.value){
+                                        real.value = virtual.value;
+                                    }
+                                    if (real.type === 'password' || rNodeName === 'textarea' ){
+                                        real.removeAttribute('value');
+                                    }
+                                }
+                                if( rChild && vChild ){
+                                    if (vChild.length !== rChild.length ){
+                                        if (vChild.length > rChild.length){
+                                            insertRemoveNode(real, vChild, rChild, true);
+                                        } else {
+                                            insertRemoveNode(real, rChild, vChild, false);
+                                        }
+                                        checkNode(real, virtual);
+                                        return false;
+                                    }
+                                    for ( var j = 0; j < vChild.length; j++ ){
+                                        var isComponent = vChild[j][ModuleName];
+                                        if (!isComponent || isComponent === '' || !isComponent['componentId'] ){
+                                            checkNode(rChild[j], vChild[j]);
+                                        }
+                                    }
+                                }
+                            } else if (real.nodeType === 3 && virtual.nodeType === 3){
+                                if (real.textContent !== virtual.textContent){
+                                    real.textContent = virtual.textContent;
+                                }
+                            }
+                        };
+                        checkNode(current, virtual);
+                    }
+                }
+            }
+        }
+    };
+    zui.extend({
+        Component : function(obj){
+            var prop;
+            var component = function(obj){
+                js2uixComponent.call(this, obj);
+                return this['setRender'].call(this);
+            };
+            component.prototype = Object.create(js2uixComponent.prototype);
+            component.prototype.constructor = component;
+            for ( prop in obj ){
+                if ( obj.hasOwnProperty(prop) ){
+                    if ( prop !== 'construct' ){
+                        component.prototype[prop] = obj[prop];
+                    }
+                }
+            }
+            return new component(obj);
+        },
+        Export : function(name, data){
+            zui.uiComponent.setModule(name, data);
+        },
+        Import : function(name){
+            return zui.uiComponent.getModule(name);
+        },
+        Render : function(){
+            var arg = arguments;
+            if( arg && arg.length > 1){
+                var parent = zui(arg[arg.length-1])[0];
+                for(var i=0; i<arg.length-1; i++){
+                    var object = arg[i];
+                    var dom = object.$$Dom;
+                    if( dom && parent){
+                        zui(parent).append(dom);
+                        object.setRenderState({
+                            parent : parent,
+                            render : dom,
+                            isMount : true
+                        });
+                    }
+                }
+            }
+        },
+        Router : function(){
+            return new js2uixRouter();
+        }
+    });
     /** --------------------------------------------------------------- */
     /** ZUI Set Define For Module */
     if ( typeof define === "function" && define.amd ) {
