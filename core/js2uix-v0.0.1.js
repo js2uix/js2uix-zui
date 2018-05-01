@@ -5,7 +5,7 @@
  * Email       : deshineplus@icloud.com
  * language    : Javascript(ES5)
  * StartDate   : 2018.02.01
- * BuildDate   : 2018.04.27
+ * BuildDate   : 2018.05.01
  * Copyright   : YJH-js2uix
  * License     : Released under the MIT license
  * -------------------------------------------------------------------------------------- /
@@ -33,7 +33,7 @@
     'use strict';
     var zui,
         ModuleName = 'js2uix',
-        ModuleVersion = 'v0.0.1';
+        ModuleVersion = 'v1.0.1';
     var DOC = window.document,
         SetProtoType = Object.setPrototypeOf,
         GetProtoType = Object.getPrototypeOf;
