@@ -1,7 +1,9 @@
 js2uix - zui
 ===
+js2uix - zui 는 Dom Control 기능과 Component 제작 기능을 결합한 새로운 Javascript Module 이다.
+기존의 Dom Control 기능을 Simple 하게 구현하였으며, 추가적으로 Component 제작이 가능하다.
 
-## zui-dom-control (js2uix-zui)
+## js2uix-zui (zui-dom-control)
 <pre>
  * ModuleName  : zui-dom-control(js2uix-zui)
  * GitHub      : https://github.com/js2uix/js2uix-zui
