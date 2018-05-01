@@ -16,10 +16,8 @@
  *               3. 기본 기능 완료 후 javascript component 기능 추가.
  * -------------------------------------------------------------------------------------- */
 
-
 (function( global, factory ){
     "use strict";
-
     if ( typeof module === "object" && typeof module.exports === "object" ) {
         module.exports = factory( global, true );
         if( !global.document ){
@@ -49,6 +47,15 @@
                 }
             } else if ( arg[i].nodeType ){
                 item.push(arg[i])
+            } else if ( typeof arg[i] === 'string' ){
+                var isString = arg[i];
+                var checkContent =  js2uixCheckValidation(isString);
+                if( checkContent.tagType && checkContent.tagType.length > 0 ){
+                    isString = zui(isString)[0];
+                } else {
+                    isString = DOC.createTextNode(isString);
+                }
+                item.push(isString);
             }
         }
         return item;
@@ -125,7 +132,7 @@
                     select = DOC.querySelectorAll( select );
                 } else if ( !isIdOrClassType && (isTagStringType && isTagStringType.length > 0) ){
                     tagName = isTagStringType[0].replace(/^<(.+?)>/g, function(match, key) { return key; });
-                    if( isTagStringType.length === 1 ){
+                    if( isTagStringType.length === 1 && tagName.indexOf('input') < 0 ){
                         select = [DOC.createElement( tagName )];
                     } else {
                         virtualDom = DOC.createElement( ModuleName );
@@ -381,6 +388,41 @@
                 DOC.addEventListener('DOMContentLoaded', callback);
             }
             return zui(item);
+        },
+        createDom : function(){
+            var dom;
+            var zuiDom;
+            var arg = arguments;
+            var tagType = arg[0];
+            var options = arg[1];
+            var zuiObject = arg[2];
+            if( tagType && typeof tagType === 'string' ){
+                dom = DOC.createElement(tagType);
+                zuiDom = zui(dom);
+                if( options && typeof options === 'object' ){
+                    for( var name in options ){
+                        var item = options[name];
+                        if ( name === 'className' ){
+                            zui.addClass(dom, item);
+                        }
+                        if ( name === 'idName' ){
+                            zui.addId(dom, item);
+                        }
+                        if ( name === 'attributes' && typeof item === 'object' ){
+                            for ( var attr in item ){
+                                zui.addAttr(dom, attr, item[attr]);
+                            }
+                        }
+                        if ( name === 'styles' && typeof item === 'object' ){
+                            zuiDom.css(item);
+                        }
+                        if ( name === 'content' ){
+                            zuiDom.html(item);
+                        }
+                    }
+                }
+            }
+            return (typeof Boolean(zuiObject) && zuiObject)?zui(dom):dom;
         }
     });
     zui.fx.extend({
@@ -546,6 +588,13 @@
                 for ( i = 0; i < item.length; i++ ){
                     parent.insertBefore(item[i], this[0]);
                 }
+            }
+            return this;
+        },
+        html : function ( value ){
+            for( var i = 0; i < this.length; i++ ){ this[i].innerHTML = ''; }
+            if( value ){
+                this.append( value );
             }
             return this;
         },
@@ -763,7 +812,11 @@
                         if( length === 2 ){
                             js2uixFxAddEventHandler(this, arg);
                         } else if ( length === 3 ){
-                            /** TODO : 개발 예정 */
+                            /** TODO : 개발 예정
+                             * MutationObserver or Observe 를 사용해야 하지만
+                             * DOM3 이기 때문에 개발 여부는 나중에 결정.
+                             * 이벤트 개발은 직접적으로 생성된 DOM에 대한 이벤트 Bind 를 최종 목표로 한다.
+                             * */
                         }
                     }
                 }
