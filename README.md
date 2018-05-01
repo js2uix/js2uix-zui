@@ -20,7 +20,7 @@ js2uix - zui
 </pre>
 
 
-## 1. 기본사용
+## 1. 특징
 ### 1. zui('selector') : 기본 셀렉터
 **zui(param) : 파라미터의 값은 'string', 'object', 'function'**
 <pre>code ex :<code>
@@ -30,13 +30,51 @@ zui('#id') : id 명을 가진 Npde 를 select 한다.
 zui('&lt;div&gt;&lt;/div&gt;') : 새로운 div 태그를 생성한다.
 zui(callback) : callback function 일 경우 html load 완료 후 callback 을 실행할 수 있다.
 </code></pre>
+
 ### 2. zui('selector).method().method() : 메소드 체이닝
 **zui selector 는 기본적으로 내장 기능을 메소드 체이닝을 통해 사용할 수 있다.**
 <pre>code ex :<code>
 zui('div').addClass('test1').removeClass('test1')
 </code></pre>
 
-## 2. 기능
+### 3. zui.Component() : component 객체를 생성
+**zui 모듈을 통해 독립된 Component 객체를 생성할 수 있다.**
+
+**기능별 Component 객체를 생성/관리할 수 있으며 각각의 객체를 조합해 화면 렌더링을 할 수 있다.**
+<pre>code ex :<code>
+[Content.js]
+    var Content = zui.Component({
+        construct : function(){
+            this.state = {
+                name : 'js2uix'
+            }
+        },
+        onClick : function(){
+            this.setState({
+                name : 'js2uix-component'
+            })
+        },
+        render : function(){
+            var onClick = this.onClick.bind(this);
+            var test = zui(
+                '&lt;section class="content"&gt;' +
+                '&lt;div class="text '+this.state.name+'"&gt;'+this.props.content+'!&lt;/div&gt;' +
+                '&lt;/section&gt;'
+            );
+            test.addEvent('click', onClick);
+            return (test);
+        }
+    });
+    zui.Export('Content', Content);
+</code></pre>
+<pre>code ex :<code>
+[index.js]
+    var content = zui.Import('Content');
+    zui.Render(test.props({'content' : 'js2uix-zui'}), '#root');
+</code></pre>
+
+
+## 2. 기능 (Dom Control)
 
 **addAttr : 선택된 Dom 의 attribute 설정.**
 <pre>code ex :<code>
