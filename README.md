@@ -46,7 +46,7 @@ zui('div').addClass('test1').removeClass('test1')
 <pre>code ex :<code>
 [Content.js]
     var Content = zui.Component({
-        construct : function(){
+        super : function(){
             this.state = {
                 name : 'js2uix'
             }

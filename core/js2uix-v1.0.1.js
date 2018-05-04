@@ -909,8 +909,8 @@
             isMount : false,
             uniqueId : Date.now()
         };
-        if ( obj.construct ){
-            obj.construct.call(this);
+        if ( obj.super ){
+            obj.super.call(this);
         }
         Object.defineProperty(this, 'state', {writable : false});
     };
@@ -1079,7 +1079,7 @@
             component.prototype.constructor = component;
             for ( prop in obj ){
                 if ( obj.hasOwnProperty(prop) ){
-                    if ( prop !== 'construct' ){
+                    if ( prop !== 'super' ){
                         component.prototype[prop] = obj[prop];
                     }
                 }
