@@ -1,11 +1,11 @@
 /** ------------------------------------------------------------------------------------- /
  * ModuleName  : zui-dom-control(js2uix-zui)
- * GitHub      : https://github.com/js2uix/ZUI
+ * GitHub      : https://github.com/js2uix/js2uix-zui
  * Developer   : YJH-js2uix
  * Email       : deshineplus@icloud.com
  * language    : Javascript(ES5)
  * StartDate   : 2018.02.01
- * BuildDate   : 2018.05.01
+ * BuildDate   : 2018.05.09
  * Copyright   : YJH-js2uix
  * License     : Released under the MIT license
  * -------------------------------------------------------------------------------------- /
@@ -154,6 +154,8 @@
                     }
                 } else if ( !isIdOrClassType && !isSpecialType && !isTagStringType ){
                     select = DOC.querySelectorAll( select );
+                } else if ( !isIdOrClassType && isString.length > 1 && (isSpecialType.indexOf('.') !== -1 || isSpecialType.indexOf('#') !== -1) ){
+                    select = DOC.querySelectorAll( select );
                 } else {
                     select = [DOC.createTextNode( select )];
                 }
@@ -167,8 +169,6 @@
                 return zui.loaded( this, select );
             } else if ( select === window ){
                 select = [window];
-            } else {
-                return undefined;
             }
         }
         return zui.fx.query( select, this );
@@ -300,6 +300,10 @@
         addAttr : function ( item, name, value ){
             if( item && name && value && typeof name === 'string' && typeof value === 'string' ){
                 item.setAttribute(name, value);
+            } else if( typeof name === 'object'){
+                for ( var key in name ){
+                    item.setAttribute(key, name[key]);
+                }
             }
         },
         removeAttr : function ( item, name ){
@@ -384,6 +388,25 @@
                 }
             }
             return item;
+        },
+        map : function( obj, callback ){
+            var length, i = 0, newObject = !zui.isArray(obj)?{}:[];
+            zui.extend(newObject, obj, true);
+            if ( zui.isArray( obj ) ) {
+                length = obj.length;
+                for (; i < length; i++ ) {
+                    if( typeof callback(i, obj[i]) !== 'undefined'  ){
+                        newObject[i] = callback(i, obj[i]);
+                    }
+                }
+            } else {
+                for ( i in obj ) {
+                    if( typeof callback(i, obj[i]) !== 'undefined' ){
+                        newObject[i] = callback(i, obj[i]);
+                    }
+                }
+            }
+            return newObject;
         },
         loaded : function ( item, callback ){
             var allowDom = ['document','window','html','body'];
@@ -608,6 +631,9 @@
             }
             return this;
         },
+        empty : function (){
+            this.html();
+        },
         replace : function ( item ){
             var result = this;
             var target = this[0];
@@ -644,6 +670,7 @@
             }
         }
     });
+    /** --------------------------------------------------------------- */
     /** js2uix-control-style method */
     var js2uixDomStyleParse = function (name, value){
         var i;
@@ -728,11 +755,16 @@
                 left : rectInfo.left,
                 right : rectInfo.right,
                 width : rectInfo.width,
-                height : rectInfo.height
+                height : rectInfo.height,
+                paddingL : this.css('padding-left'),
+                paddingR : this.css('padding-right'),
+                paddingT : this.css('padding-top'),
+                paddingB : this.css('padding-bottom')
             };
             return (!this[0].getClientRects().length)?undefined:result;
         }
     });
+    /** --------------------------------------------------------------- */
     /** js2uix-control-event method */
     var js2uixFxAddEventHandler = function (item, param){
         var eventNameArray = param[0].split('.');
@@ -840,6 +872,217 @@
             }
         }
     });
+    /** --------------------------------------------------------------- */
+    /** js2uix-ajax method
+     * TODO : xhr 을 이용한 ajax 통신 구현
+     * */
+    var js2uixAjax = function(form, option){
+        this._target = form;
+        this._onceMemory = {
+            success : null,
+            error : false
+        };
+        this._init(this._target, option);
+    };
+    js2uixAjax.prototype = {
+        _xhr : function() {
+            try {
+                return new window.XMLHttpRequest();
+            } catch ( e ) {
+                /** error */
+                throw error;
+            }
+        },
+        _setDataType : function(option){
+            var checkUrl = option['url'].split(".");
+            var matchType = /xml|html|json|js|jsp|asp|php|txt/gi;
+            var type = checkUrl[checkUrl.length-1];
+            var result = type.match(matchType);
+            if ( !result[0] ){
+                return 'text';
+            }
+            if ( result[0] && result[0] !== option.dataType ){
+                if( result[0] === 'js' ){result[0] = 'script';}
+                return result[0];
+            }
+            return undefined;
+        },
+        _getOptionObject : function(form, option){
+            var opts_obj = {
+                url   : document.location.href,
+                method  : 'POST',
+                data  : null,
+                async : true,
+                cache : true,
+                success : null,
+                error : null,
+                upload : false,
+                jsonParse : true,
+                dataType : 'json',
+                contentType: "application/x-www-form-urlencoded; charset=UTF-8"
+            };
+            opts_obj = zui.extend(opts_obj, option);
+            opts_obj.dataType = this._setDataType( option ) || opts_obj.dataType;
+            if( form ){
+                opts_obj.type = 'POST';
+                opts_obj.upload = true;
+                opts_obj.url = opts_obj.url+'?upload'
+            }
+            if( option.cache === false ){
+                var querySplit = '?';
+                if( option.url.indexOf("?") !== -1 ){querySplit = '&';}
+                option.url = option.url+querySplit+"cache"+Date.now();
+            }
+            return opts_obj;
+        },
+        _getQueryString : function(data){
+            var result =[];
+            if( typeof data === 'object' ){
+                zui.loop(data, function(key, value){
+                    result.push(key+"="+value)
+                });
+            }
+            return result.join("&");
+        },
+        _setUploadHandler : function(request, option){
+            request.upload.addEventListener('progress', function(event) {
+                var percent = 0;
+                var position = event.loaded || event.position;
+                var total = event.total;
+                if (event.lengthComputable) {
+                    percent = Math.ceil(position / total * 100);
+                }
+                if( option.progress && typeof option.progress == "function" ){
+                    option.progress(percent);
+                }
+            }, false);
+        },
+        _setJsonParseData : function(option, value){
+            var returnValue = value;
+            var dataType = option.dataType;
+            if( dataType === 'script' ){
+                var script = document.createElement("script");
+                script.type = 'text/javascript';
+                script.text = returnValue;
+                document.head.appendChild(script).parentNode.removeChild(script);
+                returnValue = script.text;
+            } else if ( dataType === 'xml' ||  dataType === 'html' ){
+                var parser = new DOMParser();
+                returnValue = parser.parseFromString( returnValue,"text/"+dataType );
+            } else if ( dataType === 'text' || dataType === 'txt' ){
+                return returnValue;
+            } else {
+                returnValue = option.jsonParse ? JSON.parse(returnValue) || returnValue : returnValue
+            }
+            return returnValue;
+        },
+        _loadAjaxRequest : function(option, dataQuery){
+            var _module = this;
+            var request = this._xhr();
+
+            /** ajax request set */
+            request.open( option.method, option.url, option.async);
+
+            /** ajax content type set */
+            if( option.data && !option.upload){
+                request.setRequestHeader("Content-type", option.contentType);
+            }
+
+            /** ajax uploadMode type set */
+            if ( request.upload && option.upload ) {
+                this._setUploadHandler(request, option);
+            }
+
+            /** ajax onLoad set */
+            request.onload = function(evt) {
+                if ( (request.status >= 200 && request.status < 400) && request.readyState == 4 ) {
+                    var returnValue = request.responseText;
+                    if( option.success && typeof option.success === "function" ){
+                        returnValue = _module._setJsonParseData(option, returnValue);
+                        option.success(returnValue, request.responseText, request);
+                        _module._onceMemory.error = false;
+                        _module._onceMemory.success = {
+                            value : returnValue,
+                            responseText : request.responseText,
+                            request : request
+                        };
+                    }
+                } else {
+                    if( option.error && typeof option.success == "function" ){
+                        option.error();
+                        _module._onceMemory.error = true;
+                        _module._onceMemory.success = null;
+                    }
+                }
+            };
+
+            /** ajax onError set */
+            request.onerror = function() {
+                if( option.error && typeof option.success == "function" ){
+                    option.error();
+                    _module._onceMemory.error = true;
+                    _module._onceMemory.success = null;
+                }
+            };
+
+            /** ajax send set */
+            request.send(dataQuery);
+        },
+        _setAjaxData : function(form, option){
+            var dataQuery; option = this._getOptionObject(form, option);
+            if( form ){
+                var inputFile = form[0].querySelectorAll('input[type=file]');
+                var etcForms = form.find("*").not('input[type=file]');
+                var appendNum = 0;
+                form.attr("enctype", "multipart/form-data");
+                dataQuery = new FormData();
+                zui.loop(inputFile, function(){
+                    var files = this.files;
+                    zui.loop(files, function(key, value) {
+                        dataQuery.append(key, value);
+                        appendNum++;
+                    });
+                });
+                zui.loop(etcForms, function(){
+                    dataQuery.append(this.name, this.value);
+                    appendNum++;
+                });
+                if( appendNum === 0 ){ return false; }
+            }
+            if( !form ){
+                dataQuery = this._getQueryString(option.data);
+            }
+            this._loadAjaxRequest(option, dataQuery);
+        },
+        _init : function(form, option){
+            if( form && (!form[0] || form[0].nodeName.toLowerCase() !== 'form') ){
+                return false;
+            }
+            this._setAjaxData(form, option);
+        },
+        done : function(fnc){
+            if( typeof fnc === 'function' && !this._onceMemory.error ){
+                var callback = this._onceMemory.success;
+                try {
+                    fnc(callback.value, callback.responseText, callback.request);
+                } finally {
+                    callback = null;
+                    this._onceMemory.success = null;
+                }
+            }
+        },
+        fail : function(fnc){
+            if( typeof fnc === 'function' && this._onceMemory.success.length === 0 ){
+                try {
+                    fnc();
+                } finally {
+                    this._onceMemory.error = false;
+                }
+            }
+        }
+    };
+    js2uixAjax.prototype.constructor = js2uixAjax;
+    /** --------------------------------------------------------------- */
     /** js2uix-component method */
     var js2uixRouter = function(){
         this.location = null;
@@ -1068,7 +1311,45 @@
             }
         }
     };
+    /** --------------------------------------------------------------- */
     zui.extend({
+        Ajax : function(opt){
+            return new js2uixAjax(null, opt);
+        },
+        AjaxDownLoad : function(link, name, type){
+            var arg = arguments[0];
+            var timer = arg[arg.length-1];
+            var start = 0;
+            var object = null;
+            if( typeof link === 'object' || Array.isArray(link) ){
+                if( timer && typeof timer === 'number' ){
+                    object = link;
+                    downloadFnc(object[start].link, object[start].name, object[start].type, timer);
+                } else {
+                    zui.loop(link, function(num, value){
+                        if( value && value.link && value.name && value.type ){
+                            downloadFnc(value.link, value.name, value.type, false);
+                        }
+                    });
+                }
+            } else {
+                downloadFnc(link, name, type, false);
+            }
+            function downloadFnc(link, name, type, timer){
+                var downClick = document.createElement('a');
+                downClick.href = link+name+"."+type;
+                downClick.download = name+"."+type;
+                document.body.appendChild(downClick);
+                downClick.click();
+                document.body.removeChild(downClick);
+                start++;
+                if( timer && start < object.length ){
+                    setTimeout(function(){
+                        downloadFnc(object[start].link, object[start].name, object[start].type, timer);
+                    }, timer);
+                }
+            }
+        },
         Component : function(obj){
             var prop;
             var component = function(obj){
@@ -1114,6 +1395,11 @@
             return new js2uixRouter();
         }
     });
+    zui.fx.extend({
+        AjaxFrom : function(opt){
+            return new js2uixAjax(this, opt);
+        }
+    });
     /** --------------------------------------------------------------- */
     /** ZUI Set Define For Module */
     if ( typeof define === "function" && define.amd ) {
@@ -1121,8 +1407,6 @@
             return zui;
         });
     }
-    if ( !noGlobal ) {
-        window.zui = zui;
-    }
+    if ( !noGlobal ) {window.zui = zui;}
     return zui;
 });
