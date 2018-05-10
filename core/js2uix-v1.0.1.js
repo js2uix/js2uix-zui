@@ -5,7 +5,7 @@
  * Email       : deshineplus@icloud.com
  * language    : Javascript(ES5)
  * StartDate   : 2018.02.01
- * BuildDate   : 2018.05.09
+ * BuildDate   : 2018.05.10
  * Copyright   : YJH-js2uix
  * License     : Released under the MIT license
  * -------------------------------------------------------------------------------------- /
@@ -32,7 +32,9 @@
     'use strict';
     var zui,
         ModuleName = 'js2uix',
-        ModuleVersion = 'v1.0.1';
+        ModuleVersion = 'v1.0.1',
+        D3ClassName = 'js2uix-d3',
+        JS2UIX_DATA_KEY = 'js2uix-d3-chart';
     var DOC = window.document,
         SetProtoType = Object.setPrototypeOf,
         GetProtoType = Object.getPrototypeOf;
@@ -93,6 +95,17 @@
             tagType : isTagStringType,
             spType : isSpStringType
         }
+    };
+    var js2uixUniqueId = function(){
+        var chars = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXTZabcdefghiklmnopqrstuvwxyz";
+        var string_length = 8;
+        var randomString = '';
+        for (var i=0; i<string_length; i++) {
+            var num = Math.floor(Math.random() * chars.length);
+            randomString += chars.substring(num,num+1);
+        }
+        var dateString = String(Date.now()).substring(0,4);
+        return dateString+randomString;
     };
     /** --------------------------------------------------------------- */
     /** zui-control create object ( zui control 을 정의한다 )
@@ -1398,6 +1411,847 @@
     zui.fx.extend({
         AjaxFrom : function(opt){
             return new js2uixAjax(this, opt);
+        }
+    });
+    /** --------------------------------------------------------------- */
+    /** js2uix-d3-control method
+     * TODO : D3.js를 이용한 그래프 모듈 제작 중.
+     * */
+    var js2uixD3Style = function(target, props){
+        target.append('<style class="js2uixD3">\n' +
+            props.svgId+' .js2uix_g .grid_x,\n' +
+            props.svgId+' .js2uix_g .grid_y{opacity : '+props.opacity+'}\n' +
+            props.svgId+' .js2uix_g .grid_x path,\n' +
+            props.svgId+' .js2uix_g .grid_y path{stroke-width:0}\n' +
+            props.svgId+' .js2uix_g .grid_x .tick line,\n' +
+            props.svgId+' .js2uix_g .grid_y .tick line{stroke-dasharray:'+props.dashArray+'}\n' +
+            '</style>');
+    };
+    var js2uixD3Module = function(element, props){
+        this.d3 = {};
+        this.nodes = {};
+        this.target = element;
+        this.props = {
+            chartType : "",
+            nameAxisX : "",
+            typeAxisX : "string",
+            timeAxisX : ["week",1],
+            timeFormat : "%Y-%m-%d",
+            tickAxisY : 10,
+            tickGridY : 10,
+            tickGridOpacity : 0.2,
+            tickGridDashNum : 2,
+            rotateAxisX : 0,
+            posXAxisX : 10,
+            posYAxisX : 10,
+            fontSizeX : 11,
+            fontSizeY : 11,
+            fontSizeTitle : 12,
+            nameAxisY : "",
+            typeAxisY : "number",
+            title : "",
+            titleBox : true,
+            lineCurve : true,
+            colorful : true,
+            colorAlpha : 1,
+            circleThickNum: 0.5,
+            layoutW : 0,
+            layoutH : 0,
+            duration : 200,
+            gridLine : true,
+            groupInfoBox : true,
+            shadeColor : ''
+        };
+        this.state = {
+            autoMode    : false,
+            clear       : false,
+            colorArray  : ["#add5d7", "#47acb1", "#ffe8af", "#ffcd33", "#f9aa7b", "#f26522", "#7fb6ff", "#7876ff", "#a5a8aa", "#676766"],
+            dataLength  : 0,
+            idName      : "",
+            max_width   : 1740,
+            min_width   : 300,
+            min_height  : 200,
+            resize      : false,
+            uniqueId    : '',
+            uniqueName  : '',
+            update      : false
+        };
+        this.axis = null;
+        this.init(props);
+        return {
+            name : JS2UIX_DATA_KEY,
+            setData : this.setData.bind(this)
+        }
+    };
+    js2uixD3Module.prototype = {
+        uiChartClass : D3ClassName,
+        /** Create js2uix D3 Chart Info */
+        renderChartDefaultSetting : function(elm){
+            if( elm.length > 0 ){
+                this.state.uniqueId = js2uixUniqueId();
+                this.state.uniqueName = 'js2uix'+this.state.uniqueId;
+                elm.addClass(this.uiChartClass);
+                if(!elm[0].id){elm.addId(ModuleName+this.state.uniqueId);}
+                this.state.idName = elm.getAttr('id');
+            }
+        },
+        setUserShadeColorSetting : function(color){
+            if( color ){
+                var hex = color.replace('#','');
+                var r = parseInt(hex.substring(0,2), 16);
+                var g = parseInt(hex.substring(2,4), 16);
+                var b = parseInt(hex.substring(4,6), 16);
+                var max = Math.max(r, Math.max(g,b));
+                var step = 255/(max*10);
+                var colorArray = [];
+                var rgb2hex = function(rgb){
+                    rgb = rgb.match(/^rgba?[\s+]?\([\s+]?(\d+)[\s+]?,[\s+]?(\d+)[\s+]?,[\s+]?(\d+)[\s+]?/i);
+                    return (rgb && rgb.length === 4) ? "#" +
+                    ("0" + parseInt(rgb[1],10).toString(16)).slice(-2) +
+                    ("0" + parseInt(rgb[2],10).toString(16)).slice(-2) +
+                    ("0" + parseInt(rgb[3],10).toString(16)).slice(-2) : '';
+                };
+                for( var i=2; i<12; i++ ){
+                    colorArray.push(rgb2hex('rgb('+parseInt(r*step*i)+','+parseInt(g*step*i)+','+parseInt(b*step*i)+',1)'))
+                }
+                if( colorArray.length > 0 ){
+                    this.state.colorArray = colorArray;
+                }
+            }
+        },
+        setCommonChartInfoString : function(type){
+            var string = "Max";
+            var fontSize = this.props.fontSizeTitle;
+            if( !this.props.titleBox ){ return; }
+            if( typeof fontSize !== "number" ){ fontSize = 12;}
+            if( this.axis.axis_string ){ string = this.axis.axis_string; }
+            if( type === "basic"){
+                this.nodes.title_g.attr("transform", "rotate(-0)")
+                    .attr("dx", "0em")
+                    .attr("y", -20)
+                    .attr("dy", "0.7em")
+                    .attr("text-anchor", "start")
+                    .attr("fill", "#000")
+                    .attr("style", "font-size:"+fontSize+"px")
+                    .text(string);
+            }else{
+                this.nodes.title_g.attr("transform", "rotate(-0)")
+                    .attr("y", -5)
+                    .attr("dy", "0.71em")
+                    .attr("text-anchor", "middle")
+                    .attr("fill", "#000")
+                    .attr("style", "font-size:"+fontSize+"px")
+                    .text(string);
+            }
+        },
+        setCommonChartAxisYNode : function(){
+            var fontSize = this.props.fontSizeY;
+            if( typeof fontSize !== "number" ){ fontSize = 11;}
+            if( !this.state.update ){
+                this.nodes.axisY_g.call( window.d3.axisLeft(this.d3.y).ticks(this.axis.tickAxisY)).attr("style", "font-size:"+fontSize+"px");
+            } else {
+                this.nodes.axisY_g.call( window.d3.axisLeft(this.d3.y).ticks(this.axis.tickAxisY));
+            }
+        },
+        setCommonChartAxisXNode : function(){
+            var positionX = 10, positionY = 20, rotateAngle = 0, fontSize = this.props.fontSizeX,
+                axisX = this.nodes.axisX_g.attr("transform", "translate(0," + this.d3.height + ")").selectAll("text").style("text-anchor", "middle");
+            if( typeof this.axis.posXAxisX === "number" && (typeof this.axis.posXAxisX !== "undefined" || this.axis.posXAxisX !== null) ){
+                positionX =  this.axis.posXAxisX;
+                axisX.attr("dx",  positionX+"px")
+            }
+            if( typeof this.axis.posYAxisX === "number" && (typeof this.axis.posYAxisX !== "undefined" || this.axis.posYAxisX !== null) ){
+                positionY = this.axis.posYAxisX;
+                axisX.attr("dy", positionY+"px")
+            }
+            if( typeof this.axis.rotateAxisX === "number" && (typeof this.axis.rotateAxisX !== "undefined" || this.axis.rotateAxisX !== null) ){
+                rotateAngle = this.axis.rotateAxisX;
+                axisX.attr("transform", "rotate(-"+rotateAngle+")")
+            }
+            if( typeof fontSize !== "number" ){ fontSize = 11;}
+            this.nodes.axisX_g.attr("style", "font-size:"+fontSize+"px");
+        },
+        setCommonChartAxisXYGrid : function(){
+            if( !this.props.gridLine ){ return; }
+            if( !this.state.update ){
+                this.nodes.gridX_g.call(window.d3.axisBottom(this.d3.x).tickSize(-this.d3.height, 0, 0).tickFormat(""));
+            }
+            this.nodes.gridY_g.call(window.d3.axisLeft(this.d3.y).ticks(this.axis.tickGridY).tickSize(-this.d3.width, 0, 0).tickFormat(""));
+        },
+        setCommonCompareInfo : function(svg, keys, color){
+            if( !this.props.groupInfoBox ){ return false; }
+            var legend = svg.g.append("g")
+                .attr("font-family", "sans-serif")
+                .attr("text-anchor", "end")
+                .selectAll("g").data(keys)
+                .enter().append("g")
+                .attr("transform", function(d, i) {
+                    return "translate(0," + ((i * 20)-30) + ")";
+                });
+            try {
+                legend.append("rect")
+                    .attr("x", svg.width - 0)
+                    .attr("width", 19)
+                    .attr("height", 19)
+                    .attr("fill", function(d){
+                        return color(d);
+                    });
+                legend.append("text").attr("style", "font-size:12px")
+                    .attr("x", svg.width-5)
+                    .attr("y", 9.5)
+                    .attr("dy", "0.32em")
+                    .text(function(d) { return d; });
+                legend.exit().remove();
+            } finally {
+                svg = null;
+                keys = null;
+            }
+        },
+        /** Crate js2uix D3 Chart Type */
+        js2uixSingleAreaType : function(param){
+            var keyX = "axisX";
+            var keyY = "axisY";
+            var parseData = param.map( function( dt ) {return {axisX : dt[this.axis.axisX], axisY : dt[this.axis.axisY]}}.bind(this));
+            var minMaxX = window.d3.extent(parseData.map(function(dt) {return dt[keyX];}), function(dt) {return new Date(dt);});
+            var minMaxY = window.d3.extent(parseData.map(function(dt) {return dt[keyY];}), function(dt) {return parseInt(dt);});
+            try {
+                if( !this.state.d3_area ){ this.state.d3_area = d3.area(); }
+                if( this.props.lineCurve ){ this.state.d3_area.curve(window.d3.curveBasis); }
+                if( this.axis.typeAxisX === "date" ){
+                    this.d3.x = window.d3.scaleTime().domain([new Date(minMaxX[0]), new Date(minMaxX[1])]).rangeRound([0, this.d3.width]);
+                    this.state.d3_area.x(function(dt) {return this.d3.x(new Date(dt[keyX]));}.bind(this));
+                }else{
+                    this.d3.x = window.d3.scaleBand().domain(parseData.map(function(dt) {return dt[keyX];})).rangeRound([0, this.d3.width]);
+                    this.state.d3_area.x(function(dt) {return this.d3.x(dt[keyX])+(this.d3.x.bandwidth()*0.5);}.bind(this));
+                }
+                this.d3.y = window.d3.scaleLinear().domain([0, minMaxY[1]]).rangeRound([this.d3.height, 0]);
+                this.state.d3_area.y(function(dt) {return this.d3.y(dt[keyY]);}.bind(this));
+                this.state.d3_area.y1(function(dt) {return this.d3.y(dt[keyY]);}.bind(this));
+                this.state.d3_area.y0(this.d3.y(0));
+                if( !this.state.update ){
+                    var color = window.d3.scaleOrdinal().range(this.state.colorArray);
+                    var timeFormat = window.d3.timeFormat(this.axis.timeFormat);
+                    this.nodes.gridX_g = this.d3.g.append("g").attr("class", "grid_x").attr("transform", "translate(0," + this.d3.height + ")").attr('opacity', this.props.tickGridOpacity);
+                    this.nodes.gridY_g = this.d3.g.append("g").attr("class", "grid_y").attr('opacity', this.props.tickGridOpacity);
+                    this.nodes.pathArea = this.d3.g.append("path").attr("class", "area").style("fill", color).attr('fill-opacity', this.props.colorAlpha);
+                    this.nodes.axisX_g = this.d3.g.append("g").attr("class", "axis axis--x");
+                    this.nodes.axisY_g = this.d3.g.append("g").attr("class", "axis axis--y");
+                    this.nodes.title_g = this.d3.g.append("g").attr("class", "title").append("text");
+                    (this.axis.typeAxisX === "date")?this.nodes.axisX_g.call( window.d3.axisBottom(this.d3.x).ticks( window.d3[this.axis.timeAxisX[0]].every(this.axis.timeAxisX[1])).tickFormat(function(dt){return timeFormat(dt)})):this.nodes.axisX_g.call( window.d3.axisBottom(this.d3.x));
+                    this.setCommonChartInfoString("basic");
+                    this.setCommonChartAxisXNode();
+                }
+                this.nodes.pathArea.datum(parseData).transition().duration(this.props.duration).attr('d', this.state.d3_area);
+                this.nodes.pathArea.exit().remove();
+                /** common axis type */
+                this.setCommonChartAxisYNode();
+                this.setCommonChartAxisXYGrid();
+            } finally {
+                param = null;
+                parseData = null;
+            }
+        },
+        js2uixCompareAreaType : function(param){
+            var self = this;
+            var keyX = "axisX";
+            var keyY = "axisY";
+            var maxAxisY = 0;
+            var compareKey = [];
+            var firstObject = param[Object.keys(param)[0]];
+            var axisXArr = firstObject.map(function(dt) { return dt[this.axis.axisX]; }.bind(this));
+            var minMaxX = window.d3.extent(axisXArr, function(dt) {return new Date(dt); });
+            var parseData = param;
+            try {
+                if( !this.state.d3_area ){
+                    this.state.d3_area = window.d3.area();
+                }
+                if( !this.state.d3_line ){
+                    this.state.d3_line = window.d3.line();
+                }
+                if( this.props.lineCurve ){
+                    this.state.d3_area.curve(window.d3.curveBasis);
+                    this.state.d3_line.curve(window.d3.curveBasis);
+                }
+                if( !Array.isArray(param) ){
+                    parseData = [];
+                    zui.loop(param, function(key, val){
+                        var self = this;
+                        parseData.push(val.map( function( dt ) {
+                            return {
+                                axisX : dt[self.axis.axisX],
+                                axisY : dt[self.axis.axisY]
+                            };
+                        }));
+                    }.bind(this));
+                }
+                zui.loop(param, function(key, value){
+                    var self = this;
+                    var max = window.d3.max(value, function(dt){
+                        return (dt[self.axis.axisY]);
+                    });
+                    if( maxAxisY < max ){ maxAxisY = max + (max*0.2); }
+                    compareKey.push(key);
+                }.bind(this));
+                if( this.axis.typeAxisX === "date" ){
+                    this.d3.x = window.d3.scaleTime().domain([new Date(minMaxX[0]), new Date(minMaxX[1])]).rangeRound([0, this.d3.width]);
+                    this.state.d3_area.x(function(dt) { return this.d3.x(new Date(dt[keyX])); }.bind(this));
+                    this.state.d3_line.x(function(dt) { return this.d3.x(new Date(dt[keyX])); }.bind(this));
+                }else{
+                    this.d3.x = window.d3.scaleBand().domain(axisXArr).rangeRound([0, this.d3.width]);
+                    this.state.d3_area.x(function(dt) { return this.d3.x(dt[keyX])+(this.d3.x.bandwidth()*0.5);}.bind(this));
+                    this.state.d3_line.x(function(dt) { return this.d3.x(dt[keyX])+(this.d3.x.bandwidth()*0.5);}.bind(this));
+                }
+                this.state.d3_area.y(function(dt) {return this.d3.y(dt[keyY]);}.bind(this));
+                this.state.d3_line.y(function(dt) {return this.d3.y(dt[keyY]);}.bind(this));
+                this.d3.y = window.d3.scaleLinear().domain([0, maxAxisY]).rangeRound([this.d3.height, 0]);
+                this.state.d3_area.y1(function(dt) {return this.d3.y(dt[keyY]);}.bind(this));
+                this.state.d3_area.y0(this.d3.y(0));
+                if( !this.state.update ){
+                    var color = window.d3.scaleOrdinal().range(this.state.colorArray);
+                    var timeFormat = window.d3.timeFormat(this.axis.timeFormat);
+                    this.nodes.gridX_g = this.d3.g.append("g").attr("class", "grid_x").attr("transform", "translate(0," + this.d3.height + ")").attr('opacity', this.props.tickGridOpacity);
+                    this.nodes.gridY_g = this.d3.g.append("g").attr("class", "grid_y").attr('opacity', this.props.tickGridOpacity);
+                    this.d3.g.append("g").attr("class", "pathBox").selectAll('path').data(parseData, function(dt, dn){
+                        window.d3.select(this).append('path').attr("class", "area").attr('fill-opacity', self.props.colorAlpha).attr("fill", function(){return color(compareKey[dn])});
+                        window.d3.select(this).append('path').attr("class", "line").attr("stroke-width", "1.5").attr("fill", "none").attr("stroke", function(){return color(compareKey[dn])});
+                    });
+                    this.nodes.axisX_g = this.d3.g.append("g").attr("class", "axis axis--x");
+                    this.nodes.axisY_g = this.d3.g.append("g").attr("class", "axis axis--y");
+                    this.nodes.title_g = this.d3.g.append("g").attr("class", "title").append("text");
+                    this.nodes.pathNode = this.d3.g.select("g.pathBox").selectAll('path.area').data(parseData);
+                    this.nodes.lineNode = this.d3.g.select("g.pathBox").selectAll('path.line').data(parseData);
+                    (this.axis.typeAxisX === "date")?this.nodes.axisX_g.call( window.d3.axisBottom(this.d3.x).ticks( window.d3[this.axis.timeAxisX[0]].every(this.axis.timeAxisX[1])).tickFormat(function(dt){return timeFormat(dt)})):this.nodes.axisX_g.call( window.d3.axisBottom(this.d3.x));
+                    this.setCommonCompareInfo(this.d3, compareKey, color);
+                    this.setCommonChartInfoString("basic");
+                    this.setCommonChartAxisXNode();
+                } else {
+                    this.nodes.pathNode = this.nodes.pathNode.data(parseData);
+                    this.nodes.lineNode = this.nodes.lineNode.data(parseData);
+                }
+                this.nodes.pathNode.transition().duration(this.props.duration).attr('d', this.state.d3_area);
+                this.nodes.lineNode.transition().duration(this.props.duration).attr('d', this.state.d3_line);
+                this.nodes.pathNode.exit().remove();
+                this.nodes.lineNode.exit().remove();
+                /** common axis type */
+                this.setCommonChartAxisYNode();
+                this.setCommonChartAxisXYGrid();
+            } finally {
+                param = null;
+                parseData = null;
+            }
+        },
+        js2uixSingleLineType : function (param){
+            var keyX = "axisX";
+            var keyY = "axisY";
+            var parseData = param.map( function( dt ) {return {axisX : dt[this.axis.axisX], axisY : dt[this.axis.axisY]};}.bind(this));
+            var minMaxX = window.d3.extent(parseData.map(function(dt) {return dt[keyX];}), function(dt) {return new Date(dt);});
+            var minMaxY = window.d3.extent(parseData.map(function(dt) {return dt[keyY];}), function(dt) {return parseInt(dt);});
+            try{
+                if( !this.state.d3_line ){
+                    this.state.d3_line = window.d3.line();
+                }
+                if( this.props.lineCurve ){
+                    this.state.d3_line.curve(window.d3.curveBasis);
+                }
+                if( this.axis.typeAxisX === "date" ){
+                    this.d3.x = window.d3.scaleTime().domain([new Date(minMaxX[0]), new Date(minMaxX[1])]).rangeRound([0, this.d3.width]);
+                    this.state.d3_line.x(function(dt) {
+                        return this.d3.x(new Date(dt[keyX]));
+                    }.bind(this));
+                }else{
+                    this.d3.x = window.d3.scaleBand().domain(parseData.map(function(dt) { return dt[keyX]; })).rangeRound([0, this.d3.width]);
+                    this.state.d3_line.x(function(dt) { return this.d3.x(dt[keyX])+(this.d3.x.bandwidth()*0.5);}.bind(this));
+                }
+                this.d3.y = window.d3.scaleLinear().domain([0, minMaxY[1]]).rangeRound([this.d3.height, 0]);
+                this.state.d3_line.y(function(dt) {return this.d3.y(dt[keyY]);}.bind(this));
+                if( !this.state.update ){
+                    var color = window.d3.scaleOrdinal().range(this.state.colorArray);
+                    var timeFormat = window.d3.timeFormat(this.axis.timeFormat);
+                    this.nodes.gridX_g = this.d3.g.append("g").attr("class", "grid_x").attr("transform", "translate(0," + this.d3.height + ")").attr('opacity', this.props.tickGridOpacity);
+                    this.nodes.gridY_g = this.d3.g.append("g").attr("class", "grid_y").attr('opacity', this.props.tickGridOpacity);
+                    this.nodes.axisX_g = this.d3.g.append("g").attr("class", "axis axis--x");
+                    this.nodes.axisY_g = this.d3.g.append("g").attr("class", "axis axis--y");
+                    this.nodes.title_g = this.d3.g.append("g").attr("class", "title").append("text");
+                    this.nodes.pathArea = this.d3.g.append("path").attr("class", "line").attr("stroke", color).attr("stroke-width", "1.5").attr("fill", "none");
+                    (this.axis.typeAxisX === "date")?this.nodes.axisX_g.call(window.d3.axisBottom(this.d3.x).ticks( window.d3[this.axis.timeAxisX[0]].every(this.axis.timeAxisX[1])).tickFormat(function(dt){return timeFormat(dt)})):this.nodes.axisX_g.call( window.d3.axisBottom(this.d3.x));
+                    this.setCommonChartInfoString("basic");
+                    this.setCommonChartAxisXNode();
+                }
+                this.nodes.pathArea.datum(parseData).transition().duration(this.props.duration).attr('d', this.state.d3_line);
+                this.nodes.pathArea.exit().remove();
+                /** common axis type */
+                this.setCommonChartAxisYNode();
+                this.setCommonChartAxisXYGrid();
+            } finally {
+                param = null;
+                parseData = null;
+            }
+        },
+        js2uixCompareLineType : function (param){
+            var keyX = "axisX";
+            var keyY = "axisY";
+            var maxAxisY = 0;
+            var firstObject = param[Object.keys(param)[0]];
+            var axisXArr = firstObject.map(function(dt){return dt[this.axis.axisX];}.bind(this));
+            var minMaxX = window.d3.extent(axisXArr, function(dt){return new Date(dt);});
+            var pathArea, compareKey = [];
+            var parseData = param;
+            try {
+                if( !this.state.d3_line ){this.state.d3_line = window.d3.line();}
+                if( this.props.lineCurve ){this.state.d3_line.curve(window.d3.curveBasis);}
+                if( !Array.isArray(param) ){
+                    parseData = [];
+                    zui.loop(param, function(key, val){
+                        var self = this;
+                        parseData.push(val.map( function( dt ) {
+                            return {
+                                axisX : dt[self.axis.axisX],
+                                axisY : dt[self.axis.axisY]
+                            };
+                        }));
+                    }.bind(this));
+                }
+                zui.loop(param, function(key, value){
+                    var self = this;
+                    var max = window.d3.max(value, function(dt){
+                        return (dt[self.axis.axisY]);
+                    });
+                    if( maxAxisY < max ){maxAxisY = max + (max*0.2);}
+                    compareKey.push(key);
+                }.bind(this));
+                if( this.axis.typeAxisX === "date" ){
+                    this.d3.x = window.d3.scaleTime().domain([new Date(minMaxX[0]), new Date(minMaxX[1])]).rangeRound([0, this.d3.width]);
+                    this.state.d3_line.x(function(dt) {
+                        return this.d3.x(new Date(dt[keyX]));
+                    }.bind(this));
+                }else{
+                    this.d3.x = window.d3.scaleBand().domain(axisXArr).rangeRound([0, this.d3.width]);
+                    this.state.d3_line.x(function(dt) {
+                        return this.d3.x(dt[keyX])+(this.d3.x.bandwidth()*0.5);
+                    }.bind(this));
+                }
+                this.d3.y = window.d3.scaleLinear().domain([0, maxAxisY]).rangeRound([this.d3.height, 0]);
+                this.state.d3_line.y(function(dt) {
+                    return this.d3.y(dt[keyY]);
+                }.bind(this));
+                if( !this.state.update ){
+                    var timeFormat = window.d3.timeFormat(this.axis.timeFormat);
+                    var color = window.d3.scaleOrdinal().range(this.state.colorArray);
+                    this.nodes.gridX_g = this.d3.g.append("g").attr("class", "grid_x").attr("transform", "translate(0," + this.d3.height + ")").attr('opacity', this.props.tickGridOpacity);
+                    this.nodes.gridY_g = this.d3.g.append("g").attr("class", "grid_y").attr('opacity', this.props.tickGridOpacity);
+                    this.nodes.axisX_g = this.d3.g.append("g").attr("class", "axis axis--x");
+                    this.nodes.axisY_g = this.d3.g.append("g").attr("class", "axis axis--y");
+                    this.nodes.title_g = this.d3.g.append("g").attr("class", "title").append("text");
+                    pathArea = this.d3.g.append("g").attr("class", "pathBox").selectAll('path').data(parseData).enter().append('path');
+                    pathArea.attr("class", "line").attr("stroke", function(dt, dn){return color(compareKey[dn])}).attr("stroke-width", "1.5").attr("fill", "none");
+                    this.nodes.pathNode = this.d3.g.select("g.pathBox").selectAll('path.line');
+                    (this.axis.typeAxisX === "date")?this.nodes.axisX_g.call( window.d3.axisBottom(this.d3.x).ticks( window.d3[this.axis.timeAxisX[0]].every(this.axis.timeAxisX[1])).tickFormat(function(dt){return timeFormat(dt)})):this.nodes.axisX_g.call( window.d3.axisBottom(this.d3.x));
+                    this.setCommonCompareInfo(this.d3, compareKey, color);
+                    this.setCommonChartInfoString("basic");
+                    this.setCommonChartAxisXNode();
+                } else {
+                    pathArea = this.nodes.pathNode.data(parseData);
+                }
+                pathArea.transition().duration(this.props.duration).attr('d', this.state.d3_line);
+                pathArea.exit().remove();
+                /** common axis type */
+                this.setCommonChartAxisYNode();
+                this.setCommonChartAxisXYGrid();
+            } finally {
+                param = null;
+                parseData = null;
+                pathArea = null;
+                compareKey = null;
+            }
+        },
+        js2uixSingleBarType : function (param){
+            var self = this;
+            var keyX = "axisX";
+            var keyY = "axisY";
+            var currentData = param.map( function( dt ) {return {axisX : dt[this.axis.axisX], axisY : dt[this.axis.axisY]};}.bind(this));
+            var axisYArr = currentData.map(function(dt) {return dt[keyY];});
+            var minMaxY = window.d3.extent(axisYArr, function(dt) {return parseInt(dt);});
+            var rectNode;
+            try {
+                this.d3.x = window.d3.scaleBand().padding(0.1).domain(currentData.map(function(dt) {return dt[keyX];})).rangeRound([0, this.d3.width]);
+                this.d3.y = window.d3.scaleLinear().domain([0, minMaxY[1]]).rangeRound([this.d3.height, 0]);
+                if( !this.state.update ){
+                    var color = window.d3.scaleOrdinal().range(this.state.colorArray);
+                    var timeFormat = window.d3.timeFormat(this.axis.timeFormat);
+                    this.nodes.gridX_g = this.d3.g.append("g").attr("class", "grid_x").attr("transform", "translate(0," + this.d3.height + ")").attr('opacity', this.props.tickGridOpacity);
+                    this.nodes.gridY_g = this.d3.g.append("g").attr("class", "grid_y").attr('opacity', this.props.tickGridOpacity);
+                    this.nodes.axisX_g =  this.d3.g.append("g").attr("class", "axis axis--x");
+                    this.nodes.axisY_g =  this.d3.g.append("g").attr("class", "axis axis--y");
+                    this.nodes.title_g =  this.d3.g.append("g").attr("class", "title").append("text");
+                    this.nodes.pathArea =  this.d3.g.append("g").attr("class", "graphBox");
+                    rectNode = this.nodes.pathArea.selectAll("g").data(currentData, function(dt) {return dt[keyX];})
+                        .enter()
+                        .append("rect")
+                        .attr("class", "ui-chart-bar")
+                        .attr("width", this.d3.x.bandwidth())
+                        .attr("x", function(dt){ return this.d3.x(dt[keyX]); }.bind(this))
+                        .attr("fill", function(dt){return color(dt[keyX]);})
+                        .attr('fill-opacity', this.props.colorAlpha)
+                        .attr("data-name", function(dt) {return dt[keyX];})
+                        .attr("data-value", function(dt) {return dt[keyY];});
+                    this.nodes.rectNode = this.d3.g.select('g.graphBox').selectAll("rect.ui-chart-bar");
+                    (this.axis.typeAxisX === "date")?this.nodes.axisX_g.call( window.d3.axisBottom(this.d3.x).tickFormat(function(dt){ return timeFormat(new Date(dt)); })):this.nodes.axisX_g.call( window.d3.axisBottom(this.d3.x));
+                    this.setCommonChartInfoString("basic");
+                    this.setCommonChartAxisXNode();
+                } else {
+                    rectNode = this.nodes.rectNode.data(currentData, function(dt) {return dt[keyX];});
+                }
+                rectNode.attr("height", function() {return (self.state.update)?window.d3.select(this)
+                    .attr("height"):self.d3.height-self.d3.y(0);})
+                    .attr("y", function() {return (self.state.update)?window.d3.select(this).attr("y"):self.d3.y(0);})
+                    .transition()
+                    .duration(this.props.duration).ease(window.d3.easeLinear)
+                    .attr("y", function(dt) {return self.d3.y(dt[keyY]);})
+                    .attr("height", function(dt) {return self.d3.height - self.d3.y(dt[keyY]);});
+                rectNode.exit().remove();
+                /** common axis type */
+                this.setCommonChartAxisYNode();
+                this.setCommonChartAxisXYGrid();
+            } finally {
+                param = null;
+                rectNode = null;
+            }
+        },
+        js2uixCompareBarType : function (param){
+            var self = this;
+            var axisXArr = param[Object.keys(param)[0]].map(function(dt) {return dt[this.axis.axisX];}.bind(this));
+            var maxAxisY = 0, boxIdx = 0;
+            var compareKey = [], boxValueArray = [], rectNode;
+            var key = function(dt) {
+                var self = this;
+                var rt_data = window.d3.values(param).map(function(dv){
+                    var val =  dv.map(function(dv2){if( dv2[self.axis.axisX] == dt ){return dv2[self.axis.axisY];}});
+                    return window.d3.max(val, function(dv){return dv;});
+                });
+                boxValueArray.push(rt_data);
+                return rt_data;
+            }.bind(this);
+            try {
+                zui.loop(param, function(key, value){
+                    var self = this;
+                    var max = window.d3.max(value, function(dt){return (dt[self.axis.axisY]);});
+                    if( maxAxisY < max ){maxAxisY = max;}
+                    compareKey.push(key);
+                }.bind(this));
+                this.d3.x = window.d3.scaleBand().domain(axisXArr).rangeRound([0, this.d3.width]).padding(0.1);
+                this.d3.x1 = window.d3.scaleBand().padding(0.05).domain(window.d3.entries(param).map(function(dt) {return dt.key;})).rangeRound([0, this.d3.x.bandwidth()]);
+                this.d3.y = window.d3.scaleLinear().domain([0, maxAxisY]).rangeRound([this.d3.height, 0]);
+                if( !this.state.update ){
+                    var color = window.d3.scaleOrdinal().range(this.state.colorArray);
+                    var timeFormat = window.d3.timeFormat(this.axis.timeFormat);
+                    this.nodes.gridX_g = this.d3.g.append("g").attr("class", "grid_x").attr("transform", "translate(0," + this.d3.height + ")").attr('opacity', this.props.tickGridOpacity);
+                    this.nodes.gridY_g = this.d3.g.append("g").attr("class", "grid_y").attr('opacity', this.props.tickGridOpacity);
+                    this.nodes.axisX_g = this.d3.g.append("g").attr("class", "axis axis--x");
+                    this.nodes.axisY_g = this.d3.g.append("g").attr("class", "axis axis--y");
+                    this.nodes.title_g = this.d3.g.append("g").attr("class", "title").append("text");
+                    rectNode = this.d3.g.append("g").attr("class", "path").selectAll("g").data(axisXArr, key).enter().append("g")
+                        .attr("class", "ui-chart-group")
+                        .attr("width", this.d3.x.bandwidth() )
+                        .attr("transform", function(dt) {return "translate(" + self.d3.x(dt) + ",0)";})
+                        .attr("data-left", function(dt) {return self.d3.x(dt);})
+                        .selectAll("rect").data(window.d3.keys(param))
+                        .enter().append("rect")
+                        .attr("class", "ui-chart-bar")
+                        .attr("width", function (){ return self.d3.x1.bandwidth(); })
+                        .attr("x", function(dt) {return self.d3.x1(dt);})
+                        .attr("fill", function(d) {return color(d);})
+                        .attr('fill-opacity', this.props.colorAlpha);
+                    this.setCommonCompareInfo(this.d3, compareKey, color);
+                    this.nodes.rectNode = this.d3.g.select("g.path").selectAll("g");
+                    this.axis.typeAxisX === "date"?this.nodes.axisX_g.call( window.d3.axisBottom(this.d3.x).ticks( window.d3[this.axis.timeAxisX[0]].every(this.axis.timeAxisX[1])).tickFormat(function(dt){return timeFormat(dt)})):this.nodes.axisX_g.call( window.d3.axisBottom(this.d3.x));
+                    this.setCommonChartInfoString("basic");
+                    this.setCommonChartAxisXNode();
+                } else {
+                    rectNode = this.nodes.rectNode.data(axisXArr, key).selectAll("rect.ui-chart-bar").data(window.d3.keys(param));
+                }
+                rectNode.attr("data-height", function(dt, dv){ if(dv === 0 ){ boxIdx++; } return self.d3.height - self.d3.y(boxValueArray[boxIdx-1][dv]); })
+                    .attr("data-name", function(dt) { boxIdx = 0; return dt; })
+                    .attr("data-value", function(dt, dv) { if(dv === 0 ){ boxIdx++; } return boxValueArray[boxIdx-1][dv]; })
+                    .attr("y", function(){ return (self.state.update)?window.d3.select(this).attr("y"):self.d3.y(0); })
+                    .attr("height", function(){return (self.state.update)?window.d3.select(this).attr("height"):self.d3.height-self.d3.y(0);});
+                boxIdx = 0;
+                rectNode.transition().duration(this.props.duration).ease(window.d3.easeLinear)
+                    .attr("y", function(){ return self.d3.height-window.d3.select(this).attr("data-height"); })
+                    .attr("height", function(dt, dv) { if(dv === 0 ){ boxIdx++; } return self.d3.height - self.d3.y(boxValueArray[boxIdx-1][dv]); });
+                rectNode.exit().remove();
+                /** common axis type */
+                this.setCommonChartAxisYNode();
+                this.setCommonChartAxisXYGrid();
+            } finally {
+                param = null;
+                compareKey = null;
+                boxValueArray = null;
+                rectNode = null;
+            }
+        },
+        js2uixCircleType : function (param){
+            var self = this;
+            var sliceNode, circleText, polyLine, legendNode;
+            try {
+                if( !this.state.update ){
+                    var color = window.d3.scaleOrdinal().range(this.state.colorArray);
+                    var chartSizeW = this.target[0].clientWidth;
+                    var chartSizeH = this.target[0].clientHeight;
+                    this.d3.width = chartSizeW;
+                    this.d3.height = chartSizeH;
+                    this.state.radius = Math.min(chartSizeW, chartSizeH)/2-30;
+                    this.state.arc1 = window.d3.arc().outerRadius(this.state.radius*0.9).innerRadius(this.state.radius*(1-this.props.circleThickNum));
+                    this.state.outerArc = window.d3.arc().innerRadius(this.state.radius).outerRadius(this.state.radius*0.9);
+                    this.state.pie = window.d3.pie().sort(null).value( function(d) { return d[self.axis.axisY]; });
+                    this.state.axisXFnc = function(d){ return d.data[self.axis.axisX]; };
+                    this.state.midAngle = function(d){ return d.startAngle + (d.endAngle - d.startAngle)/2; };
+                    this.d3.g = this.d3.g.attr("transform", "translate(" + chartSizeW/2 + "," + chartSizeH/2 + ")");
+                    this.d3.g.append("g").attr("class", "labels");
+                    this.d3.g.append("g").attr("class", "lines");
+                    this.nodes.title_g = this.d3.g.append("g").attr("class", "titleBox").append("text");
+
+                    /** TODO : 노드 정의 */
+                    sliceNode = this.d3.g.append("g").attr("class", "slices ui-"+this.state.uniqueId).selectAll("path.slice").data(this.state.pie(param), this.state.axisXFnc).enter().insert("path").style("fill", function(d) { return color(d.data[self.axis.axisX]); }).attr("class", "slice").attr('fill-opacity', this.props.colorAlpha);
+                    circleText = this.d3.g.select(".labels").selectAll("text")
+                        .data(this.state.pie(param), this.state.axisXFnc).enter()
+                        .append("text").attr("style", "font-size:12px").attr("dy", ".35em").attr("opacity", 1);
+                    polyLine = this.d3.g.select(".lines").selectAll("polyline")
+                        .data(this.state.pie(param), this.state.axisXFnc).enter()
+                        .append("polyline").attr("opacity", 0.3).attr("stroke", 'black').attr("stroke-width", '1px').attr("fill", 'none').attr("stroke-opacity", 1);
+                    if( this.props.groupInfoBox ){
+                        legendNode = this.d3.g.append("g").attr("class", "infoBox").attr("text-anchor", "end").selectAll("g").data(param.map(function(dt){ return d3.values(dt)[0]; })).enter().append("g").attr("transform", function(d, i) { return "translate(0," + ((i * 20)) + ")"; });
+                        legendNode.append("rect").attr("x", -this.d3.width*0.5+10).attr("y", -this.d3.height*0.5+10).attr("width", 19).attr("height", 19).attr("fill", color);
+                        legendNode.append("text").attr("style", "font-size:12px").attr("text-anchor", "start").attr("x", -this.d3.width*0.5+35).attr("y", -this.d3.height*0.5+20).attr("dy", "0.32em").text(function(d) {return d;});
+                        legendNode.exit().remove();
+                    }
+
+                    /** DOM select */
+                    this.nodes.slice = this.d3.g.selectAll("path.slice");
+                    this.nodes.circleText = this.d3.g.select(".labels").selectAll("text");
+                    this.nodes.polyLine = this.d3.g.select(".lines").selectAll("polyline");
+                    this.setCommonChartInfoString("circle");
+                } else {
+                    sliceNode = this.nodes.slice.data(this.state.pie(param), this.state.axisXFnc);
+                    circleText = this.nodes.circleText.data(this.state.pie(param), this.state.axisXFnc);
+                    polyLine = this.nodes.polyLine.data(this.state.pie(param), this.state.axisXFnc);
+                }
+
+                sliceNode.transition()
+                    .duration(this.props.duration)
+                    .attrTween("d", function(d) {
+                        this._current = this._current || d;
+                        var interpolate = window.d3.interpolate(this._current, d);
+                        if( !self.state.update ){ interpolate = window.d3.interpolate({ startAngle: 0, endAngle: 0 }, this._current); }
+                        this._current = interpolate(0);
+                        return function(t) {
+                            return self.state.arc1(interpolate(t));
+                        };
+                    });
+                sliceNode.exit().remove();
+
+                circleText.text(function(d){ return d.data[self.axis.axisY]; })
+                    .transition().duration(this.props.duration)
+                    .attrTween("transform", function(d) {
+                        this._current = this._current || d;
+                        var interpolate = window.d3.interpolate(this._current, d);
+                        this._current = interpolate(0);
+                        return function(t) {
+                            var d2 = interpolate(t);
+                            var pos = self.state.outerArc.centroid(d2);
+                            pos[0] = self.state.radius * (self.state.midAngle(d2) < Math.PI ? 1 : -1);
+                            return "translate("+ pos +")";
+                        };
+                    })
+                    .styleTween("text-anchor", function(d){
+                        this._current = this._current || d;
+                        var interpolate = window.d3.interpolate(this._current, d);
+                        this._current = interpolate(0);
+                        return function(t) {return self.state.midAngle(interpolate(t)) < Math.PI ? "start":"end";};
+                    });
+                circleText.exit().remove();
+
+                polyLine.transition()
+                    .duration(this.props.duration)
+                    .attrTween("points", function(d){
+                        this._current = this._current || d;
+                        var interpolate = window.d3.interpolate(this._current, d);
+                        this._current = interpolate(0);
+                        return function(t) {
+                            var d2 = interpolate(t);
+                            var pos = self.state.outerArc.centroid(d2);
+                            pos[0] = self.state.radius * 0.95 * (self.state.midAngle(d2) < Math.PI ? 1: -1);
+                            return [self.state.arc1.centroid(d2), self.state.outerArc.centroid(d2), pos];
+                        };
+                    });
+                polyLine.exit().remove();
+            } finally {
+                param = null;
+                sliceNode = null;
+                circleText = null;
+                polyLine = null;
+                legendNode = null;
+            }
+        },
+        /** Create Default Setting */
+        setSwitchChartDomType : function (param){
+            switch(this.props.chartType){
+                case "line-s" : this.js2uixSingleLineType(param); break;
+                case "line-c" : this.js2uixCompareLineType(param); break;
+                case "area-s" : this.js2uixSingleAreaType(param); break;
+                case "area-c" : this.js2uixCompareAreaType(param); break;
+                case "bar-s"  : this.js2uixSingleBarType(param); break;
+                case "bar-c"  : this.js2uixCompareBarType(param); break;
+                case "circle" : this.js2uixCircleType(param); break;
+                default : alert("Chart type is incorrect."); break;
+            }
+        },
+        setCreateChartOption : function (){
+            var objAxisInfo = {};
+            var objLayoutInfo = {};
+            try{
+                if( !this.props.colorful ){
+                    this.state.colorArray = [this.state.colorArray[0]];
+                }
+                if( this.props.colorArray ){
+                    this.state.colorArray = this.props.colorArray;
+                }
+                if( this.props.shadeColor ){
+                    this.setUserShadeColorSetting(this.props.shadeColor);
+                }
+                if( typeof this.props.timeAxisX[0] !== "string" || typeof this.props.timeAxisX[1] !== "number" ){
+                    alert("The value of the timeAxisX is not correct.");
+                    return false;
+                }
+                if(typeof this.props.circleThickNum === 'number'){
+                    if( this.props.circleThickNum > 1 ){
+                        this.props.circleThickNum = 1;
+                    } else if( this.props.circleThickNum <= 0 ){
+                        this.props.circleThickNum = 0.15;
+                    }
+                } else {
+                    this.props.circleThickNum = 0.5;
+                }
+                this.props.timeAxisX = this.props.timeAxisX.map(function(dt) {
+                    var srtArray = "";
+                    switch( dt ){
+                        case "day"   : srtArray = "timeDay"; break;
+                        case "week"  : srtArray = "timeWeek"; break;
+                        case "month" : srtArray = "timeMonth"; break;
+                        case "year"  : srtArray = "timeYear"; break;
+                        default      : srtArray = dt; break;
+                    }
+                    return srtArray;
+                });
+            } finally {
+                objAxisInfo = null;
+                objLayoutInfo = null;
+            }
+        },
+        setCreateChartD3Target : function (chart){
+            var state = this.state;
+            var opts = this.props;
+            var str_chartId = chart[0].id;
+            var parentWrap = chart.parent().offset();
+            var num_chartSizeW = (parentWrap.width)-(parentWrap.paddingL+parentWrap.paddingR);
+            var num_chartSizeH = (parentWrap.height)-(parentWrap.paddingT+parentWrap.paddingB);
+            var axis = this.axis = {
+                axisX       : opts.nameAxisX,
+                axisY       : opts.nameAxisY,
+                typeAxisX   : opts.typeAxisX,
+                typeAxisY   : opts.typeAxisY,
+                timeAxisX   : opts.timeAxisX,
+                timeFormat  : opts.timeFormat,
+                tickAxisY   : opts.tickAxisY,
+                tickGridY   : opts.tickGridY,
+                rotateAxisX : opts.rotateAxisX,
+                posXAxisX   : opts.posXAxisX,
+                posYAxisX   : opts.posYAxisX,
+                axis_string : opts.title
+            };
+            var layout = {width  : opts.layoutW, height : opts.layoutH};
+            try {
+                if( layout.width ){
+                    num_chartSizeW = parseInt(layout.width);
+                    chart.width(num_chartSizeW);
+                }
+                if( layout.height ){
+                    num_chartSizeH = parseInt(layout.height);
+                    chart.height(num_chartSizeH);
+                }
+                if( num_chartSizeW > state.max_width ){num_chartSizeW = state.max_width;}
+                if( num_chartSizeW < state.min_width ){num_chartSizeW = state.min_width;}
+                if( num_chartSizeH < state.min_height){num_chartSizeH = state.min_height;}
+                if( !this.d3.svg ){
+                    this.d3 = {
+                        svg   : null,
+                        g     : null,
+                        x     : null,
+                        y     : null,
+                        width : 0,
+                        height: 0,
+                        margin: {},
+                        line  : null,
+                        tip   : null,
+                        type  : this.props.chartType,
+                        axisX : "",
+                        axisY : "",
+                        title : ""
+                    };
+                    this.d3.svg = window.d3.select("#"+str_chartId).append("svg:svg").attr('id', this.state.uniqueName).attr("width", num_chartSizeW).attr("height", num_chartSizeH);
+                    this.d3.margin = {top: 40, right: 30, bottom: 30, left: 30};
+                    this.d3.width = num_chartSizeW - this.d3.margin.left - this.d3.margin.right;
+                    this.d3.height = num_chartSizeH - this.d3.margin.top - this.d3.margin.bottom;
+                    this.d3.g = this.d3.svg.append("g").attr("class", "js2uix_g").attr("transform", "translate(" + this.d3.margin.left + "," + this.d3.margin.top + ")");
+                    this.d3.axisX = axis.axisX;
+                    this.d3.axisY = axis.axisY;
+                    this.d3.title = axis.axis_string;
+                }
+            } finally {
+                axis = null;
+            }
+        },
+        setCreateStyleOption : function(elm){
+            js2uixD3Style(elm, {
+                svgId : '#'+this.state.uniqueName,
+                opacity : this.props.tickGridOpacity,
+                dashArray :  this.props.tickGridDashNum
+            });
+        },
+        render : function(elm){
+            this.renderChartDefaultSetting(elm);
+            this.setCreateStyleOption(elm);
+            this.setCreateChartOption(elm);
+            this.setCreateChartD3Target(elm);
+        },
+        init : function(props){
+            if(typeof props === 'object' ){
+                zui.extend(this.props, props);
+                this.render(this.target);
+            }
+        },
+        setData : function(data){
+            this.setSwitchChartDomType(data);
+            if( !this.state.update ){
+                this.state.update = true;
+                this.state.dataLength = data.length;
+            }
+        }
+    };
+    js2uixD3Module.prototype.constructor = js2uixD3Module;
+    zui.extend({
+        D3Control : function(target, config){
+            if( !window.d3 ){
+                alert('please check! d3.js api');
+                return;
+            }
+            if( target && typeof target === 'string' ){
+                target = zui(target);
+                if( target.length > 0 ){
+                    target = ( target.length > 1 )?zui(target[0]):target;
+                    if( target.name !== ModuleName ){ return; }
+                    return new js2uixD3Module(target, config);
+                }
+            }
         }
     });
     /** --------------------------------------------------------------- */
