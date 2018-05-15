@@ -1,4 +1,4 @@
-.js2uix-grid{ position: relative; display: block; width: 100%; min-width: 290px; height: 100%; font-size: 13px; border: 1px solid #ddd; overflow: hidden; -webkit-box-sizing: border-box;  -moz-box-sizing: border-box;  box-sizing: border-box; }
+.js2uix-grid{ position: relative; display: block; width: 100%; min-width: 330px; height: 100%; font-size: 13px; border: 1px solid #ddd; overflow: hidden; -webkit-box-sizing: border-box;  -moz-box-sizing: border-box;  box-sizing: border-box; }
 .js2uix-grid.disableSelection * {  -webkit-user-select: none;  -moz-user-select: -moz-none;  -o-user-select: none;  user-select: none; }
 .js2uix-grid *{ -webkit-box-sizing: border-box;  -moz-box-sizing: border-box;  box-sizing: border-box; }
 .js2uix-grid ul, .js2uix-grid ul li{ list-style: none; }
@@ -72,10 +72,11 @@
 .js2uix-grid .js2uix-grid-load .innerBox{ position: absolute; width: 180px; height: 30px; top:calc(50% - 15px);  left: calc(50% - 90px); border: 1px solid #ccc; background-color: #fff; border-radius: 2px; text-align: center; padding: 5px;  -webkit-box-shadow: 0 2px 3px -1px rgba(0,0,0,0.23);  -moz-box-shadow: 0 2px 3px -1px rgba(0,0,0,0.23);  box-shadow: 0 2px 3px -1px rgba(0,0,0,0.23);}
 .js2uix-grid ul.js2uix-body-row li button{ display: inline-block; height: 22px; border: 1px solid #ddd; border-radius: 2px; margin: 0 2px; font-size: 12px; background-color: #efefef; cursor: pointer; }
 /** availableMini mode */
-.js2uix-grid{ min-width: 290px !important; }
+.js2uix-grid{ min-width: 330px !important; }
 .js2uix-grid.availableMini .js2uix-grid-body{ height: calc(100% - 105px);  }
 .js2uix-grid.availableMini .js2uix-grid-foot{ height: 72px;  }
 .js2uix-grid.availableMini .js2uix-grid-foot > * { display: block !important; text-align: left; }
-.js2uix-grid.availableMini .js2uix-grid-foot .js2uix-grid-list{ position: absolute; top: 0; left: 0; }
-.js2uix-grid.availableMini .js2uix-grid-foot .js2uix-grid-total{ position: absolute; top: 0; right: 0; }
-.js2uix-grid.availableMini .js2uix-grid-foot .js2uix-grid-page{ position: absolute; width: 100%; bottom: 0; left: 0; border-top: 1px solid #ddd; }
+.js2uix-grid.availableMini .js2uix-grid-foot .js2uix-grid-list{ position: absolute; bottom: 0; left: 0; }
+.js2uix-grid.availableMini .js2uix-grid-foot .js2uix-grid-total{ position: absolute; bottom: 0; right: 0; }
+.js2uix-grid.availableMini .js2uix-grid-foot .js2uix-grid-page{ position: absolute; width: 100%; top: 0; left: 0; border-bottom: 1px solid #ddd; }
+.js2uix-grid.availableMini .js2uix-grid-foot .js2uix-grid-page ul{ text-align: center; }
