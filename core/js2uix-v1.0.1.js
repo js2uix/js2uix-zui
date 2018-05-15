@@ -55,7 +55,7 @@
         }
     };
     var js2uixNewArrayNode = function (arg){
-        var i, j;
+        var i, j, k;
         var item = [];
         for ( i = 0; i < arg.length; i++ ){
             if( arg[i].name === ModuleName ){
@@ -68,11 +68,14 @@
                 var isString = arg[i];
                 var checkContent =  js2uixCheckValidation(isString);
                 if( checkContent.tagType && checkContent.tagType.length > 0 ){
-                    isString = zui(isString)[0];
+                    isString = zui(isString);
+                    for(k=0; k < isString.length; k++ ){
+                        item.push(isString[k]);
+                    }
                 } else {
                     isString = DOC.createTextNode(isString);
+                    item.push(isString);
                 }
-                item.push(isString);
             }
         }
         return item;
@@ -163,7 +166,10 @@
                     } else {
                         virtualDom = DOC.createElement( ModuleName );
                         virtualDom.innerHTML = select;
-                        select = [virtualDom.firstChild];
+                        select = [virtualDom];
+                        if( select[0].nodeName.toLowerCase() === ModuleName){
+                            select = select[0].childNodes;
+                        }
                     }
                 } else if ( !isIdOrClassType && !isSpecialType && !isTagStringType ){
                     select = DOC.querySelectorAll( select );
@@ -356,7 +362,7 @@
         },
         removeClass : function ( name ){
             for( var i=0; i < this.length; i++ ){
-                zui.removeId( this[i], name );
+                zui.removeClass( this[i], name );
             }
             return this;
         },
@@ -522,6 +528,15 @@
                             parent = parent.parentNode;
                         }
                     }
+                } else {
+                    while ( parent && parent.nodeName.toLowerCase() !== 'html' ){
+                        if( parent.nodeName.toLowerCase() === name ){
+                            result = parent;
+                            break;
+                        } else {
+                            parent = parent.parentNode;
+                        }
+                    }
                 }
             }
             return zui(result);
@@ -577,6 +592,24 @@
         },
         lastINode : function (){
             return (this.length < 2)?this:zui(this[this.length-1]);
+        },
+        siblingNodes : function(){
+            if( this.length > 0 ){
+                var target = this[0];
+                var allSiblings = target.parentNode.childNodes;
+                var findSiblingNode = [];
+                for( var i=0; i<allSiblings.length; i++ ){
+                    if( target !== allSiblings[i] ){
+                        findSiblingNode.push(allSiblings[i]);
+                    }
+                }
+                try {
+                    return zui(findSiblingNode);
+                } finally {
+                    allSiblings = null;
+                    findSiblingNode = null;
+                }
+            }
         },
         /** control basic method - dom change */
         append : function (){
@@ -638,9 +671,13 @@
             return this;
         },
         html : function ( value ){
-            for( var i = 0; i < this.length; i++ ){ this[i].innerHTML = ''; }
-            if( value ){
-                this.append( value );
+            if( this.length > 0 ){
+                for( var i = 0; i < this.length; i++ ){
+                    this[i].innerHTML = '';
+                }
+                if( value ){
+                    this.append( value );
+                }
             }
             return this;
         },
@@ -775,6 +812,54 @@
                 paddingB : this.css('padding-bottom')
             };
             return (!this[0].getClientRects().length)?undefined:result;
+        },
+        fadeIn : function(speed, fnc){
+            zui.loop(this, function(){
+                var elm = this;
+                elm.style.display = "block";
+                elm.style.opacity = 0;
+                var last = +new Date();
+                (function tick() {
+                    elm.style.opacity = +elm.style.opacity+((new Date()-last)/(speed |300));
+                    last = +new Date();
+                    if (+elm.style.opacity < 1) {
+                        if( window.requestAnimationFrame ){
+                            requestAnimationFrame(tick);
+                        } else {
+                            setTimeout(tick, 16);
+                        }
+                    }
+                    if( +elm.style.opacity > 1.0 ){
+                        elm.style.opacity = 1.0;
+                        if(typeof fnc === "function" ){ fnc(); }
+                    }
+                }());
+            });
+            return this;
+        },
+        fadeOut : function(speed, fnc){
+            zui.loop(this, function(){
+                var elm = this;
+                var last = +new Date();
+                elm.style.opacity = 1;
+                (function tick() {
+                    elm.style.opacity = +elm.style.opacity - ((new Date()-last)/(speed||500));
+                    last = +new Date();
+                    if (+elm.style.opacity > 0) {
+                        if( window.requestAnimationFrame ){
+                            requestAnimationFrame(tick);
+                        } else {
+                            setTimeout(tick, 16);
+                        }
+                    }
+                    if( +elm.style.opacity < 0.1 ){
+                        elm.style.display = "none";
+                        elm.style.opacity = 0;
+                        if(typeof fnc === "function" ){ fnc(); }
+                    }
+                }());
+            });
+            return this;
         }
     });
     /** --------------------------------------------------------------- */
@@ -817,11 +902,21 @@
                 var eventName = eventNameArray[0];
                 var eventKeyName = eventNameArray[1] || null;
                 if ( length === 1 && typeof first === 'string' ){
-                    for( i = 0; i < eventData[eventName].length; i++ ){
-                        crtEvent = eventData[eventName][i];
-                        if( crtEvent.eventKey === eventKeyName ){
-                            this.removeEventListener(eventName, eventData[eventName][i]['handler']);
-                            eventData[eventName][i]['removed'] = true;
+                    if( eventName === 'all' ){
+                        for( var eventKey in eventData ){
+                            for( i = 0; i < eventData[eventKey].length; i++ ){
+                                crtEvent = eventData[eventKey][i];
+                                this.removeEventListener(eventKey, crtEvent['handler']);
+                                crtEvent['removed'] = true;
+                            }
+                        }
+                    } else {
+                        for( i = 0; i < eventData[eventName].length; i++ ){
+                            crtEvent = eventData[eventName][i];
+                            if( crtEvent.eventKey === eventKeyName ){
+                                this.removeEventListener(eventName, eventData[eventName][i]['handler']);
+                                eventData[eventName][i]['removed'] = true;
+                            }
                         }
                     }
                 } else if ( length === 2 && typeof first === 'string' && (typeof last === 'function' || typeof last === 'object') ){
@@ -2238,6 +2333,499 @@
         }
     };
     js2uixD3Module.prototype.constructor = js2uixD3Module;
+    /** --------------------------------------------------------------- */
+    /** js2uix-ui-module method */
+    var js2uixToolGrid = function(element){
+        this.element = element;
+        this.idName ='';
+        this.props = {
+            fieldTitle : null,
+            fieldName : null,
+            gridFixWidth : null,
+            gridFixHeight : null,
+            gridMinWidth : null,
+            gridMaxWidth : null,
+            listCountNum : [10,20,30],
+            fieldWidth : null,
+            appendLayoutStyle : true,
+            availableMini : false,
+            bodyTextAlign : 'center',
+            disableSelection : false,
+            optionCheckBox : false,
+            optionNumbering : false,
+            onChangeStateEvent : null,
+            onCustomizedField : null,
+            onCustomizedEvent : null
+        };
+        this.state = {
+            totalCountNum : 0,
+            totalPageNum : 1,
+            currentPageNum : 1,
+            listCountNum : 10,
+            displayItemNum : 0,
+            orderInfo : {},
+            gridWidth : 0,
+            gridAdjustGap : 0,
+            gridCalcWidth : 0,
+            girdCalcUlWidth : 0,
+            contentHead : null,
+            contentBody : null,
+            contentBodyList : null,
+            contentFoot : null,
+            listSelect : null,
+            totalItem : null,
+            displayItem : null,
+            totalPage : null,
+            currentPage : null,
+            loadBox : null,
+            optionCheckbox : null,
+            isControl : true
+        };
+        this.gridData = null;
+        return {
+            init : this.init.bind(this),
+            setData : this.setData.bind(this)
+        }
+    };
+    js2uixToolGrid.prototype = {
+        js2uixGridName : "js2uix-grid",
+        setLoadEffectStyle : function(bool){
+            if( bool ){
+                this.state.isControl = false;
+                this.state.loadBox[0].style.display = 'block';
+                this.state.loadBox[0].style.opacity = 1;
+            } else {
+                this.state.loadBox.fadeOut(450, function(){
+                    this.state.isControl = true;
+                }.bind(this));
+            }
+        },
+        setDefaultRender : function(){
+            if( this.element.length === 1 ){
+                this.element.addClass(this.js2uixGridName);
+                if( this.props.disableSelection ){
+                    this.element.addClass('disableSelection');
+                }
+                if( this.props.gridFixWidth && typeof this.props.gridFixWidth === 'number' ){
+                    this.element.css('width', this.props.gridFixWidth)
+                }
+                if( this.props.gridMinWidth && typeof this.props.gridMinWidth === 'number' ){
+                    this.element.css('min-width', this.props.gridMinWidth)
+                }
+                if( this.props.gridMaxWidth && typeof this.props.gridMaxWidth === 'number' ){
+                    this.element.css('max-width', this.props.gridMaxWidth)
+                }
+                if( this.props.gridFixHeight && typeof this.props.gridFixHeight === 'number' ){
+                    this.element.css('height', this.props.gridFixHeight)
+                }
+                if( this.props.availableMini ){
+                    this.element.addClass('availableMini');
+                }
+                return true;
+            }
+        },
+        setAppendElement : function(element){
+            this.element.append(element);
+        },
+        setCreateCssStyle : function(){
+            if( this.props.appendLayoutStyle ){
+                if( this.props.fieldWidth && Array.isArray(this.props.fieldWidth) ){
+                    var oldStyle = zui('style[data-target='+this.idName+']');
+                    var widthStyle = '<style data-target="'+this.idName+'">\n';
+                    for(var i=0; i<this.props.fieldWidth.length; i++){
+                        var idx = i+1;
+                        var fieldWidth = this.props.fieldWidth[i];
+                        if(typeof fieldWidth === 'string' && fieldWidth === 'auto' ){
+                            fieldWidth = (this.state.girdCalcUlWidth-this.state.gridCalcWidth)+'px';
+                            fieldWidth = 'calc(100% - '+this.state.gridCalcWidth+'px)';
+                        } else {
+                            fieldWidth = fieldWidth+'px';
+                        }
+                        widthStyle += '#'+this.idName+'.js2uix-grid ul.js2uix-head-row li:nth-child('+(idx)+'),\n';
+                        widthStyle += '#'+this.idName+'.js2uix-grid ul.js2uix-body-row li:nth-child('+(idx)+'){width:'+fieldWidth+'}\n';
+                    }
+                    widthStyle += '</style>';
+                    if( oldStyle.length > 0 ){ oldStyle.remove(); }
+                    this.element.before(widthStyle)
+                }
+            }
+        },
+        setGridFieldStyle : function(type){
+            if( !this.props.appendLayoutStyle ){
+                if( this.props.fieldWidth && Array.isArray(this.props.fieldWidth) ){
+                    var module = this;
+                    var target = this.state.contentHead;
+                    if( type === 'body' ){ target = this.state.contentBody; }
+                    target = target.find('ul');
+                    if( !this.state.girdCalcUlWidth ){ this.state.girdCalcUlWidth = target.width(); }
+                    zui.loop(target, function(){
+                        var thisItems = this.children;
+                        for( var i=0; i<thisItems.length; i++){
+                            var fieldWidth = module.props.fieldWidth[i];
+                            if(typeof fieldWidth === 'string' && fieldWidth === 'auto' ){
+                                fieldWidth = (module.state.girdCalcUlWidth-module.state.gridCalcWidth)+'px';
+                            } else {
+                                fieldWidth = fieldWidth+'px';
+                            }
+                            thisItems[i].style.width = fieldWidth;
+                        }
+                    });
+                }
+            }
+        },
+        setAdjustStyleLayout : function(){
+            /** TODO : 추후 기능을 바꿀 필요 있음 */
+            this.state.gridAdjustGap = this.state.contentBody.width() - this.state.contentBodyList.width();
+            this.state.contentHead[0].children[0].style.paddingRight = this.state.gridAdjustGap+'px';
+            if( this.state.contentBodyList ){
+                this.state.contentBodyList.addAttr('data-overflow','false');
+                if( this.state.contentBodyList.height() - this.state.contentBody.height() >= 0 ){
+                    this.state.contentBodyList.addAttr('data-overflow','true');
+                }
+            }
+        },
+        setDefaultOptionState : function(){
+            /** checkbox */
+            if( this.state.optionCheckbox ){
+                this.state.optionCheckbox[0].firstChild.checked = false;
+            }
+        },
+        /** set state */
+        setGridDefaultState : function(){
+            var calcWidth = 0;
+            this.idName = ( !this.element[0].id )?this.idName = ModuleName+'Grid'+js2uixUniqueId():this.element[0].id;
+            if( this.props.fieldWidth ){
+                if( this.props.optionCheckBox ){
+                    this.props.fieldWidth.unshift(35)
+                }
+                if( this.props.optionNumbering ){
+                    this.props.fieldWidth.unshift(40)
+                }
+                for(var i=0; i<this.props.fieldWidth.length; i++){
+                    if(typeof this.props.fieldWidth[i] === 'number' ){
+                        calcWidth = calcWidth+this.props.fieldWidth[i];
+                    }
+                }
+                this.state.gridCalcWidth = calcWidth;
+                this.state.gridWidth = this.state.contentHead.width();
+            }
+        },
+        setGridRenderState : function(param){
+            /** set state-value */
+            this.state.totalCountNum = parseInt(param.totalCount);
+            this.state.currentPageNum = parseInt(param.pageCount);
+            this.state.listCountNum = parseInt(param.listCount || this.state.listCountNum);
+            this.state.displayItemNum = (this.state.currentPageNum === 0)?parseInt(param.data.length):((this.state.currentPageNum-1)*this.state.listCountNum)+parseInt(param.data.length);
+            this.state.totalPageNum = parseInt(this.state.totalCountNum/this.state.listCountNum);
+            if( this.state.totalPageNum < 1 ){ this.state.totalPageNum = 1; }
+            if( this.state.totalPageNum < this.state.totalCountNum/this.state.listCountNum ){ this.state.totalPageNum = this.state.totalPageNum+1; }
+            if( this.state.listSelect[0].value !== this.state.listCountNum ){this.state.listSelect[0].value = this.state.listCountNum;}
+            this.gridData = param.data;
+        },
+        setGridFootState : function(param){
+            /** set node-value*/
+            this.state.totalItem[0].innerText = this.state.totalCountNum;
+            this.state.displayItem[0].innerText = this.state.displayItemNum;
+            this.state.totalPage[0].innerText = this.state.totalPageNum;
+            this.state.currentPage[0].value = this.state.currentPageNum;
+            console.log(param)
+        },
+        /** create element */
+        setGridHeadElement : function(){
+            if( this.props.fieldTitle && this.props.fieldName ){
+                var headContentUl = zui.createDom('ul', {className : 'js2uix-grid-head-wrap js2uix-head-row'}, true);
+                for(var i=0; i<this.props.fieldTitle.length; i++){
+                    headContentUl.append('<li class="field" data-order="NORMAL" data-name="'+this.props.fieldName[i]+'">'+this.props.fieldTitle[i]+'</li>');
+                }
+                if( this.props.optionCheckBox ){
+                    this.state.optionCheckbox = zui.createDom('li', {
+                        content : '<input type="checkbox" name="optionCheckBox" />'
+                    }, true);
+                    this.state.optionCheckbox.addAttr('data-option', 'checkbox');
+                    headContentUl.prepend(this.state.optionCheckbox);
+                }
+                if( this.props.optionNumbering ){
+                    headContentUl.prepend('<li data-option="numbering">&nbsp;</li>');
+                }
+                this.state.contentHead = zui.createDom('div', {
+                    className : 'js2uix-grid-head',
+                    content : headContentUl
+                }, true);
+                this.setAppendElement(this.state.contentHead);
+                this.setGridHeadControl(this.state.contentHead);
+            }
+        },
+        setGridBodyElement : function(){
+            this.state.contentBodyList = zui.createDom('div', {
+                className : 'js2uix-grid-body-list'
+            }, true);
+            this.state.contentBody = zui.createDom('div', {
+                className : 'js2uix-grid-body',
+                content : zui.createDom('div', {
+                    className : 'js2uix-grid-body-wrap',
+                    content : this.state.contentBodyList
+                })
+            }, true);
+            this.setAppendElement(this.state.contentBody);
+        },
+        setGridFootElement : function(){
+            this.state.contentFoot = zui.createDom('div', {className : 'js2uix-grid-foot'}, true);
+            var totalList = zui.createDom('div', {
+                className : 'js2uix-grid-list',
+                content : '<select class="list"></select>'
+            }, true);
+            var totalNode = zui.createDom('div', {
+                className : 'js2uix-grid-total',
+                content : '<ul>' +
+                '<li>Displaying&nbsp;</li>' +
+                '<li class="current">1</li>' +
+                '<li>&nbsp;of&nbsp;</li>' +
+                '<li class="total">1</li>' +
+                '<li>&nbsp;items</li>' +
+                '</ul>'
+            });
+            var totalPage = zui.createDom('div', {
+                className : 'js2uix-grid-page',
+                content : '<ul>' +
+                '<li class="first"></li>' +
+                '<li class="prev"></li>' +
+                '<li class="page">' +
+                '<span>Page</span>' +
+                '<span class="current">' +
+                '<input type="text" name="crtPage" class="crtPage">' +
+                '</span>' +
+                '<span>of</span>' +
+                '<span class="total">1</span>' +
+                '</li>' +
+                '<li class="next"></li>' +
+                '<li class="last"></li>' +
+                '<li class="reload"></li>' +
+                '</ul>'
+            });
+            if( Array.isArray(this.props.listCountNum) && this.props.listCountNum.length > 0 ){
+                for(var i = 0; i<this.props.listCountNum.length; i++){
+                    var selected = '';
+                    if(i === 0){
+                        this.state.listCountNum = this.props.listCountNum[i];
+                        selected = 'selected';
+                    }
+                    totalList.find('select').append('<option '+selected+' value="'+this.props.listCountNum[i]+'">'+this.props.listCountNum[i]+'</option>');
+
+                }
+            }
+            this.state.contentFoot.append(totalList, totalPage, totalNode);
+            this.state.listSelect  = this.state.contentFoot.find('select');
+            this.state.totalItem  = this.state.contentFoot.find('.js2uix-grid-total .total');
+            this.state.displayItem  = this.state.contentFoot.find('.js2uix-grid-total .current');
+            this.state.totalPage  = this.state.contentFoot.find('.js2uix-grid-page .total');
+            this.state.currentPage  = this.state.contentFoot.find('.js2uix-grid-page .current input');
+            this.setAppendElement(this.state.contentFoot);
+            this.setGridFootControl(this.state.contentFoot);
+        },
+        setGridLoadElement : function(){
+            this.state.loadBox = zui.createDom('div', {
+                className : 'js2uix-grid-load',
+                content : '<div class="innerBox">processing.. please wait!</div>'
+            }, true);
+            this.state.contentBody.append(this.state.loadBox);
+        },
+        setGridBodyItemElement : function(param){
+            var bodyUl = '';
+            if( param.data && param.data.length > 0 && this.props.fieldName.length > 0){
+                for(var i=0; i<param.data.length; i++){
+                    if( i <= this.state.listCountNum ){
+                        bodyUl += '<ul class="js2uix-body-row">';
+                        if( this.props.optionNumbering ){bodyUl += '<li data-option="numbering">'+(i+1)+'</li>';}
+                        if( this.props.optionCheckBox ){bodyUl += '<li data-option="checkbox"><input type="checkbox" name="optionCheckBox" /></li>';}
+                        for(var j=0; j<this.props.fieldName.length; j++){
+                            var isEmpty = '';
+                            var key = this.props.fieldName[j];
+                            var fieldValue = param.data[i][key];
+                            if( !fieldValue ){
+                                fieldValue = '';
+                                isEmpty = 'data-empty="true"';
+                                if( i === 0 ){this.state.contentHead.find('li[data-name="'+key+'"]').removeEvent('all');}
+                            }
+                            bodyUl += '<li data-name="'+key+'" '+isEmpty+' style="text-align:'+this.props.bodyTextAlign+'">'+fieldValue+'</li>';
+                        }
+                        bodyUl +='</ul>';
+                    }
+                }
+            } else {
+                bodyUl = '<ul class="js2uix-body-row"><li class="noGridData">No Data</li></ul>';
+            }
+            this.setGridBodyControl(true);
+            this.state.contentBodyList[0].parentNode.scrollTop = 0;
+            this.state.contentBodyList[0].innerHTML = bodyUl;
+            this.onCustomizedField();
+            this.setGridBodyControl(false);
+            this.setAdjustStyleLayout();
+        },
+        setGridDefaultElement : function(){
+            this.setGridBodyControl(true);
+            this.element[0].innerHTML = '';
+        },
+        /** create element event */
+        setGridHeadControl : function(target){
+            var module = this;
+            target.find('li.field').addEvent('click.js2uix-grid', function(){
+                if( module.state.isControl ){
+                    var item = zui(this);
+                    var dataOrder = item.getAttr('data-order');
+                    var dataName = item.getAttr('data-name');
+                    if( dataOrder === 'NORMAL' ){
+                        item.addAttr('data-order', 'ASC');
+                        module.state.orderInfo[dataName] = 'ASC';
+                    } else if( dataOrder === 'ASC' ){
+                        item.addAttr('data-order', 'DESC');
+                        module.state.orderInfo[dataName] = 'DESC';
+                    } else if( dataOrder === 'DESC' ){
+                        item.addAttr('data-order', 'NORMAL');
+                        delete module.state.orderInfo[dataName]
+                    }
+                    module.state.currentPageNum = 1;
+                    module.onChangeStateEvent();
+                }
+            });
+            target.find('li[data-option="checkbox"] input[type=checkbox]').addEvent('change.js2uix-grid', function(){
+                if( module.state.isControl ){
+                    var bodyItem = module.state.contentBodyList.find('input[name=optionCheckBox]');
+                    zui.loop(bodyItem, function(num, elm){elm.checked = this.checked;}.bind(this));
+                }
+            });
+        },
+        setGridBodyControl : function(reset){
+            if( reset ){
+                if( this.state.contentBody ){
+                    this.state.contentBody.find('.js2uix-grid-body-list *').removeEvent('all');
+                }
+            } else {
+                this.onCustomizedEvent();
+            }
+        },
+        setGridFootControl : function(target){
+            var module = this;
+            /** first page search */
+            target.find('.first').addEvent('click.js2uix-grid', function(){
+                if( module.state.currentPageNum !== 1 && module.state.isControl ){
+                    module.state.currentPageNum = 1;
+                    module.onChangeStateEvent();
+                }
+                return false;
+            });
+            /** prev page search */
+            target.find('.prev').addEvent('click.js2uix-grid', function(){
+                if( module.state.currentPageNum !== 1  && module.state.isControl ){
+                    module.state.currentPageNum = (module.state.currentPageNum-1 !== 0 )?module.state.currentPageNum-1:1;
+                    module.onChangeStateEvent();
+                }
+                return false;
+            });
+            /** next page search */
+            target.find('.next').addEvent('click.js2uix-grid', function(){
+                if( (module.state.currentPageNum < module.state.totalPageNum) && module.state.isControl ){
+                    module.state.currentPageNum = (module.state.currentPageNum+1 <= module.state.totalPageNum )?module.state.currentPageNum+1:module.state.totalPageNum;
+                    module.onChangeStateEvent();
+                }
+                return false;
+            });
+            /** last page search */
+            target.find('.last').addEvent('click.js2uix-grid', function(){
+                if( (module.state.currentPageNum < module.state.totalPageNum) && module.state.isControl ){
+                    module.state.currentPageNum = module.state.totalPageNum;
+                    module.onChangeStateEvent();
+                }
+                return false;
+            });
+            /** reload page */
+            target.find('.reload').addEvent('click.js2uix-grid', function(){
+                if( module.state.isControl ){
+                    module.onChangeStateEvent();
+                }
+                return false;
+            });
+            /** user page search */
+            target.find('.crtPage').addEvent('keyup.js2uix-grid', function(e){
+                var thisValue = this.value;
+                thisValue = thisValue.replace(/[^0-9]/gi,"");
+                if( thisValue === '' ){
+                    module.state.currentPage[0].value = ''
+                } else {
+                    thisValue = parseInt(thisValue);
+                    if( thisValue < 1 ){thisValue = 1;}
+                    if( thisValue > module.state.totalPageNum ){thisValue = module.state.totalPageNum;}
+                    module.state.currentPage[0].value = thisValue;
+                }
+                if( e.keyCode === 13 ){
+                    module.state.currentPageNum = thisValue;
+                    module.onChangeStateEvent();
+                }
+                return false;
+            });
+            /** select list change */
+            target.find('select').addEvent('change.js2uix-grid', function(e){
+                if( module.state.isControl ){
+                    module.state.currentPageNum = 1;
+                    module.state.listCountNum = this.value;
+                    module.onChangeStateEvent();
+                }
+                return false;
+            });
+        },
+        /** default fnc */
+        setGridCreateElement : function(){
+            this.setGridDefaultElement();
+            this.setGridHeadElement();
+            this.setGridBodyElement();
+            this.setGridFootElement();
+            this.setGridLoadElement();
+        },
+        onChangeStateEvent : function(){
+            if( typeof this.props.onChangeStateEvent && typeof this.props.onChangeStateEvent === 'function' ){
+                this.setLoadEffectStyle(true);
+                this.setDefaultOptionState();
+                this.props.onChangeStateEvent({
+                    searchOrder : this.state.orderInfo,
+                    searchPageNum : this.state.currentPageNum,
+                    searchItemListNum : this.state.listCountNum
+                });
+            }
+        },
+        onCustomizedField : function(){
+            if( this.props.onCustomizedField && typeof this.props.onCustomizedField === 'function' ){
+                var module = this;
+                this.state.contentBodyList.find('ul').loop(function(num){ module.props.onCustomizedField(zui(this), module.gridData[num]); });
+                module.gridData = null;
+            }
+        },
+        onCustomizedEvent : function(){
+            if(  this.props.onCustomizedEvent && typeof this.props.onCustomizedEvent === 'function' ){
+                this.props.onCustomizedEvent(this.state.contentBodyList);
+            }
+        },
+        setData : function(param){
+            if( param && typeof param === 'object' ){
+                this.setLoadEffectStyle(true);
+                this.setGridRenderState(param);
+                this.setGridFootState(param);
+                this.setGridBodyItemElement(param);
+                this.setGridFieldStyle('body');
+                this.setLoadEffectStyle(false);
+            }
+        },
+        init : function(props){
+            if( props && typeof props === 'object' ){
+                zui.extend(this.props, props);
+                if( this.setDefaultRender() ){
+                    this.setGridCreateElement();
+                    this.setGridDefaultState();
+                    this.setCreateCssStyle();
+                    this.setGridFieldStyle('head');
+                }
+            }
+        }
+    };
+    js2uixToolGrid.prototype.constructor = js2uixToolGrid;
     zui.extend({
         D3Control : function(target, config){
             if( !window.d3 ){
@@ -2250,6 +2838,21 @@
                     target = ( target.length > 1 )?zui(target[0]):target;
                     if( target.name !== ModuleName ){ return; }
                     return new js2uixD3Module(target, config);
+                }
+            }
+        },
+        Grid : function(target){
+            if( target ){
+                var element;
+                if( typeof target === 'string' ){
+                    element = zui(zui(target)[0]);
+                } else if ( target.name && target.name === ModuleName ){
+                    element = target;
+                } else if ( target.nodeName ){
+                    element = zui(target);
+                }
+                if( element && element.length > 0 ){
+                    return new js2uixToolGrid(element);
                 }
             }
         }
