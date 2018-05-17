@@ -1,11 +1,11 @@
 /** ------------------------------------------------------------------------------------- /
- * ModuleName  : zui-dom-control(js2uix-zui)
- * GitHub      : https://github.com/js2uix/js2uix-zui
+ * ModuleName  : js2uix-dom-control(js2uix)
+ * GitHub      : https://github.com/js2uix/js2uix
  * Developer   : YJH-js2uix
  * Email       : deshineplus@icloud.com
  * language    : Javascript(ES5)
  * StartDate   : 2018.02.01
- * BuildDate   : 2018.05.10
+ * BuildDate   : 2018.05.17
  * Copyright   : YJH-js2uix
  * License     : Released under the MIT license
  * -------------------------------------------------------------------------------------- /
@@ -21,7 +21,7 @@
         module.exports = factory( global, true );
         if( !global.document ){
             module.exports = function(win) {
-                if ( !win.document ) { throw new Error( "js2uix-zui is not support this browser!" ); }
+                if ( !win.document ) { throw new Error( "js2uix is not support this browser!" ); }
                 return factory(win);
             }
         }
@@ -30,7 +30,7 @@
     }
 })( typeof window !== "undefined" ? window : this, function( window, noGlobal ){
     'use strict';
-    var zui,
+    var js2uix,
         ModuleName = 'js2uix',
         ModuleVersion = 'v1.0.1',
         D3ClassName = 'js2uix-d3',
@@ -68,7 +68,7 @@
                 var isString = arg[i];
                 var checkContent =  js2uixCheckValidation(isString);
                 if( checkContent.tagType && checkContent.tagType.length > 0 ){
-                    isString = zui(isString);
+                    isString = js2uix(isString);
                     for(k=0; k < isString.length; k++ ){
                         item.push(isString[k]);
                     }
@@ -111,7 +111,7 @@
         return dateString+randomString;
     };
     /** --------------------------------------------------------------- */
-    /** zui-control create object ( zui control 을 정의한다 )
+    /** js2uix-control create object ( js2uix control 을 정의한다 )
      * TODO : 가장 기본적인 기능을 먼저 활성화 하며, 추후 ui 기능을 확장한다.
      * info : NodeList 객체를 새롭게 해석하여 module 화 한다.
      *       새로운 Node 객체를 만들고 기능을 확장/상속 시킨다.
@@ -120,13 +120,13 @@
     /** TODO : extend prototype, 상속을 구현한다.
      * Object.setPrototypeOf 기본 사용 / 불가능 : __proto__ 를 이용하여 상속.
      * */
-    zui = function (select){return new zui.fx.init(select);};
-    zui.fx = zui.prototype = {
-        zui : ModuleVersion,
-        constructor : zui,
+    js2uix = function (select){return new js2uix.fx.init(select);};
+    js2uix.fx = js2uix.prototype = {
+        js2uix : ModuleVersion,
+        constructor : js2uix,
         query : function ( select, result ){
             var argArray = Array.prototype.slice.call(arguments);
-            var newNode = zui.extend([], argArray.shift());
+            var newNode = js2uix.extend([], argArray.shift());
             newNode.name = ModuleName;
             if ( SetProtoType ){
                 newNode = SetProtoType( newNode, GetProtoType( result ) );
@@ -141,7 +141,7 @@
             return newNode;
         }
     };
-    zui.fx.init = function (select){
+    js2uix.fx.init = function (select){
         if ( !select ) { return this; }
         /** TODO : Dom Query
          * ES5 를 이용한 Dom Query Select 를 구현한다.
@@ -185,15 +185,15 @@
             } else if ( select['name'] && select['name'] === ModuleName ){
                 return select;
             } else if ( typeof select === 'function' ){
-                return zui.loaded( this, select );
+                return js2uix.loaded( this, select );
             } else if ( select === window ){
                 select = [window];
             }
         }
-        return zui.fx.query( select, this );
+        return js2uix.fx.query( select, this );
     };
-    zui.fx.init.prototype = zui.fx;
-    zui.extend = zui.fx.extend = function (){
+    js2uix.fx.init.prototype = js2uix.fx;
+    js2uix.extend = js2uix.fx.extend = function (){
         var arg = arguments;
         var target = arg[0] || {};
         var object;
@@ -217,7 +217,7 @@
         }
         return target;
     };
-    zui.extend({
+    js2uix.extend({
         typeIs : function ( object ){
             var result;
             if ( object === null ) {
@@ -238,7 +238,7 @@
             return result;
         },
         isArray : function ( object ){
-            var typeIs = zui.typeIs( object );
+            var typeIs = js2uix.typeIs( object );
             var lengthIs = !!object && 'length' in object && object.length;
             if( object != null && object === object.window || typeIs === 'function' ){ return false; }
             return !!(typeIs === 'array' || lengthIs === 0 || typeIs === 'number' && lengthIs > 0 && ( lengthIs - 1 ) in object);
@@ -253,13 +253,14 @@
             return typeof number === 'number';
         }
     });
+
     /** --------------------------------------------------------------- */
     /** TODO : 추가적인 기능을 확장한다
      * 추가기능은 단계적으로 control 에 필요한 기능을 추가한다.
      * */
     /** --------------------------------------------------------------- */
     /** js2uix-control-attribute method */
-    zui.extend({
+    js2uix.extend({
         /** control attribute[id] name */
         addId : function ( item, name ){
             if( item && name && typeof name === 'string' ){
@@ -340,59 +341,71 @@
             }
         }
     });
-    zui.fx.extend({
+    js2uix.fx.extend({
         /** control attribute[id] name */
         addId : function ( name ){
-            zui.addId( this[0], name );
+            js2uix.addId( this[0], name );
             return this;
         },
         removeId : function ( name ){
-            zui.removeId( this[0], name );
+            js2uix.removeId( this[0], name );
             return this;
         },
         hasId : function ( name ){
-            return zui.hasId( this[0], name );
+            return js2uix.hasId( this[0], name );
         },
         /** control attribute[class] name */
         addClass : function ( name ){
             for( var i=0; i < this.length; i++ ){
-                zui.addClass( this[i], name );
+                js2uix.addClass( this[i], name );
             }
             return this;
         },
         removeClass : function ( name ){
             for( var i=0; i < this.length; i++ ){
-                zui.removeClass( this[i], name );
+                js2uix.removeClass( this[i], name );
             }
             return this;
         },
         hasClass : function ( name ){
-            return zui.hasClass( this[0], name );
+            return js2uix.hasClass( this[0], name );
         },
         /** control attribute[*] name */
         addAttr : function ( name, value ){
             for ( var i=0; i < this.length; i++ ){
-                zui.addAttr(this[i], name, value);
+                js2uix.addAttr(this[i], name, value);
             }
             return this;
         },
         removeAttr : function ( name ){
             for ( var i=0; i < this.length; i++ ){
-                zui.removeAttr(this[i], name);
+                js2uix.removeAttr(this[i], name);
             }
             return this;
         },
         getAttr : function ( name ){
             if( this.length === 0 ){ return undefined; }
-            return zui.getAttr(this[0], name);
+            return js2uix.getAttr(this[0], name);
+        },
+        index : function(){
+            if( this.length > 0 ){
+                var child = this[0].parentNode.children;
+                for(var i=0; i < child.length; i++){
+                    if( this[0] === child[i] ){
+                        return i;
+                    }
+                }
+            }
+            return undefined;
         }
     });
+
     /** --------------------------------------------------------------- */
     /** js2uix-control-basic method */
-    zui.extend({
+    js2uix.extend({
         loop : function ( item, callback ){
             var length, i = 0;
-            if ( zui.isArray( item ) ) {
+            if ( js2uix.isArray( item ) ) {
                 length = item.length;
                 for (; i < length; i++ ) {
                     if ( callback.call( item[i], i, item[i] ) === false ) {
@@ -409,9 +422,9 @@
             return item;
         },
         map : function( obj, callback ){
-            var length, i = 0, newObject = !zui.isArray(obj)?{}:[];
-            zui.extend(newObject, obj, true);
-            if ( zui.isArray( obj ) ) {
+            var length, i = 0, newObject = !js2uix.isArray(obj)?{}:[];
+            js2uix.extend(newObject, obj, true);
+            if ( js2uix.isArray( obj ) ) {
                 length = obj.length;
                 for (; i < length; i++ ) {
                     if( typeof callback(i, obj[i]) !== 'undefined'  ){
@@ -438,53 +451,53 @@
             } else {
                 DOC.addEventListener('DOMContentLoaded', callback);
             }
-            return zui(item);
+            return js2uix(item);
         },
         createDom : function(){
             var dom;
-            var zuiDom;
+            var js2uixDom;
             var arg = arguments;
             var tagType = arg[0];
             var options = arg[1];
-            var zuiObject = arg[2];
+            var js2uixObject = arg[2];
             if( tagType && typeof tagType === 'string' ){
                 dom = DOC.createElement(tagType);
-                zuiDom = zui(dom);
+                js2uixDom = js2uix(dom);
                 if( options && typeof options === 'object' ){
                     for( var name in options ){
                         var item = options[name];
                         if ( name === 'className' ){
-                            zui.addClass(dom, item);
+                            js2uix.addClass(dom, item);
                         }
                         if ( name === 'idName' ){
-                            zui.addId(dom, item);
+                            js2uix.addId(dom, item);
                         }
                         if ( name === 'attributes' && typeof item === 'object' ){
                             for ( var attr in item ){
-                                zui.addAttr(dom, attr, item[attr]);
+                                js2uix.addAttr(dom, attr, item[attr]);
                             }
                         }
                         if ( name === 'styles' && typeof item === 'object' ){
-                            zuiDom.css(item);
+                            js2uixDom.css(item);
                         }
                         if ( name === 'content' ){
-                            zuiDom.html(item);
+                            js2uixDom.html(item);
                         }
                     }
                 }
             }
-            return (typeof Boolean(zuiObject) && zuiObject)?zui(dom):dom;
+            return (typeof Boolean(js2uixObject) && js2uixObject)?js2uix(dom):dom;
         },
         uiComponent : new js2uixConstModule()
     });
-    zui.fx.extend({
+    js2uix.fx.extend({
         /** control basic method - utility */
         loop : function ( callback ){
-            return zui.loop( this, callback );
+            return js2uix.loop( this, callback );
         },
         loaded : function ( callback ){
             if ( callback && typeof callback === 'function' ){
-                zui.loaded( this, callback );
+                js2uix.loaded( this, callback );
             }
         },
         /** control basic query - dom select */
@@ -493,7 +506,7 @@
             if( name && typeof name === 'string' ){
                 result = this[0].querySelectorAll(name);
             }
-            return zui(result);
+            return js2uix(result);
         },
         parent : function ( name ){
             var result = [];
@@ -511,7 +524,7 @@
             } else {
                 result = this[0].parentNode;
             }
-            return zui(result);
+            return js2uix(result);
         },
         parents : function ( name ){
             var result = [];
@@ -521,7 +534,7 @@
                 if( isIdOrClassType ){
                     while ( parent && parent.nodeName.toLowerCase() !== 'html' ){
                         var findName = name.substr(1, name.length);
-                        if( zui.hasClass(parent, findName) || zui.hasId(parent, findName) ){
+                        if( js2uix.hasClass(parent, findName) || js2uix.hasId(parent, findName) ){
                             result = parent;
                             break;
                         } else {
@@ -539,7 +552,7 @@
                     }
                 }
             }
-            return zui(result);
+            return js2uix(result);
         },
         hasParents : function ( name ){
             var result = false;
@@ -549,7 +562,7 @@
                 if( isIdOrClassType ){
                     while ( parent && parent.nodeName.toLowerCase() !== 'html' ){
                         var findName = name.substr(1, name.length);
-                        if( zui.hasClass(parent, findName) || zui.hasId(parent, findName) ){
+                        if( js2uix.hasClass(parent, findName) || js2uix.hasId(parent, findName) ){
                             result = true;
                             break;
                         } else {
@@ -567,7 +580,7 @@
             if( name && typeof name === 'string' ){
                 var findName = name.substr(1, name.length);
                 for (i = 0; i < children.length; i++ ){
-                    if( zui.hasClass(children[i], findName) || zui.hasId(children[i], findName) ){
+                    if( js2uix.hasClass(children[i], findName) || js2uix.hasId(children[i], findName) ){
                         result.push(children[i]);
                     }
                 }
@@ -576,22 +589,22 @@
                     result.push(children[i]);
                 }
             }
-            return zui(result);
+            return js2uix(result);
         },
         hasChild : function ( name ){
             return this.find(name).length > 0 && name && typeof name === 'string';
         },
         nextNode : function (){
-            return this[0].nextElementSibling?zui(this[0].nextElementSibling):undefined;
+            return (this.length > 0 && this[0].nextElementSibling)?js2uix(this[0].nextElementSibling):this;
         },
         prevNode : function (){
-            return this[0].previousElementSibling?zui(this[0].previousElementSibling):undefined;
+            return (this.length > 0 && this[0].previousElementSibling)?js2uix(this[0].previousElementSibling):this;
         },
         firstNode : function (){
-            return (this.length < 2)?this:zui(this[0]);
+            return (this.length < 2)?this:js2uix(this[0]);
         },
         lastINode : function (){
-            return (this.length < 2)?this:zui(this[this.length-1]);
+            return (this.length < 2)?this:js2uix(this[this.length-1]);
         },
         siblingNodes : function(){
             if( this.length > 0 ){
@@ -604,7 +617,7 @@
                     }
                 }
                 try {
-                    return zui(findSiblingNode);
+                    return js2uix(findSiblingNode);
                 } finally {
                     allSiblings = null;
                     findSiblingNode = null;
@@ -692,18 +705,18 @@
                 if ( typeof item === 'string' ){
                     var stringType = js2uixCheckValidation(item);
                     if( stringType.idClass || stringType.spType || stringType.tagType ){
-                        result = zui(item);
+                        result = js2uix(item);
                     } else {
-                        result = zui(DOC.createTextNode(item));
+                        result = js2uix(DOC.createTextNode(item));
                     }
                 } else {
                     if ( item.name && item.name === ModuleName ){
                         result = item;
                     } else if ( item.nodeName ){
-                        result = zui[item];
+                        result = js2uix[item];
                     }
                 }
-                zui(target).after(result);
+                js2uix(target).after(result);
                 parent.removeChild(target);
             }
             return result;
@@ -720,6 +733,7 @@
             }
         }
     });
+
     /** --------------------------------------------------------------- */
     /** js2uix-control-style method */
     var js2uixDomStyleParse = function (name, value){
@@ -756,7 +770,7 @@
             return item.css(name);
         }
     };
-    zui.fx.extend({
+    js2uix.fx.extend({
         css : function (){
             var arg = arguments;
             var length = arg.length;
@@ -814,7 +828,7 @@
             return (!this[0].getClientRects().length)?undefined:result;
         },
         fadeIn : function(speed, fnc){
-            zui.loop(this, function(){
+            js2uix.loop(this, function(){
                 var elm = this;
                 elm.style.display = "block";
                 elm.style.opacity = 0;
@@ -838,7 +852,7 @@
             return this;
         },
         fadeOut : function(speed, fnc){
-            zui.loop(this, function(){
+            js2uix.loop(this, function(){
                 var elm = this;
                 var last = +new Date();
                 elm.style.opacity = 1;
@@ -862,12 +876,13 @@
             return this;
         }
     });
+
     /** --------------------------------------------------------------- */
     /** js2uix-control-event method */
     var js2uixFxAddEventHandler = function (item, param){
         var eventNameArray = param[0].split('.');
         var eventKeyName = eventNameArray[1];
-        zui.loop(item, function(){
+        js2uix.loop(item, function(){
             var eventName = eventNameArray[0];
             if ( !this[ModuleName]['events'][eventName] ) {
                 this[ModuleName]['events'][eventName] = [];
@@ -882,7 +897,7 @@
     };
     var js2uixFxRemoveEventHandler = function (item, param){
         /** document node event remove */
-        zui.loop(item, function(){
+        js2uix.loop(item, function(){
             var key;
             var i;
             var eventData = this[ModuleName]['events'];
@@ -901,8 +916,9 @@
                 var eventNameArray = param[0].split('.');
                 var eventName = eventNameArray[0];
                 var eventKeyName = eventNameArray[1] || null;
+
                 if ( length === 1 && typeof first === 'string' ){
-                    if( eventName === 'all' ){
+                    if( eventName === 'all' || eventKeyName === 'js2uix_only' ){
                         for( var eventKey in eventData ){
                             for( i = 0; i < eventData[eventKey].length; i++ ){
                                 crtEvent = eventData[eventKey][i];
@@ -911,27 +927,31 @@
                             }
                         }
                     } else {
-                        for( i = 0; i < eventData[eventName].length; i++ ){
-                            crtEvent = eventData[eventName][i];
-                            if( crtEvent.eventKey === eventKeyName ){
-                                this.removeEventListener(eventName, eventData[eventName][i]['handler']);
-                                eventData[eventName][i]['removed'] = true;
+                        if( eventData[eventName] ){
+                            for( i = 0; i < eventData[eventName].length; i++ ){
+                                crtEvent = eventData[eventName][i];
+                                if( crtEvent.eventKey === eventKeyName ){
+                                    this.removeEventListener(eventName, eventData[eventName][i]['handler']);
+                                    eventData[eventName][i]['removed'] = true;
+                                }
                             }
                         }
                     }
                 } else if ( length === 2 && typeof first === 'string' && (typeof last === 'function' || typeof last === 'object') ){
-                    for( i = 0; i < eventData[eventName].length; i++ ){
-                        crtEvent = eventData[eventName][i];
-                        if( crtEvent.eventKey === eventKeyName && last === eventData[eventName][i]['handler'] ){
-                            this.removeEventListener(eventName, eventData[eventName][i]['handler']);
-                            eventData[eventName][i]['removed'] = true;
+                    if( eventData[eventName] ){
+                        for( i = 0; i < eventData[eventName].length; i++ ){
+                            crtEvent = eventData[eventName][i];
+                            if( crtEvent.eventKey === eventKeyName && last === eventData[eventName][i]['handler'] ){
+                                this.removeEventListener(eventName, eventData[eventName][i]['handler']);
+                                eventData[eventName][i]['removed'] = true;
+                            }
                         }
                     }
                 }
             }
         });
         /** module node event remove */
-        zui.loop(item, function(){
+        js2uix.loop(item, function(){
             var key;
             var i;
             var eventData = this[ModuleName]['events'];
@@ -944,7 +964,7 @@
             }
         });
     };
-    zui.fx.extend({
+    js2uix.fx.extend({
         addEvent : function (){
             var arg = arguments;
             var length = arg.length;
@@ -980,6 +1000,7 @@
             }
         }
     });
+
     /** --------------------------------------------------------------- */
     /** js2uix-ajax method
      * TODO : xhr 을 이용한 ajax 통신 구현
@@ -1029,7 +1050,7 @@
                 dataType : 'json',
                 contentType: "application/x-www-form-urlencoded; charset=UTF-8"
             };
-            opts_obj = zui.extend(opts_obj, option);
+            opts_obj = js2uix.extend(opts_obj, option);
             opts_obj.dataType = this._setDataType( option ) || opts_obj.dataType;
             if( form ){
                 opts_obj.type = 'POST';
@@ -1046,7 +1067,7 @@
         _getQueryString : function(data){
             var result =[];
             if( typeof data === 'object' ){
-                zui.loop(data, function(key, value){
+                js2uix.loop(data, function(key, value){
                     result.push(key+"="+value)
                 });
             }
@@ -1144,14 +1165,14 @@
                 var appendNum = 0;
                 form.attr("enctype", "multipart/form-data");
                 dataQuery = new FormData();
-                zui.loop(inputFile, function(){
+                js2uix.loop(inputFile, function(){
                     var files = this.files;
-                    zui.loop(files, function(key, value) {
+                    js2uix.loop(files, function(key, value) {
                         dataQuery.append(key, value);
                         appendNum++;
                     });
                 });
-                zui.loop(etcForms, function(){
+                js2uix.loop(etcForms, function(){
                     dataQuery.append(this.name, this.value);
                     appendNum++;
                 });
@@ -1190,6 +1211,7 @@
         }
     };
     js2uixAjax.prototype.constructor = js2uixAjax;
+
     /** --------------------------------------------------------------- */
     /** js2uix-component method */
     var js2uixRouter = function(){
@@ -1268,7 +1290,7 @@
     js2uixComponent.prototype = {
         setState : function (state, value){
             if (state && typeof state === 'object' && !Array.isArray(state)){
-                zui.loop(state, function(name, value){
+                js2uix.loop(state, function(name, value){
                     this.state[name] = value;
                 }.bind(this));
             } else if (state && value && typeof state === 'string'){
@@ -1285,7 +1307,7 @@
         },
         setProps : function (props){
             if (props && typeof props === 'object' && !Array.isArray(props)){
-                zui.loop(props, function(name, value){
+                js2uix.loop(props, function(name, value){
                     this.props[name] = value;
                 }.bind(this));
             }
@@ -1299,7 +1321,7 @@
         },
         setRender : function (){
             if (this.render && typeof this.render === 'function' ){
-                var renderDom = zui(this.render());
+                var renderDom = js2uix(this.render());
                 this.setForceUpdate(renderDom);
                 if (renderDom && this.domState.virtual){
                     return {
@@ -1311,7 +1333,7 @@
             }
         },
         setRenderState : function (param){
-            zui.loop(param, function(name, value){
+            js2uix.loop(param, function(name, value){
                 this.domState[name] = value;
             }.bind(this));
         },
@@ -1335,7 +1357,7 @@
                         };
                         var insertRemoveNode = function (parent, maxChild, minChild, addNodeType){
                             var findWillRemoveNode = [];
-                            zui.loop(maxChild, function(num){
+                            js2uix.loop(maxChild, function(num){
                                 var copy;
                                 var targetNode = minChild[num];
                                 if (!targetNode){
@@ -1363,7 +1385,7 @@
                                 }
                             });
                             if (findWillRemoveNode.length > 0){
-                                zui.loop(findWillRemoveNode, function(){
+                                js2uix.loop(findWillRemoveNode, function(){
                                     removeNode(this.parentNode, this);
                                 });
                             }
@@ -1419,8 +1441,9 @@
             }
         }
     };
+
     /** --------------------------------------------------------------- */
-    zui.extend({
+    js2uix.extend({
         Ajax : function(opt){
             return new js2uixAjax(null, opt);
         },
@@ -1434,7 +1457,7 @@
                     object = link;
                     downloadFnc(object[start].link, object[start].name, object[start].type, timer);
                 } else {
-                    zui.loop(link, function(num, value){
+                    js2uix.loop(link, function(num, value){
                         if( value && value.link && value.name && value.type ){
                             downloadFnc(value.link, value.name, value.type, false);
                         }
@@ -1476,20 +1499,20 @@
             return new component(obj);
         },
         Export : function(name, data){
-            zui.uiComponent.setModule(name, data);
+            js2uix.uiComponent.setModule(name, data);
         },
         Import : function(name){
-            return zui.uiComponent.getModule(name);
+            return js2uix.uiComponent.getModule(name);
         },
         Render : function(){
             var arg = arguments;
             if( arg && arg.length > 1){
-                var parent = zui(arg[arg.length-1])[0];
+                var parent = js2uix(arg[arg.length-1])[0];
                 for(var i=0; i<arg.length-1; i++){
                     var object = arg[i];
                     var dom = object.$$Dom;
                     if( dom && parent){
-                        zui(parent).append(dom);
+                        js2uix(parent).append(dom);
                         object.setRenderState({
                             parent : parent,
                             render : dom,
@@ -1503,15 +1526,19 @@
             return new js2uixRouter();
         }
     });
-    zui.fx.extend({
+    js2uix.fx.extend({
         AjaxFrom : function(opt){
             return new js2uixAjax(this, opt);
         }
     });
+
     /** --------------------------------------------------------------- */
-    /** js2uix-d3-control method
-     * TODO : D3.js를 이용한 그래프 모듈 제작 중.
-     * */
+    /** js2uix-ui-module method
+     *  TODO : D3.js를 이용한 그래프 모듈 제작 중.
+     *  */
+    /** --------------------------------------------------------------- */
+    var ROOT = js2uix('html');
+    /** js2uix-chart */
     var js2uixD3Style = function(target, props){
         target.append('<style class="js2uixD3">\n' +
             props.svgId+' .js2uix_g .grid_x,\n' +
@@ -1522,7 +1549,7 @@
             props.svgId+' .js2uix_g .grid_y .tick line{stroke-dasharray:'+props.dashArray+'}\n' +
             '</style>');
     };
-    var js2uixD3Module = function(element, props){
+    var js2uixToolChart = function(element, props){
         this.d3 = {};
         this.nodes = {};
         this.target = element;
@@ -1578,7 +1605,7 @@
             setData : this.setData.bind(this)
         }
     };
-    js2uixD3Module.prototype = {
+    js2uixToolChart.prototype = {
         uiChartClass : D3ClassName,
         /** Create js2uix D3 Chart Info */
         renderChartDefaultSetting : function(elm){
@@ -1769,7 +1796,7 @@
                 }
                 if( !Array.isArray(param) ){
                     parseData = [];
-                    zui.loop(param, function(key, val){
+                    js2uix.loop(param, function(key, val){
                         var self = this;
                         parseData.push(val.map( function( dt ) {
                             return {
@@ -1779,7 +1806,7 @@
                         }));
                     }.bind(this));
                 }
-                zui.loop(param, function(key, value){
+                js2uix.loop(param, function(key, value){
                     var self = this;
                     var max = window.d3.max(value, function(dt){
                         return (dt[self.axis.axisY]);
@@ -1896,7 +1923,7 @@
                 if( this.props.lineCurve ){this.state.d3_line.curve(window.d3.curveBasis);}
                 if( !Array.isArray(param) ){
                     parseData = [];
-                    zui.loop(param, function(key, val){
+                    js2uix.loop(param, function(key, val){
                         var self = this;
                         parseData.push(val.map( function( dt ) {
                             return {
@@ -1906,7 +1933,7 @@
                         }));
                     }.bind(this));
                 }
-                zui.loop(param, function(key, value){
+                js2uix.loop(param, function(key, value){
                     var self = this;
                     var max = window.d3.max(value, function(dt){
                         return (dt[self.axis.axisY]);
@@ -2027,7 +2054,7 @@
                 return rt_data;
             }.bind(this);
             try {
-                zui.loop(param, function(key, value){
+                js2uix.loop(param, function(key, value){
                     var self = this;
                     var max = window.d3.max(value, function(dt){return (dt[self.axis.axisY]);});
                     if( maxAxisY < max ){maxAxisY = max;}
@@ -2320,7 +2347,7 @@
         },
         init : function(props){
             if(typeof props === 'object' ){
-                zui.extend(this.props, props);
+                js2uix.extend(this.props, props);
                 this.render(this.target);
             }
         },
@@ -2332,9 +2359,20 @@
             }
         }
     };
-    js2uixD3Module.prototype.constructor = js2uixD3Module;
-    /** --------------------------------------------------------------- */
-    /** js2uix-ui-module method */
+    js2uixToolChart.prototype.constructor = js2uixToolChart;
+
+    /** js2uix-grid */
+    var js2xixElementResult = function(target){
+        if( target ){
+            if( typeof target === 'string' ){
+                return js2uix(js2uix(target)[0]);
+            } else if ( target.name && target.name === ModuleName ){
+                return target;
+            } else if ( target.nodeName ){
+                return js2uix(target);
+            }
+        }
+    };
     var js2uixToolGrid = function(element){
         this.element = element;
         this.idName ='';
@@ -2383,12 +2421,13 @@
         };
         this.gridData = null;
         return {
+            name : this.js2uixName,
             init : this.init.bind(this),
             setData : this.setData.bind(this)
         }
     };
     js2uixToolGrid.prototype = {
-        js2uixGridName : "js2uix-grid",
+        js2uixName : "js2uix-grid",
         setLoadEffectStyle : function(bool){
             if( bool ){
                 this.state.isControl = false;
@@ -2402,7 +2441,7 @@
         },
         setDefaultRender : function(){
             if( this.element.length === 1 ){
-                this.element.addClass(this.js2uixGridName);
+                this.element.addClass(this.js2uixName);
                 if( this.props.disableSelection ){
                     this.element.addClass('disableSelection');
                 }
@@ -2430,7 +2469,7 @@
         setCreateCssStyle : function(){
             if( this.props.appendLayoutStyle ){
                 if( this.props.fieldWidth && Array.isArray(this.props.fieldWidth) ){
-                    var oldStyle = zui('style[data-target='+this.idName+']');
+                    var oldStyle = js2uix('style[data-target='+this.idName+']');
                     var widthStyle = '<style data-target="'+this.idName+'">\n';
                     for(var i=0; i<this.props.fieldWidth.length; i++){
                         var idx = i+1;
@@ -2458,7 +2497,7 @@
                     if( type === 'body' ){ target = this.state.contentBody; }
                     target = target.find('ul');
                     if( !this.state.girdCalcUlWidth ){ this.state.girdCalcUlWidth = target.width(); }
-                    zui.loop(target, function(){
+                    js2uix.loop(target, function(){
                         var thisItems = this.children;
                         for( var i=0; i<thisItems.length; i++){
                             var fieldWidth = module.props.fieldWidth[i];
@@ -2533,12 +2572,12 @@
         /** create element */
         setGridHeadElement : function(){
             if( this.props.fieldTitle && this.props.fieldName ){
-                var headContentUl = zui.createDom('ul', {className : 'js2uix-grid-head-wrap js2uix-head-row'}, true);
+                var headContentUl = js2uix.createDom('ul', {className : 'js2uix-grid-head-wrap js2uix-head-row'}, true);
                 for(var i=0; i<this.props.fieldTitle.length; i++){
                     headContentUl.append('<li class="field" data-order="NORMAL" data-name="'+this.props.fieldName[i]+'">'+this.props.fieldTitle[i]+'</li>');
                 }
                 if( this.props.optionCheckBox ){
-                    this.state.optionCheckbox = zui.createDom('li', {
+                    this.state.optionCheckbox = js2uix.createDom('li', {
                         content : '<input type="checkbox" name="optionCheckBox" />'
                     }, true);
                     this.state.optionCheckbox.addAttr('data-option', 'checkbox');
@@ -2547,7 +2586,7 @@
                 if( this.props.optionNumbering ){
                     headContentUl.prepend('<li data-option="numbering">&nbsp;</li>');
                 }
-                this.state.contentHead = zui.createDom('div', {
+                this.state.contentHead = js2uix.createDom('div', {
                     className : 'js2uix-grid-head',
                     content : headContentUl
                 }, true);
@@ -2556,12 +2595,12 @@
             }
         },
         setGridBodyElement : function(){
-            this.state.contentBodyList = zui.createDom('div', {
+            this.state.contentBodyList = js2uix.createDom('div', {
                 className : 'js2uix-grid-body-list'
             }, true);
-            this.state.contentBody = zui.createDom('div', {
+            this.state.contentBody = js2uix.createDom('div', {
                 className : 'js2uix-grid-body',
-                content : zui.createDom('div', {
+                content : js2uix.createDom('div', {
                     className : 'js2uix-grid-body-wrap',
                     content : this.state.contentBodyList
                 })
@@ -2569,12 +2608,12 @@
             this.setAppendElement(this.state.contentBody);
         },
         setGridFootElement : function(){
-            this.state.contentFoot = zui.createDom('div', {className : 'js2uix-grid-foot'}, true);
-            var totalList = zui.createDom('div', {
+            this.state.contentFoot = js2uix.createDom('div', {className : 'js2uix-grid-foot'}, true);
+            var totalList = js2uix.createDom('div', {
                 className : 'js2uix-grid-list',
                 content : '<select class="list"></select>'
             }, true);
-            var totalNode = zui.createDom('div', {
+            var totalNode = js2uix.createDom('div', {
                 className : 'js2uix-grid-total',
                 content : '<ul>' +
                 '<li>Displaying&nbsp;</li>' +
@@ -2584,7 +2623,7 @@
                 '<li>&nbsp;items</li>' +
                 '</ul>'
             });
-            var totalPage = zui.createDom('div', {
+            var totalPage = js2uix.createDom('div', {
                 className : 'js2uix-grid-page',
                 content : '<ul>' +
                 '<li class="first"></li>' +
@@ -2623,7 +2662,7 @@
             this.setGridFootControl(this.state.contentFoot);
         },
         setGridLoadElement : function(){
-            this.state.loadBox = zui.createDom('div', {
+            this.state.loadBox = js2uix.createDom('div', {
                 className : 'js2uix-grid-load',
                 content : '<div class="innerBox">processing.. please wait!</div>'
             }, true);
@@ -2670,7 +2709,7 @@
             var module = this;
             target.find('li.field').addEvent('click.js2uix-grid', function(){
                 if( module.state.isControl ){
-                    var item = zui(this);
+                    var item = js2uix(this);
                     var dataOrder = item.getAttr('data-order');
                     var dataName = item.getAttr('data-name');
                     if( dataOrder === 'NORMAL' ){
@@ -2690,7 +2729,7 @@
             target.find('li[data-option="checkbox"] input[type=checkbox]').addEvent('change.js2uix-grid', function(){
                 if( module.state.isControl ){
                     var bodyItem = module.state.contentBodyList.find('input[name=optionCheckBox]');
-                    zui.loop(bodyItem, function(num, elm){elm.checked = this.checked;}.bind(this));
+                    js2uix.loop(bodyItem, function(num, elm){elm.checked = this.checked;}.bind(this));
                 }
             });
         },
@@ -2794,7 +2833,7 @@
         onCustomizedField : function(){
             if( this.props.onCustomizedField && typeof this.props.onCustomizedField === 'function' ){
                 var module = this;
-                this.state.contentBodyList.find('ul').loop(function(num){ module.props.onCustomizedField(zui(this), module.gridData[num]); });
+                this.state.contentBodyList.find('ul').loop(function(num){ module.props.onCustomizedField(js2uix(this), module.gridData[num]); });
                 module.gridData = null;
             }
         },
@@ -2805,7 +2844,6 @@
         },
         setData : function(param){
             if( param && typeof param === 'object' ){
-                this.setLoadEffectStyle(true);
                 this.setGridRenderState(param);
                 this.setGridFootState(param);
                 this.setGridBodyItemElement(param);
@@ -2815,7 +2853,7 @@
         },
         init : function(props){
             if( props && typeof props === 'object' ){
-                zui.extend(this.props, props);
+                js2uix.extend(this.props, props);
                 if( this.setDefaultRender() ){
                     this.setGridCreateElement();
                     this.setGridDefaultState();
@@ -2826,44 +2864,1011 @@
         }
     };
     js2uixToolGrid.prototype.constructor = js2uixToolGrid;
-    zui.extend({
-        D3Control : function(target, config){
-            if( !window.d3 ){
-                alert('please check! d3.js api');
-                return;
-            }
-            if( target && typeof target === 'string' ){
-                target = zui(target);
-                if( target.length > 0 ){
-                    target = ( target.length > 1 )?zui(target[0]):target;
-                    if( target.name !== ModuleName ){ return; }
-                    return new js2uixD3Module(target, config);
-                }
+
+    /** js2uix-combo */
+    var js2uixToolCombo = function(element, props){
+        this.element = element;
+        this.props = {
+            comboFixWidth : null,
+            defaultTitle : null,
+            searchCombo : false,
+            inputPlaceholder : '',
+            onChangeEvent : null,
+            onSearchEvent : null
+        };
+        this.state = {
+            comboBoxNode : null,
+            optionNode : null,
+            searchOptionNode : null,
+            selectedNode : null,
+            titleNode : null,
+            defaultTitleNode : null,
+            arrowNode : null,
+            width : 0,
+            height : 0,
+            value : null,
+            change : false
+        };
+        this.init(props);
+        return {
+            name : this.js2uixName,
+            getValue : this.getValue.bind(this),
+            setValue : this.setValue.bind(this),
+            setOption : this.setOption.bind(this)
+        }
+    };
+    js2uixToolCombo.prototype = {
+        js2uixName : "js2uix-combo",
+        setComboBoxElementLayout : function(){
+            var width = this.state.width = this.props.comboFixWidth || this.element.width();
+            var height = this.state.height = this.state.comboBoxNode.height();
+            var designWidth = ( this.props.comboFixWidth === 'parent' || typeof this.props.comboFixWidth !== 'number' )?'100%':width+height;
+            this.element.css({'width' : designWidth, 'height' : height});
+            this.state.comboBoxNode.css({'width' : designWidth, 'height' : height});
+            this.state.titleNode.css('padding-right', 25);
+            this.state.arrowNode.css({'width' : 25, 'height' : height});
+            if( this.props.searchCombo ){
+                this.state.comboBoxNode.addClass('js2uix-search');
+                this.state.titleNode.css({'width' : designWidth, 'height' : height});
+                this.state.searchOptionNode.css({'width' : designWidth, 'top' : height-1});
+                this.element[0].style.display = 'none';
             }
         },
-        Grid : function(target){
-            if( target ){
-                var element;
-                if( typeof target === 'string' ){
-                    element = zui(zui(target)[0]);
-                } else if ( target.name && target.name === ModuleName ){
-                    element = target;
-                } else if ( target.nodeName ){
-                    element = zui(target);
+        createComboBoxDefaultOption : function(){
+            var options = this.element.find('option');
+            if( this.props.defaultTitle || options.length === 0 ){
+                this.state.defaultTitleNode = js2uix.createDom('option', { 'content' : this.props.defaultTitle || 'No data'});
+                this.state.defaultTitleNode.value = 'none';
+                this.state.defaultTitleNode.disabled = true;
+                this.state.defaultTitleNode.setAttribute('selected', true);
+                this.element.prepend(this.state.defaultTitleNode);
+            }
+            try {
+                return this.element.find('option');
+            } finally {
+                options = null;
+            }
+        },
+        createComboBoxOptionNode : function(){
+            var optionNode = this.state.optionNode;
+            if( this.props.searchCombo ){
+                var ulNode = js2uix.createDom('ul',{'className':'js2uix-option-wrap'}, true);
+                if( optionNode.length > 0 ){
+                    for(var i=0; i<optionNode.length; i++){
+                        var crt = optionNode[i];
+                        var title = crt.innerText;
+                        var attr = '';
+                        for(var j=0; j<crt.attributes.length; j++){
+                            var data = crt.attributes[j];
+                            var dataName = data.name;
+                            var dataValue = data.value || '';
+                            if( dataName === 'disabled' ){ dataValue = 'true'; }
+                            if( dataName.indexOf('data-') !== -1 ){
+                                attr += ' '+dataName+'="'+dataValue+'"';
+                            } else {
+                                attr += ' data-'+dataName+'="'+dataValue+'"';
+                            }
+                        }
+                        ulNode.append('<li'+attr+'>'+title+'</li>');
+                    }
+                } else {
+                    ulNode.append('<li>No data</li>');
                 }
-                if( element && element.length > 0 ){
-                    return new js2uixToolGrid(element);
+                this.setComboBoxSearchControl(true);
+                this.state.searchOptionNode.html(ulNode);
+            }
+        },
+        createComboBoxLayout : function(){
+            this.state.comboBoxNode = js2uix.createDom('div', {'className' : this.js2uixName}, true);
+            this.state.arrowNode = js2uix.createDom('span', {'className' : 'arrow'}, true);
+            this.state.optionNode = this.createComboBoxDefaultOption();
+            if( !this.props.searchCombo ){
+                this.state.titleNode = js2uix.createDom('label', {'className' : 'title'}, true);
+                this.state.comboBoxNode.append(this.state.titleNode, this.state.arrowNode);
+            } else {
+                this.state.searchOptionNode = js2uix.createDom('div', {'className' : 'js2uix-option'}, true);
+                this.createComboBoxOptionNode();
+                this.state.titleNode = js2uix.createDom('input', {'className' : 'search'}, true);
+                this.state.comboBoxNode.append(this.state.titleNode, this.state.arrowNode, this.state.searchOptionNode);
+            }
+            this.element.before(this.state.comboBoxNode);
+            this.state.comboBoxNode.append(this.element);
+        },
+        setComboBoxOptionState : function(change){
+            var value = this.element[0].value;
+            var title = '';
+            if( this.state.optionNode.length > 0){
+                for(var i=0; i<this.state.optionNode.length; i++ ){
+                    if( this.state.optionNode[i].selected === true ){
+                        this.selectedNode = this.state.optionNode[i];
+                        title = this.state.optionNode[i].innerText;
+                    }
                 }
             }
+            if( this.state.defaultTitleNode && !this.state.change && change){
+                this.state.defaultTitleNode.removeAttribute('selected');
+                this.state.change = true;
+            }
+            if( !this.props.searchCombo ){
+                this.state.titleNode[0].innerText = title;
+            } else {
+                this.state.titleNode[0].placeholder = this.props.inputPlaceholder;
+                if( change ){ this.state.titleNode[0].value = title; }
+            }
+            this.state.value = value || '';
+        },
+        setScrollActiveItem : function(comboSelect, activeItem){
+            var comboSelectRect = comboSelect[0].getBoundingClientRect(),
+                itemRect = activeItem[0].getBoundingClientRect(),
+                itemIndex = activeItem.index()+1,
+                comboBoxHeight = comboSelectRect.height,
+                itemHeight = itemRect.height,
+                scroll = comboSelect[0].scrollTop || 0;
+            if( itemIndex*itemHeight < scroll+itemHeight ){
+                comboSelect[0].scrollTop = scroll+((itemIndex*itemHeight)-(scroll+itemHeight));
+            }
+            if( itemIndex*itemHeight > comboBoxHeight+scroll ){
+                comboSelect[0].scrollTop = scroll+((itemIndex*itemHeight)-(comboBoxHeight+scroll));
+            }
+        },
+        /** bind control event */
+        setComboBoxDefaultControl : function(){
+            var module = this;
+            if( this.props.searchCombo ){
+                /** input keyup event */
+                this.state.titleNode.addEvent('keyup.'+this.js2uixName, function(e){
+                    if( (e.keyCode < 37 || e.keyCode > 40) && e.keyCode !== 13 ){
+                        module.onSearchCallBack(this, this.value);
+                    }
+                });
+                /** input keydown event */
+                this.state.titleNode.addEvent('keydown.'+this.js2uixName, function(e){
+                    var thisKeyCode = e.keyCode;
+                    if( thisKeyCode === 38 || thisKeyCode === 40 || thisKeyCode === 13){
+                        var checkItem = module.state.searchOptionNode.find("li");
+                        var checkActiveItem = module.state.searchOptionNode.find("li.on");
+                        var prevItem = checkActiveItem.prevNode();
+                        var nextItem = checkActiveItem.nextNode();
+                        var activeItem;
+                        if( checkActiveItem.length === 0 ){
+                            if( thisKeyCode === 40 ){
+                                activeItem = js2uix(checkItem[0]);
+                                activeItem.addClass("on");
+                            }
+                        } else {
+                            if( thisKeyCode === 13 ){
+                                var itemValue = checkActiveItem[0].getAttribute('data-value') || '';
+                                if( module.state.value !== itemValue ){
+                                    module.setValue(itemValue);
+                                    module.state.searchOptionNode[0].style.display = 'none';
+                                    module.onChangeCallBack();
+                                }
+                            } else {
+                                if( thisKeyCode === 38 ){
+                                    if( prevItem.length === 1 ){
+                                        activeItem = prevItem;
+                                    }
+                                }
+                                if( thisKeyCode === 40 ){
+                                    if( nextItem.length === 1 ){
+                                        activeItem = nextItem;
+                                    }
+                                }
+                                if( activeItem ){
+                                    activeItem.addClass("on").siblingNodes().removeClass("on");
+                                    module.setScrollActiveItem(module.state.searchOptionNode, activeItem);
+                                }
+                            }
+                        }
+                    }
+                });
+                /** input mousedown event */
+                this.state.titleNode.addEvent('mousedown.'+this.js2uixName, function(e){
+                    module.state.searchOptionNode[0].style.display = 'block';
+                    e.stopPropagation();
+                });
+                /** input mousedown event */
+                this.state.arrowNode.addEvent('mousedown.'+this.js2uixName, function(e){
+                    module.state.searchOptionNode[0].style.display = (module.state.searchOptionNode[0].style.display !== 'block')?'block':'none';
+                    e.stopPropagation();
+                });
+                /** new search list box mousedown event */
+                this.state.searchOptionNode.addEvent('mousedown.'+this.js2uixName, function(e){
+                    e.stopPropagation();
+                });
+                /** body mousedown event */
+                js2uix('body').addEvent('mousedown.'+this.js2uixName, function(){
+                    module.state.searchOptionNode[0].style.display = 'none';
+                });
+            } else {
+                this.element.addEvent('change.'+this.js2uixName, function(){
+                    module.setComboBoxOptionState(true);
+                    module.onChangeCallBack();
+                });
+            }
+        },
+        setComboBoxSearchControl : function(remove){
+            /** new search list box mousedown event */
+            var findItems = this.state.searchOptionNode.find('li');
+            if( remove ){
+                findItems.removeEvent('all');
+            } else {
+                var module = this;
+                findItems.addEvent('mouseup.'+this.js2uixName, function(e){
+                    if( this && !this.hasAttribute('data-disabled') ){
+                        if( module.element[0].value !== this.getAttribute('data-value') ){
+                            module.element[0].value = this.getAttribute('data-value') || '';
+                            module.setComboBoxOptionState(true);
+                            module.onChangeCallBack();
+                        }
+                    }
+                    js2uix(this).addClass('on').siblingNodes().removeClass('on');
+                    module.state.searchOptionNode[0].style.display = 'none';
+                    e.stopPropagation();
+                });
+            }
+        },
+        /** default event */
+        setOption : function(param){
+            if( param && Array.isArray(param) ){
+                var i;
+                var name;
+                var option = '';
+                for(i=0; i<param.length; i++){
+                    var disabled = '';
+                    var dataAttr = '';
+                    var dataAttrObj = param[i]['dataAttr'];
+                    for(name in dataAttrObj ){ dataAttr += ' data-'+name+'="'+dataAttrObj[name]+'"'; }
+                    if( (param[i]['disabled']) === true || (param[i]['disabled']) === 'true' ){ disabled = 'disabled'; }
+                    option += '<option value="'+param[i]["value"]+'"'+dataAttr+' '+disabled+'>'+param[i]["title"]+'</option>'
+                }
+                this.element.removeAttr('style').html(option);
+                this.state.optionNode = this.createComboBoxDefaultOption();
+                this.createComboBoxOptionNode();
+                this.setComboBoxElementLayout();
+                this.setComboBoxOptionState();
+                this.setComboBoxSearchControl(false);
+            }
+        },
+        setValue : function(value){
+            this.element[0].value = this.state.value = value;
+            this.setComboBoxOptionState(true);
+        },
+        getValue : function(){
+            return this.state.value;
+        },
+        onChangeCallBack : function(){
+            if(this.props.onChangeEvent && typeof this.props.onChangeEvent === 'function' ){
+                var callBackData = {};
+                for(var i=0; i<this.selectedNode.attributes.length; i++){
+                    var data = this.selectedNode.attributes[i];
+                    callBackData[data.name.replace('data-','')] = data.value;
+                }
+                callBackData['title'] = this.selectedNode.innerText;
+                this.props.onChangeEvent(callBackData);
+            }
+        },
+        onSearchCallBack : function(input, value){
+            if(this.props.onSearchEvent && typeof this.props.onSearchEvent === 'function' ){
+                this.props.onSearchEvent(input, value);
+            }
+        },
+        init : function(props){
+            if(typeof props === 'object' ){ js2uix.extend(this.props, props); }
+            this.createComboBoxLayout();
+            this.setComboBoxElementLayout();
+            this.setComboBoxOptionState();
+            this.setComboBoxDefaultControl();
+        }
+    };
+    js2uixToolCombo.prototype.constructor = js2uixToolCombo;
+
+    /** js2uix-drag */
+    var js2uixUICommon = {
+        setLimitPosition : function(parent, target){
+            var opt = this.state;
+            if( target ){
+                var targetBorderLW = parseInt(target.css("border-left-width")) || 0;
+                var targetBorderRW = parseInt(target.css("border-right-width")) || 0;
+                var targetBorderTW = parseInt(target.css("border-top-width")) || 0;
+                var targetBorderBW = parseInt(target.css("border-bottom-width")) || 0;
+                opt.targetRect = target[0].getBoundingClientRect();
+                opt.targetRect.borderLeft = targetBorderLW;
+                opt.targetRect.borderRight = targetBorderRW;
+                opt.targetRect.borderTop = targetBorderTW;
+                opt.targetRect.borderBottom = targetBorderBW;
+            }
+            if( parent ){
+                var parentBorderLW = parseInt(parent.css("border-left-width")) || 0;
+                var parentBorderRW = parseInt(parent.css("border-right-width")) || 0;
+                var parentBorderTW = parseInt(parent.css("border-top-width")) || 0;
+                var parentBorderBW = parseInt(parent.css("border-bottom-width")) || 0;
+                var paddingLeft = parseInt(parent.css("padding-left")) || 0;
+                var paddingRight = parseInt(parent.css("padding-right")) || 0;
+                var paddingTop = parseInt(parent.css("padding-top")) || 0;
+                var paddingBot = parseInt(parent.css("padding-bottom")) || 0;
+                opt.parent = parent[0];
+                opt.parentRect = parent[0].getBoundingClientRect();
+                opt.parentRect.borderLeft = parentBorderLW;
+                opt.parentRect.borderRight = parentBorderRW;
+                opt.parentRect.borderTop = parentBorderTW;
+                opt.parentRect.borderBottom = parentBorderBW;
+                opt.parentRect.paddingLeft = paddingLeft;
+                opt.parentRect.paddingRight = paddingRight;
+                opt.parentRect.paddingTop = paddingTop;
+                opt.parentRect.paddingBottom = paddingBot;
+                opt.limitX = opt.parentRect.left - opt.targetRect.left + opt.parentRect.borderLeft + opt.parentRect.paddingLeft;
+                opt.limitY = opt.parentRect.top - opt.targetRect.top + opt.parentRect.borderBottom + opt.parentRect.paddingTop;
+                opt.maxX = opt.parentRect.right - opt.targetRect.right - opt.parentRect.borderRight - opt.parentRect.paddingRight;
+                opt.maxY = opt.parentRect.bottom - opt.targetRect.bottom - opt.parentRect.borderBottom - opt.parentRect.paddingBottom;
+            }else{
+                opt.limitX = -99999;
+                opt.limitY = -99999;
+                opt.maxX = 99999;
+                opt.maxY = 99999;
+            }
+        },
+        setLimitedAreaForUserCommand : function( parent, target, nodeX, nodeY ){
+            this.state.targetX = parseInt(nodeX) || 0;
+            this.state.targetY = parseInt(nodeY) || 0;
+            this.setLimitPosition(parent, target);
+        },
+        getClickMousePositionXY : function(event){
+            event = (!event)?window.event:event;
+            return {
+                pageX : event.pageX,
+                pageY : event.pageY
+            }
+        }
+    };
+    var js2uixToolDrag = function( target, props ){
+        this.element = target;
+        this.props = {
+            addClass    : null,
+            handle      : null,
+            cancel      : null,
+            cursor      : null,
+            containment : null,
+            dropTarget  : null,
+            create      : null,
+            start       : null,
+            drag        : null,
+            stop        : null,
+            drop        : null,
+            userSelect  : false,
+            smoothDrag  : false,
+            zIndex      : 9
+        };
+        this.state = {
+            targetX    : 0,
+            targetY    : 0,
+            targetRect : null,
+            parent     : null,
+            parentRect : null,
+            limitX     : 0,
+            maxX       : 0,
+            limitY     : 0,
+            maxY       : 0,
+            isDown     : false,
+            mouseX     : 0,
+            mouseY     : 0,
+            isDrag     : false,
+            isMove     : false,
+            isCancel   : false,
+            isHandle   : false,
+            enable     : true,
+            disable    : false,
+            destroy    : false,
+            dataId     : null
+        };
+        this.init(props);
+        return {
+            name : this.js2uixName,
+            enable  : this.enable.bind(this),
+            destroy : this.destroy.bind(this),
+            disable : this.disable.bind(this)
+        }
+    };
+    js2uixToolDrag.prototype = {
+        uiBodyNode : null,
+        js2uixName : 'js2uix-draggable',
+        uiDragHandleClass : 'js2uix-drag-handle',
+        uiDragCancelClass : 'js2uix-drag-cancel',
+        uiDragFxClass : 'js2uix-drag-fx',
+        setDefaultState : function( target ){
+            var handler = target.find(this.props.handle);
+            var position = target.css("position");
+            this.uiBodyNode = (!this.uiBodyNode)?js2uix('body'):this.uiBodyNode;
+            if ( this.props.addClass ) { target.addClass(this.props.addClass); }
+            if ( this.props.smoothDrag ) { target.addClass(this.uiDragFxClass); }
+            if ( !this.props.userSelect ) { target.addAttr("data-selectable", false); }
+            if ( position === "static" || position === "relative" ) { position = "absolute"; }
+            else if ( position === "fixed" ) { position = "fixed"; }
+            if( handler.length > 0 ){ if(this.props.cursor && this.props.cursor !== ""){ handler.css("cursor", this.props.cursor); } }
+            if( this.props.zIndex && typeof this.props.zIndex === "number" ){ target.css("z-index", parseInt(this.props.zIndex)); }
+            target.addClass(this.js2uixName).removeAttr("data-disable").css("position" , position);
+        },
+        setRemoveDragNodeConstruct : function( target ){
+            var dragHandle = target.find(".js2uix-drag-handle");
+            var dragCancel = target.find(".js2uix-drag-cancel");
+            ROOT.removeEvent('mousemove.js2uix-'+this.state.dataId);
+            ROOT.removeEvent('mouseup.js2uix-'+this.state.dataId);
+            dragHandle.removeEvent('mousedown.js2uix-drag-handle');
+            dragHandle.removeEvent('mouseup.js2uix-drag-handle');
+            dragCancel.removeEvent('mousedown.js2uix-drag-cancel');
+            dragCancel.removeEvent('mouseup.js2uix-drag-cancel');
+            target.removeEvent('mousedown.js2uix-drag-control');
+            target.removeEvent('mouseup.js2uix-drag-control');
+            target.removeClass("js2uix-draggable")
+                .removeAttr("data-selectable")
+                .removeAttr("data-disable")
+                .find(".js2uix-drag-handle")
+                .removeClass("js2uix-drag-handle");
+            target.find(".js2uix-drag-cancel").removeClass("js2uix-drag-cancel");
+            target.css({'position' : '', 'left' : '', 'top' : '', 'cursor' : '', 'zIndex' : ''});
+            dragHandle.css("cursor" , "");
+            target.remove();
+        },
+        setMouseMoveLimitAreaCheck : function( mouseX, mouseY ){
+            var state = this.state;
+            if( mouseX <= state.limitX  ){ mouseX = state.limitX ; }
+            if( mouseX >= state.maxX ){ mouseX = state.maxX ; }
+            if( mouseY <= state.limitY  ){ mouseY = state.limitY ; }
+            if( mouseY >= state.maxY ){ mouseY = state.maxY ; }
+            return { mouseX : mouseX, mouseY : mouseY }
+        },
+        setMouseDownDragEventHandler : function(){
+            this.state.isHandle = true;
+        },
+        setMouseUpDragEventHandler : function(){
+            this.state.isHandle = false;
+        },
+        setMouseDownCancelEventHandler : function(){
+            this.state.isCancel = true;
+        },
+        setMouseUpCancelEventHandler : function(){
+            this.state.isCancel = false;
+        },
+        setMouseDownNodeEventHandler : function( event ){
+            var nodeX, nodeY;
+            var disableBool = this.element.getAttr("data-disable");
+            var parent = this.element.parent();
+            this.uiBodyNode.addClass("disableSelection");
+            this.state.isDrag = true;
+            this.state.mouseX = event.pageX;
+            this.state.mouseY = event.pageY ;
+            if( !disableBool || disableBool === "false" || typeof disableBool === "undefined" ){this.state.isDrag = true;}
+            if( this.state.destroy || this.state.disable || disableBool === "true" || !this.state.isHandle ){this.state.isDrag = false;}
+            if( this.state.isDrag ){
+                if( this.props.containment !== "parent" && this.props.containment !== "" && this.props.containment ){
+                    parent = this.element.parents(this.props.containment);
+                    if( typeof parent === "undefined" ){parent = this.uiBodyNode;}
+                }else if( this.props.containment === "parent" ){
+                    parent = this.element.parent();
+                }else{
+                    parent = null;
+                }
+                nodeX = this.element.css("left");
+                nodeY = this.element.css("top");
+                if( nodeX === "auto" ){nodeX = parseInt(this.element[0].offsetLeft);}
+                if( nodeY === "auto" ){nodeY = parseInt(this.element[0].offsetTop);}
+                this.setLimitedAreaForUserCommand(parent, this.element, nodeX, nodeY);
+                this.setCallBackStart({
+                    target  : this.element[0],
+                    width   : this.element.width(),
+                    height  : this.element.height(),
+                    positionX : parseInt(this.element.css("left")),
+                    positionY : parseInt(this.element.css("top"))
+                });
+                if( !this.state.isCancel ){ this.setDragWindowControl(); }
+            }
+        },
+        setMouseUpNodeEventHandler : function(){
+            if( this.state.isMove && this.state.enable ){
+                if( this.props.dropTarget ){
+                    var drop = this.uiBodyNode.find(this.props.dropTarget);
+                    if( drop && drop.length > 0 ){
+                        this.setMouseUpDropEventHandler(this.element, drop)
+                    }
+                }
+                this.setCallBackStop({
+                    target  : this.element[0],
+                    width   : this.element.width(),
+                    height  : this.element.height(),
+                    positionX : parseInt(this.element.css("left")),
+                    positionY : parseInt(this.element.css("top"))
+                });
+            }
+            this.state.isDrag = false;
+            this.state.isMove = false;
+            this.state.isHandle = false;
+        },
+        setMouseMoveWindowEventHandler : function(event){
+            var mouseX, mouseY, calcXY, targetX, targetY;
+            if(this.state.isDrag && this.state.isHandle && !this.state.isCancel){
+                mouseX = event.pageX - this.state.mouseX;
+                mouseY = event.pageY - this.state.mouseY;
+                calcXY = this.setMouseMoveLimitAreaCheck(mouseX, mouseY);
+                targetX = this.state.targetX + calcXY.mouseX;
+                targetY = this.state.targetY + calcXY.mouseY;
+                this.state.isMove = true;
+                this.element[0].style.left = targetX + "px";
+                this.element[0].style.top = targetY + "px";
+                this.setCallBackDrag({
+                    target  : this.element[0],
+                    width   : this.element.width(),
+                    height  : this.element.height(),
+                    positionX : parseInt(this.element.css("left")),
+                    positionY : parseInt(this.element.css("top"))
+                });
+            }
+        },
+        setMouseUpWindowEventHandler : function(){
+            if( this.state.isDrag ){
+                this.setCallBackStop({
+                    target  : this.element[0],
+                    width   : this.element.width(),
+                    height  : this.element.height(),
+                    positionX : parseInt(this.element.css("left")),
+                    positionY : parseInt(this.element.css("top"))
+                });
+            }
+            this.state.isCancel = false;
+            this.state.isDrag = false;
+            this.state.isMove = false;
+            this.state.isHandle = false;
+            ROOT.removeEvent('mousemove.js2uix-'+this.state.dataId);
+            ROOT.removeEvent('mouseup.js2uix-'+this.state.dataId);
+            this.uiBodyNode.removeClass("disableSelection");
+        },
+        setMouseUpDropEventHandler : function( target, dropTarget ){
+            var obj_targetRect = target[0].getBoundingClientRect();
+            var obj_dropInfo = [];
+            js2uix.loop(dropTarget, function(){
+                var dropRect = this.getBoundingClientRect();
+                var DropSuccess = ((obj_targetRect.right > dropRect.left) && (obj_targetRect.left < dropRect.right)) && ((obj_targetRect.bottom > dropRect.top) && (obj_targetRect.top < dropRect.bottom));
+                obj_dropInfo.push({ dropSuccess : DropSuccess, dropTarget : this });
+            });
+            this.setCallBackDrop({
+                dragTarget  : target[0],
+                dropTarget  : obj_dropInfo
+            });
+        },
+        /** default control event */
+        setDragHandleControl : function(){
+            if(this.props.handle && this.props.handle !== ""){
+                var userHandle = this.element.find(this.props.handle).addClass(this.uiDragHandleClass);
+                if( userHandle.length > 0 ){
+                    userHandle.addEvent({
+                        'mousedown.js2uix-drag-handle' : this.setMouseDownDragEventHandler.bind(this),
+                        'mouseup.js2uix-drag-handle' : this.setMouseUpDragEventHandler.bind(this)
+                    });
+                }
+            }else{
+                this.state.isHandle = true;
+            }
+        },
+        setDragCancelControl : function(){
+            if( this.props.cancel && this.props.cancel !== ""){
+                var cancel = this.element.find(this.props.cancel).addClass(this.uiDragCancelClass);
+                if( cancel.length > 0 ){
+                    cancel.addEvent({
+                        'mousedown.js2uix-drag-cancel' : this.setMouseDownCancelEventHandler.bind(this),
+                        'mouseup.js2uix-drag-cancel' : this.setMouseUpCancelEventHandler.bind(this)
+                    });
+                }
+            }else{
+                this.state.isCancel = false;
+            }
+        },
+        setDragNodeControl : function(){
+            this.element.addEvent({
+                'mousedown.js2uix-drag-control' : this.setMouseDownNodeEventHandler.bind(this),
+                'mouseup.js2uix-drag-control' : this.setMouseUpNodeEventHandler.bind(this)
+            });
+        },
+        setDragWindowControl : function(){
+            ROOT.addEvent('mousemove.js2uix-'+this.state.dataId, this.setMouseMoveWindowEventHandler.bind(this));
+            ROOT.addEvent('mouseup.js2uix-'+this.state.dataId, this.setMouseUpWindowEventHandler.bind(this));
+        },
+        /** default event */
+        setCallBackCreate: function(){
+            if( typeof this.props.create === 'function' ){
+                this.props.create({
+                    target  : this.element[0],
+                    width   : this.element.width(),
+                    height  : this.element.height(),
+                    positionX : parseInt(this.element.css("left")),
+                    positionY : parseInt(this.element.css("top"))
+                });
+            }
+        },
+        setCallBackStart : function( data ){
+            if( typeof this.props.start === 'function' ){this.props.start(data);}
+        },
+        setCallBackDrag : function( data ){
+            if( typeof this.props.drag === 'function' ){this.props.drag(data);}
+        },
+        setCallBackStop : function( data ){
+            if( typeof this.props.stop === 'function' ){this.props.stop(data);}
+        },
+        setCallBackDrop : function( data ){
+            if( typeof this.props.drop === 'function' ){this.props.drop(data);}
+        },
+        enable  : function(){
+            this.state.enable = true;
+            this.state.destroy = false;
+            this.state.disable = false;
+            this.element.removeAttr("data-disable");
+        },
+        destroy : function(){
+            this.state.enable = false;
+            this.state.disable = true;
+            this.state.destroy = true;
+            this.setRemoveDragNodeConstruct(this.element);
+        },
+        disable : function(){
+            this.state.enable = false;
+            this.state.destroy = false;
+            this.state.disable = true;
+            this.element.attr("data-disable", true);
+        },
+        init : function(props){
+            if( typeof props === 'object' ){ js2uix.extend(this.props, props); }
+            if( this.element ){
+                this.state.dataId = js2uixUniqueId();
+                this.setDefaultState(this.element);
+                this.setDragHandleControl();
+                this.setDragCancelControl();
+                this.setDragNodeControl();
+                this.setCallBackCreate();
+            }
+        }
+    };
+    js2uix.extend(js2uixToolDrag.prototype, js2uixUICommon);
+    js2uixToolDrag.prototype.constructor = js2uixToolDrag;
+
+    /** js2uix-resize */
+    var js2uixToolResize = function( target, props ){
+        this.element = target;
+        this.props = {
+            addClass : null,
+            create : null,
+            containment : null,
+            handle : 'e,s,w,se,sw',
+            minWidth : 50,
+            minHeight : 50,
+            start : null,
+            stop : null,
+            resize : null,
+            userSelect : false
+        };
+        this.state = {
+            dragNode : null,
+            resizeNodePos: "relative",
+            target : null,
+            targetX : 0,
+            targetY : 0,
+            targetRect : null,
+            parent : null,
+            parentRect : null,
+            isHandle : false,
+            isCancel : false,
+            isResize : false,
+            isDrag : false,
+            isMove : false,
+            strHandle : "js2uix-resize-se",
+            limitX : 0,
+            maxX : 0,
+            limitY : 0,
+            maxY : 0,
+            mouseX : 0,
+            mouseY : 0,
+            enable : true,
+            disable : false,
+            destroy : false,
+            dataId : null
+        };
+        this.init(props);
+        return {
+            name : this.js2uixName,
+            enable  : this.enable.bind(this),
+            destroy : this.destroy.bind(this),
+            disable : this.disable.bind(this)
+        }
+    };
+    js2uixToolResize.prototype = {
+        uiBodyNode : null,
+        js2uixName : 'js2uix-resizable',
+        setDefaultState : function(){
+            this.uiBodyNode = (!this.uiBodyNode)?js2uix('body'):this.uiBodyNode;
+            if( this.element.css("position") === "static" ){this.element.css("position", "relative" );}
+            if( this.props.addClass ){this.element.addClass(this.props.addClass);}
+            if( !this.props.userSelect ){this.element.addAttr("data-selectable", false);}
+            this.element.addClass(this.js2uixName).removeAttr("data-disable");
+        },
+        setDefaultHtml : function(target){
+            var str_handle = this.props.handle.split(",");
+            var allowHandle = ["n","e","s","w","ne","se","sw","nw"];
+            if( !target ){ return false; }
+            if( str_handle ){
+                js2uix.loop(str_handle, function(n, v){
+                    var str_v = v.trim();
+                    if( allowHandle.indexOf(str_v) !== -1 ){
+                        var num_zIndex = 90;
+                        if( str_v.length > 1){num_zIndex = 91;}
+                        target.append(js2uix.createDom('div', {
+                            'className' : "js2uix-resize-handle js2uix-resize-"+str_v,
+                            'styles' : {"z-index:" : num_zIndex}
+                        }));
+                    }
+                });
+            }
+        },
+        setRemoveResizeNodeConstruct : function(){
+            var resizeHandle = this.element.find(".js2uix-resize-handle");
+            this.element.removeClass("js2uix-resizable").removeAttr("data-selectable");
+            this.element.css({'left':'', 'top':'', 'width':'', 'height':''});
+            resizeHandle.removeEvent("mousedown.js2uix-resize-handle");
+            resizeHandle.removeEvent("mouseup.js2uix-resize-handle");
+            ROOT.removeEvent('mousemove.js2uix-'+this.state.dataId);
+            ROOT.removeEvent('mouseup.js2uix-'+this.state.dataId);
+            resizeHandle.remove();
+            this.element.remove();
+        },
+        getResizeLimitMaxPosition : function(x, y, type){
+            var state = this.state;
+            if( type === "w" || type === "n") {
+                if (x <= state.limitX){ x = state.limitX; }
+                if (y <= state.limitY){ y = state.limitY; }
+            }
+            if( type === "e" || type === "s"){
+                if( x >= state.maxX  ){ x = state.maxX; }
+                if( y >= state.maxY  ){ y = state.maxY; }
+            }
+            return {
+                mouseX : x,
+                mouseY : y
+            }
+        },
+        getCalcResizeUpEventHandler : function( item, x, y, limit ){
+            var calcXY = this.getResizeLimitMaxPosition(x, y, "n");
+            var moveY = calcXY.mouseY;
+            if( moveY >= limit ){ moveY = limit; }
+            item.style.top = this.state.targetY + moveY+"px";
+            item.style.height = this.state.targetRect.height - moveY+"px";
+        },
+        getCalcResizeDownEventHandler : function( item, x, y, limit ){
+            var calcXY = this.getResizeLimitMaxPosition(x, y, "s");
+            var moveY = calcXY.mouseY;
+            if( moveY <= -limit ){ moveY = -limit; }
+            item.style.height = this.state.targetRect.height + moveY+"px";
+        },
+        getCalcResizeRightEventHandler : function( item, x, y, limit ){
+            var calcXY = this.getResizeLimitMaxPosition(x, y, "e");
+            var moveX = calcXY.mouseX;
+            if( moveX <= -limit ){ moveX = -limit; }
+            item.style.width = this.state.targetRect.width + moveX+"px";
+        },
+        getCalcResizeLeftEventHandler : function( item, x, y, limit ){
+            var calcXY = this.getResizeLimitMaxPosition(x, y, "w");
+            var moveX = calcXY.mouseX;
+            if( moveX >= limit ){ moveX = limit; }
+            item.style.left = (this.state.targetX+moveX)+"px";
+            item.style.width = (this.state.targetRect.width-moveX)+"px";
+        },
+        setMouseDownResizeEventHandler : function( event ){
+            var handle = event.target;
+            var parent = this.element.parent();
+            var nodeX, nodeY, disableBool;
+            this.uiBodyNode.addClass("disableSelection");
+            this.state.mouseX = event.pageX;
+            this.state.mouseY = event.pageY;
+            this.state.strHandle = handle.classList[1];
+            this.state.isResize = true;
+            this.state.isDrag = true;
+            disableBool = this.element.getAttr("data-disable");
+            if( this.state.destroy || this.state.disable || disableBool === "true" ){
+                this.state.isResize = false;
+                this.state.isDrag = false;
+            }
+            if( !disableBool || disableBool === "false" || typeof disableBool === "undefined" ){
+                this.state.isResize = true;
+                this.state.isDrag = true;
+            }
+            if(this.state.isDrag){
+                if( this.props.containment !== "parent" && this.props.containment !== "" && this.props.containment ){
+                    parent = this.element.parents(this.props.containment);
+                    if( typeof parent === "undefined" ){ parent = body; }
+                }else if( this.props.containment === "parent" ){
+                    parent = this.element.parent();
+                }else{
+                    parent = null;
+                }
+                nodeX = this.element.css("left");
+                nodeY = this.element.css("top");
+                if( nodeX === "auto" ){ nodeX = parseInt(this.element[0].offsetLeft); }
+                if( nodeY === "auto" ){ nodeY = parseInt(this.element[0].offsetTop); }
+                this.setLimitedAreaForUserCommand(parent, this.element, nodeX, nodeY);
+                this.setCallBackStart({
+                    target  : this.element[0],
+                    width   : this.element.width(),
+                    height  : this.element.height(),
+                    positionX : parseInt(this.element.css("left")),
+                    positionY : parseInt(this.element.css("top"))
+                });
+                this.setDragWindowControl();
+            }
+        },
+        setMouseUpResizeEventHandler : function(){
+            if( this.state.isResize && this.state.enable ){
+                this.setCallBackStop({
+                    target  : this.element[0],
+                    width   : this.element.width(),
+                    height  : this.element.height(),
+                    positionX : parseInt(this.element.css("left")),
+                    positionY : parseInt(this.element.css("top"))
+                });
+                this.state.isDrag = false;
+                this.state.isResize = false;
+            }
+        },
+        setMouseMoveWindowEventHandler : function( event ){
+            var item =  this.element[0];
+            if(this.state.isDrag && this.state.isResize && !this.state.isCancel){
+                this.state.isMove = true;
+                var targetRect = this.state.targetRect;
+                var mouseX = event.pageX - this.state.mouseX;
+                var mouseY = event.pageY - this.state.mouseY;
+                var limitWidth = targetRect.width-(this.props.minWidth||50);
+                var limitHeight = targetRect.height-(this.props.minHeight||50);
+                if( this.state.strHandle === "js2uix-resize-e" ){
+                    this.getCalcResizeRightEventHandler(item, mouseX, mouseY, limitWidth);
+                }
+                if( this.state.strHandle === "js2uix-resize-w" ){
+                    this.getCalcResizeLeftEventHandler(item, mouseX, mouseY, limitWidth);
+                }
+                if( this.state.strHandle === "js2uix-resize-s" ){
+                    this.getCalcResizeDownEventHandler(item, mouseX, mouseY, limitHeight);
+                }
+                if( this.state.strHandle === "js2uix-resize-n" ){
+                    this.getCalcResizeUpEventHandler(item, mouseX, mouseY, limitHeight);
+                }
+                if( this.state.strHandle === "js2uix-resize-se" ){
+                    this.getCalcResizeDownEventHandler(item, mouseX, mouseY, limitHeight);
+                    this.getCalcResizeRightEventHandler(item, mouseX, mouseY, limitWidth);
+                }
+                if( this.state.strHandle === "js2uix-resize-ne" ){
+                    this.getCalcResizeUpEventHandler(item, mouseX, mouseY, limitHeight);
+                    this.getCalcResizeRightEventHandler(item, mouseX, mouseY, limitWidth);
+                }
+                if( this.state.strHandle === "js2uix-resize-nw" ){
+                    this.getCalcResizeUpEventHandler(item, mouseX, mouseY, limitHeight);
+                    this.getCalcResizeLeftEventHandler(item, mouseX, mouseY, limitWidth);
+                }
+                if( this.state.strHandle === "js2uix-resize-sw" ){
+                    this.getCalcResizeDownEventHandler(item, mouseX, mouseY, limitHeight);
+                    this.getCalcResizeLeftEventHandler(item, mouseX, mouseY, limitWidth);
+                }
+                this.setCallBackResize({
+                    target  : this.element[0],
+                    width   : this.element.width(),
+                    height  : this.element.height(),
+                    positionX : parseInt(this.element.css("left")),
+                    positionY : parseInt(this.element.css("top"))
+                });
+            }
+        },
+        setMouseUpWindowEventHandler : function(){
+            if( this.state.isResize ){
+                this.setCallBackStop({
+                    target  : this.element[0],
+                    width   : this.element.width(),
+                    height  : this.element.height(),
+                    positionX : parseInt(this.element.css("left")),
+                    positionY : parseInt(this.element.css("top"))
+                });
+            }
+            this.state.isResize = false;
+            this.state.isDrag = false;
+            ROOT.removeEvent('mousemove.js2uix-'+this.state.dataId);
+            ROOT.removeEvent('mouseup.js2uix-'+this.state.dataId);
+            this.uiBodyNode.removeClass("disableSelection");
+        },
+        setResizeHandleControl : function(){
+            this.element.find(".js2uix-resize-handle").addEvent({
+                "mousedown.js2uix-resize-handle" : this.setMouseDownResizeEventHandler.bind(this),
+                "mouseup.js2uix-resize-handle" : this.setMouseUpResizeEventHandler.bind(this)
+            })
+        },
+        setDragWindowControl : function(){
+            ROOT.addEvent('mousemove.js2uix-'+this.state.dataId, this.setMouseMoveWindowEventHandler.bind(this));
+            ROOT.addEvent('mouseup.js2uix-'+this.state.dataId, this.setMouseUpWindowEventHandler.bind(this));
+        },
+        setCallBackCreate: function(){
+            if( typeof this.props.create === 'function' ){
+                this.props.create({
+                    target  : this.element[0],
+                    width   : this.element.width(),
+                    height  : this.element.height(),
+                    positionX : parseInt(this.element.css("left")),
+                    positionY : parseInt(this.element.css("top"))
+                });
+            }
+        },
+        setCallBackStart : function( data ){
+            if( typeof this.props.start === 'function' ){this.props.start(data);}
+        },
+        setCallBackResize : function( data ){
+            if( typeof this.props.resize === 'function' ){ this.props.resize(data); }
+        },
+        setCallBackStop : function( data ){
+            if( typeof this.props.stop === 'function' ){this.props.stop(data);}
+        },
+        enable : function(){
+            this.state.enable = true;
+            this.state.destroy = false;
+            this.state.disable = false;
+            this.element.removeAttr("data-disable");
+        },
+        destroy : function(){
+            this.state.enable = false;
+            this.state.disable = true;
+            this.state.destroy = true;
+            this.setRemoveResizeNodeConstruct();
+        },
+        disable : function(){
+            this.state.enable = false;
+            this.state.destroy = false;
+            this.state.disable = true;
+            this.element.attr("data-disable", true);
+        },
+        init : function(props){
+            if( typeof props === 'object' ){js2uix.extend(this.props, props);}
+            if( this.element ){
+                this.state.dataId = js2uixUniqueId();
+                this.setDefaultState();
+                this.setDefaultHtml(this.element);
+                this.setResizeHandleControl();
+                this.setCallBackCreate();
+            }
+        }
+    };
+    js2uix.extend(js2uixToolResize.prototype, js2uixUICommon);
+    js2uixToolResize.prototype.constructor = js2uixToolResize;
+
+    /** --------------------------------------------------------------- */
+    js2uix.extend({
+        Chart : function(target, props){
+            if( !window.d3 ){ alert('please check! d3.js api'); return; }
+            var element = js2xixElementResult(target);
+            if( element && element.length > 0 ){ return new js2uixToolChart(element, props); }
+        },
+        Combo : function(target, props){
+            var element = js2xixElementResult(target);
+            if( element && element.length > 0 ){ return new js2uixToolCombo(element, props); }
+        },
+        Draggable : function(target, props){
+            var element = js2xixElementResult(target);
+            if( element && element.length > 0 ){return new js2uixToolDrag(element, props);}
+        },
+        Resizable : function(target, props){
+            var element = js2xixElementResult(target);
+            if( element && element.length > 0 ){return new js2uixToolResize(element, props);}
+        },
+        Grid : function(target){
+            var element = js2xixElementResult(target);
+            if( element && element.length > 0 ){return new js2uixToolGrid(element);}
         }
     });
+
     /** --------------------------------------------------------------- */
     /** ZUI Set Define For Module */
     if ( typeof define === "function" && define.amd ) {
-        define( "zui", [], function() {
-            return zui;
+        define( "js2uix", [], function() {
+            return js2uix;
         });
     }
-    if ( !noGlobal ) {window.zui = zui;}
-    return zui;
+    if ( !noGlobal ) {window.js2uix = js2uix;}
+    return js2uix;
 });

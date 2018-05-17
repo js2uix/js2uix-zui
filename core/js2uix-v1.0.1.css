@@ -1,3 +1,6 @@
+body.disableSelection * {  -webkit-user-select: none;  -moz-user-select: -moz-none;  -o-user-select: none;  user-select: none; }
+
+/** js2uix-grid */
 .js2uix-grid{ position: relative; display: block; width: 100%; min-width: 330px; height: 100%; font-size: 13px; border: 1px solid #ddd; overflow: hidden; -webkit-box-sizing: border-box;  -moz-box-sizing: border-box;  box-sizing: border-box; }
 .js2uix-grid.disableSelection * {  -webkit-user-select: none;  -moz-user-select: -moz-none;  -o-user-select: none;  user-select: none; }
 .js2uix-grid *{ -webkit-box-sizing: border-box;  -moz-box-sizing: border-box;  box-sizing: border-box; }
@@ -80,3 +83,39 @@
 .js2uix-grid.availableMini .js2uix-grid-foot .js2uix-grid-total{ position: absolute; bottom: 0; right: 0; }
 .js2uix-grid.availableMini .js2uix-grid-foot .js2uix-grid-page{ position: absolute; width: 100%; top: 0; left: 0; border-bottom: 1px solid #ddd; }
 .js2uix-grid.availableMini .js2uix-grid-foot .js2uix-grid-page ul{ text-align: center; }
+
+/** js2uix-combo */
+.js2uix-combo, .js2uix-combo *{ -webkit-box-sizing: border-box;  -moz-box-sizing: border-box;  box-sizing: border-box; }
+.js2uix-combo{position: relative; display: block; width: auto; height: 28px; }
+.js2uix-combo label.title{ position: absolute; display: block; top:0; left: 0; font-size: 12px; width: 100%; height: 100%; overflow: hidden; padding: 5px 0 5px 5px; text-align: left; border: 1px solid #ddd;  z-index:1; background-color: #fff; text-overflow: ellipsis; white-space: nowrap;}
+.js2uix-combo span.arrow{ display: block; position: absolute; top:0; right: 0; border: 1px solid #ddd; z-index: 2; background-color: #f9f9f9; overflow: hidden; }
+.js2uix-combo span.arrow:after{content:''; display: block; width: 25px; height: 100%; border: 1px solid #fff;  opacity: 0.6;  background: url(images/pagination_icons.png?ver2.0) no-repeat -99px 4px; }
+.js2uix-combo select{ position: absolute; display: block; height: 28px; top:0; left:0; border:0; cursor: pointer; padding: 6px 0; font-size: 12px; opacity: 0; z-index:2 }
+.js2uix-combo.js2uix-search input.search{ position: absolute; display: block;  top:0; left: 0; font-size: 12px; width: 100%; height: 100%; overflow: hidden; padding: 5px 0 5px 5px; text-align: left; border: 1px solid #ddd;  z-index:4; background-color: #fff;  }
+.js2uix-combo.js2uix-search span.arrow{ z-index: 4; }
+.js2uix-combo.js2uix-search select{ z-index: 0;}
+.js2uix-combo.js2uix-search .js2uix-option{ position: absolute; display: none; left: 0; width: 100%; max-height: 105px; overflow: hidden; overflow-y: auto; border: 1px solid #ddd; z-index: 9; background-color: #fff; }
+.js2uix-combo.js2uix-search .js2uix-option ul{ display: block; width: 100%; height: auto; }
+.js2uix-combo.js2uix-search .js2uix-option li{ padding: 6px; font-size: 11px; border-bottom: 1px dotted #ddd; cursor: pointer; }
+.js2uix-combo.js2uix-search .js2uix-option li:last-child{border-bottom:0;}
+.js2uix-combo.js2uix-search .js2uix-option li:hover,
+.js2uix-combo.js2uix-search .js2uix-option li.on{ background-color: rgba(0, 175, 255, 0.1); }
+.js2uix-combo.js2uix-search .js2uix-option li[data-disabled='true']{ background-color: #efefef; cursor: default; }
+
+/** js2uix-draggable, js2uix-resizable */
+.js2uix-draggable { position: absolute; z-index: 9; }
+.js2uix-drag-handle{ cursor: pointer; }
+.js2uix-resize-handle { position: absolute; background-color: rgba(255, 0, 0, 0); }
+.js2uix-resize-e { width: 10px; height: 100%; right: -10px; bottom: 0!important; top: 0!important; cursor: e-resize; }
+.js2uix-resize-w { width: 10px; height: 100%; left: -10px; bottom: 0!important; top: 0!important; cursor: e-resize; }
+.js2uix-resize-n { width: 100%; height: 10px; top: -10px; right: 0!important; left: 0!important; cursor: n-resize; }
+.js2uix-resize-s { width: 100%; height: 10px; bottom: -10px; right: 0!important; left: 0!important; cursor: n-resize; }
+.js2uix-resize-se { width: 10px; height: 10px; right: -10px; bottom: -10px; cursor: se-resize; }
+.js2uix-resize-ne { width: 10px; height: 10px; right: -10px; top: -10px; cursor: ne-resize; }
+.js2uix-resize-sw { width: 10px; height: 10px; left: -10px; bottom: -10px; cursor: ne-resize; }
+.js2uix-resize-nw { width: 10px; height: 10px; left: -10px; top: -10px; cursor: nw-resize; }
+.js2uix-resize-se:after, .js2uix-resize-ne:after, .js2uix-resize-sw:after, .js2uix-resize-nw:after{  background: url(images/uix-icons.png?v2) no-repeat;  }
+.js2uix-resize-se:after { content: ""; position: absolute; width: 10px; height: 10px; right: 10px; bottom: 10px; background-position: -83px -228px; }
+.js2uix-resize-ne:after { content: ""; position: absolute; width: 10px; height: 10px; right: 10px; top: 10px; background-position: -83px -228px; transform: rotate(270deg); }
+.js2uix-resize-sw:after { content: ""; position: absolute; width: 10px; height: 10px; left: 10px; bottom: 10px; background-position: -83px -228px; transform: rotate(90deg); }
+.js2uix-resize-nw:after { content: ""; position: absolute; width: 10px; height: 10px; left: 10px; top: 10px; background-position: -83px -228px; transform: rotate(180deg); }
