@@ -317,7 +317,7 @@
             return result;
         },
         /** control attribute[*] name */
-        addAttr : function ( item, name, value ){
+        setAttr : function ( item, name, value ){
             if( item && name && value && typeof name === 'string' && typeof value === 'string' ){
                 item.setAttribute(name, value);
             } else if( typeof name === 'object'){
@@ -371,9 +371,9 @@
             return js2uix.hasClass( this[0], name );
         },
         /** control attribute[*] name */
-        addAttr : function ( name, value ){
+        setAttr : function ( name, value ){
             for ( var i=0; i < this.length; i++ ){
-                js2uix.addAttr(this[i], name, value);
+                js2uix.setAttr(this[i], name, value);
             }
             return this;
         },
@@ -474,7 +474,7 @@
                         }
                         if ( name === 'attributes' && typeof item === 'object' ){
                             for ( var attr in item ){
-                                js2uix.addAttr(dom, attr, item[attr]);
+                                js2uix.setAttr(dom, attr, item[attr]);
                             }
                         }
                         if ( name === 'styles' && typeof item === 'object' ){
@@ -2517,9 +2517,9 @@
             this.state.gridAdjustGap = this.state.contentBody.width() - this.state.contentBodyList.width();
             this.state.contentHead[0].children[0].style.paddingRight = this.state.gridAdjustGap+'px';
             if( this.state.contentBodyList ){
-                this.state.contentBodyList.addAttr('data-overflow','false');
+                this.state.contentBodyList.setAttr('data-overflow','false');
                 if( this.state.contentBodyList.height() - this.state.contentBody.height() >= 0 ){
-                    this.state.contentBodyList.addAttr('data-overflow','true');
+                    this.state.contentBodyList.setAttr('data-overflow','true');
                 }
             }
         },
@@ -2580,7 +2580,7 @@
                     this.state.optionCheckbox = js2uix.createDom('li', {
                         content : '<input type="checkbox" name="optionCheckBox" />'
                     }, true);
-                    this.state.optionCheckbox.addAttr('data-option', 'checkbox');
+                    this.state.optionCheckbox.setAttr('data-option', 'checkbox');
                     headContentUl.prepend(this.state.optionCheckbox);
                 }
                 if( this.props.optionNumbering ){
@@ -2713,13 +2713,13 @@
                     var dataOrder = item.getAttr('data-order');
                     var dataName = item.getAttr('data-name');
                     if( dataOrder === 'NORMAL' ){
-                        item.addAttr('data-order', 'ASC');
+                        item.setAttr('data-order', 'ASC');
                         module.state.orderInfo[dataName] = 'ASC';
                     } else if( dataOrder === 'ASC' ){
-                        item.addAttr('data-order', 'DESC');
+                        item.setAttr('data-order', 'DESC');
                         module.state.orderInfo[dataName] = 'DESC';
                     } else if( dataOrder === 'DESC' ){
-                        item.addAttr('data-order', 'NORMAL');
+                        item.setAttr('data-order', 'NORMAL');
                         delete module.state.orderInfo[dataName]
                     }
                     module.state.currentPageNum = 1;
@@ -3281,7 +3281,7 @@
             this.uiBodyNode = (!this.uiBodyNode)?js2uix('body'):this.uiBodyNode;
             if ( this.props.addClass ) { target.addClass(this.props.addClass); }
             if ( this.props.smoothDrag ) { target.addClass(this.uiDragFxClass); }
-            if ( !this.props.userSelect ) { target.addAttr("data-selectable", false); }
+            if ( !this.props.userSelect ) { target.setAttr("data-selectable", false); }
             if ( position === "static" || position === "relative" ) { position = "absolute"; }
             else if ( position === "fixed" ) { position = "fixed"; }
             if( handler.length > 0 ){ if(this.props.cursor && this.props.cursor !== ""){ handler.css("cursor", this.props.cursor); } }
@@ -3584,7 +3584,7 @@
             this.uiBodyNode = (!this.uiBodyNode)?js2uix('body'):this.uiBodyNode;
             if( this.element.css("position") === "static" ){this.element.css("position", "relative" );}
             if( this.props.addClass ){this.element.addClass(this.props.addClass);}
-            if( !this.props.userSelect ){this.element.addAttr("data-selectable", false);}
+            if( !this.props.userSelect ){this.element.setAttr("data-selectable", false);}
             this.element.addClass(this.js2uixName).removeAttr("data-disable");
         },
         setDefaultHtml : function(target){
