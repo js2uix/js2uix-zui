@@ -694,6 +694,16 @@
             }
             return this;
         },
+        text : function ( value ){
+            if( this.length > 0 ){
+                if( !value && value !== '' ){
+                    return this[0].innerText;
+                } else if( typeof value === 'string' || value === '' ) {
+                    for( var i = 0; i < this.length; i++ ){ this[i].innerText = value; }
+                }
+            }
+            return this;
+        },
         empty : function (){
             this.html();
         },

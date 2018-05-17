@@ -77,15 +77,6 @@ js2uix('div').addClass('test1').removeClass('test1')
 
 ## 2. 기능 (Dom Control)
 
-**addAttr : 선택된 Dom 의 attribute 설정.**
-<pre>code ex :<code>
-js2uix(select).addAttr('data-name', test);
-js2uix(select).addAttr({
-    'data-name' : test,
-    'data-value' : 100
-});
-</code></pre>
-
 **addClass : 선택된 Dom 의 class name 설정.**
 <pre>code ex :<code>
 js2uix('div').addClass('test');
@@ -321,6 +312,22 @@ js2uix('div#test').removeId('test');
 **replace : 선택된 Dom 을 특정 Dom 또는 생성된 Dom 으로 교체**
 <pre>code ex :<code>
 js2uix('div#test').replace(js2uix('div.new'));
+</code></pre>
+
+**setAttr : 선택된 Dom 의 attribute 설정.**
+<pre>code ex :<code>
+js2uix(select).addAttr('data-name', test);
+js2uix(select).addAttr({
+    'data-name' : test,
+    'data-value' : 100
+});
+</code></pre>
+
+**text : 선택된 Dom 의 text 설정 및 확인**
+<pre>code ex :<code>
+js2uix('div#test').text('test');
+var textValue = js2uix('div#test').text();
+console.log(textValue) 
 </code></pre>
 
 **top : 선택된 Dom 의 top 설정 및 확인**
