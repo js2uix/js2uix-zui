@@ -110,6 +110,29 @@
         var dateString = String(Date.now()).substring(0,4);
         return dateString+randomString;
     };
+    var js2uixDomObserver = (function(){
+        var MutationObserver = window.MutationObserver || window.WebKitMutationObserver,
+            eventListenerSupported = window.addEventListener;
+        return function(obj, callback){
+            if( MutationObserver ){
+                var observer = new MutationObserver(function(mutations) {
+                    mutations.forEach(function(mutation) { callback(mutation); });
+                });
+                observer.observe( obj, {
+                    childList : true,
+                    subtree : true,
+                    attributes : true,
+                    attributeOldValue : true,
+                    characterData : true,
+                    characterDataOldValue : true
+                });
+            }
+            else if( eventListenerSupported ){
+                obj.addEventListener('DOMNodeInserted', callback, false);
+                obj.addEventListener('DOMNodeRemoved', callback, false);
+            }
+        };
+    }());
     /** --------------------------------------------------------------- */
     /** js2uix-control create object ( js2uix control 을 정의한다 )
      * TODO : 가장 기본적인 기능을 먼저 활성화 하며, 추후 ui 기능을 확장한다.
@@ -905,6 +928,31 @@
             });
         });
     };
+    var js2uixFxAddEventObserverHandler = function(item, param){
+        var eventName = param[0];
+        var findName = param[1];
+        var handler = param[2];
+        if( eventName && findName && handler){
+            js2uix.loop(item, function(){
+                var parent = js2uix(this);
+                var find = parent.find(findName);
+                if( find.length > 0 ){
+                    find.removeEvent(eventName, handler);
+                    js2uixFxAddEventHandler(find, param);
+                    js2uixDomObserver(this, function(change){
+                        if( change.type === "childList" || change.type === "attributes" ) {
+                            for(var i=0; i<change.addedNodes.length; i++){
+                                var addNode = change.addedNodes[i];
+                                if( addNode.nodeType === 1 ){
+                                    js2uixFxAddEventObserverHandler(item, param);
+                                }
+                            }
+                        }
+                    });
+                }
+            });
+        }
+    };
     var js2uixFxRemoveEventHandler = function (item, param){
         /** document node event remove */
         js2uix.loop(item, function(){
@@ -983,22 +1031,23 @@
                 var lastType = typeof arg[arg.length-1];
                 if ( firstType === 'object' ){
                     for ( var name in arg[0] ){
-                        js2uixFxAddEventHandler(this, [name, arg[0][name]]);
+                        if( arg.length === 1 ){
+                            js2uixFxAddEventHandler(this, [name, arg[0][name]]);
+                        }else if( arg.length === 2 && typeof lastType === 'string' ){
+                            js2uixFxAddEventObserverHandler(this, [name, arg[1], arg[0][name]]);
+                        }
                     }
                 } else {
                     if( firstType === 'string' && (lastType === 'function' || lastType === 'object') ){
                         if( length === 2 ){
                             js2uixFxAddEventHandler(this, arg);
                         } else if ( length === 3 ){
-                            /** TODO : 개발 예정
-                             * MutationObserver or Observe 를 사용해야 하지만
-                             * DOM3 이기 때문에 개발 여부는 나중에 결정.
-                             * 이벤트 개발은 직접적으로 생성된 DOM에 대한 이벤트 Bind 를 최종 목표로 한다.
-                             * */
+                            js2uixFxAddEventObserverHandler(this, arg);
                         }
                     }
                 }
             }
+            return this;
         },
         removeEvent : function (){
             var arg = arguments;
@@ -1008,6 +1057,7 @@
             } else {
                 js2uixFxRemoveEventHandler(this, arg);
             }
+            return this;
         }
     });
 
