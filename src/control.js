@@ -1,2 +1,3 @@
-var root = zui('#root');
-console.log(root);
+js2uix(function(){
+    js2uix('#root').html('Hello js2uix')
+});
