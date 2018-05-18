@@ -120,3 +120,17 @@ body.disableSelection * {  -webkit-user-select: none;  -moz-user-select: -moz-no
 .js2uix-resize-ne:after { content: ""; position: absolute; width: 10px; height: 10px; right: 10px; top: 10px; background-position: -83px -228px; transform: rotate(270deg); }
 .js2uix-resize-sw:after { content: ""; position: absolute; width: 10px; height: 10px; left: 10px; bottom: 10px; background-position: -83px -228px; transform: rotate(90deg); }
 .js2uix-resize-nw:after { content: ""; position: absolute; width: 10px; height: 10px; left: 10px; top: 10px; background-position: -83px -228px; transform: rotate(180deg); }
+
+/** js2uix-tree */
+.js2uix-tree, .js2uix-tree *{ -webkit-box-sizing: border-box;  -moz-box-sizing: border-box;  box-sizing: border-box; }
+.js2uix-tree .js2uix-tree-content *{ display: block; }
+.js2uix-tree .js2uix-tree-content .js2uix-tree-group .js2uix-tree-group{ padding-left: 17px; }
+.js2uix-tree .js2uix-tree-content .js2uix-tree-title{vertical-align: top; font-size: 0; padding: 2px 0; cursor: pointer; }
+.js2uix-tree .js2uix-tree-content .js2uix-tree-title > * {display: inline-block; vertical-align: top; }
+.js2uix-tree .js2uix-tree-content .js2uix-tree-title .js2uix-tree-icon{ background: url(images/uix-icons2.png?v3) no-repeat; }
+.js2uix-tree .js2uix-tree-content .js2uix-tree-title[data-child='true'] .js2uix-tree-icon{ background-position: -267px -0; }
+.js2uix-tree .js2uix-tree-content .js2uix-tree-title[data-child='false'] .js2uix-tree-icon{ background-position: -290px -29px; }
+.js2uix-tree .js2uix-tree-content .js2uix-tree-item[data-open='true'] > .js2uix-tree-title .js2uix-tree-icon{ background-position: -290px -0}
+.js2uix-tree .js2uix-tree-content .js2uix-tree-title .js2uix-tree-icon{ width: 15px; height: 15px; margin-right: 3px; }
+.js2uix-tree .js2uix-tree-content .js2uix-tree-title .js2uix-tree-text{ font-size: 14px; }
+.js2uix-tree .js2uix-tree-content .js2uix-tree-child{ display: none; }
