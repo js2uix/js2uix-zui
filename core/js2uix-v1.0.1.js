@@ -3935,8 +3935,8 @@
     var js2uixToolTree = function(element, props){
         this.element = element;
         this.props = {
-            titleName : 'title',
-            dataName : 'data',
+            mainTitleName : 'title',
+            childDataName : 'data',
             onClickEvent : null
         };
         this.state = {
@@ -3961,8 +3961,8 @@
         },
         setCreateTreeItemForData : function(param){
             var module = this;
-            var title = this.props.titleName;
-            var data = this.props.dataName;
+            var title = this.props.mainTitleName;
+            var data = this.props.childDataName;
             var createNode = function(param, parent){
                 var parentNode = parent || js2uix.createDom('ul', {'className':'js2uix-tree-group'}, true);
                 js2uix.loop(param, function(num, obj){
@@ -4046,8 +4046,32 @@
     };
     js2uixToolTree.prototype.constructor = js2uixToolTree;
 
+    /** js2uix-Calendar */
+    var js2uixToolCalendar = function(element, props){
+        this.element = element;
+        this.props = {};
+        this.state = {};
+        this.init(props);
+        return {
+            name : this.js2uixName
+        }
+    };
+    js2uixToolCalendar.prototype = {
+        js2uixName : 'js2uix-calendar',
+        init : function(props){
+            if( props && typeof props === 'object' ){
+                js2uix.extend(this.props, props);
+            }
+        }
+    };
+    js2uixToolCalendar.prototype.constructor = js2uixToolCalendar;
+
     /** --------------------------------------------------------------- */
     js2uix.extend({
+        Calendar : function(target, props){
+            var element = js2xixElementResult(target);
+            if( element && element.length > 0 ){ return new js2uixToolCalendar(element, props); }
+        },
         Chart : function(target, props){
             if( !window.d3 ){ alert('please check! d3.js api'); return; }
             var element = js2xixElementResult(target);
@@ -4061,6 +4085,10 @@
             var element = js2xixElementResult(target);
             if( element && element.length > 0 ){return new js2uixToolDrag(element, props);}
         },
+        Grid : function(target){
+            var element = js2xixElementResult(target);
+            if( element && element.length > 0 ){return new js2uixToolGrid(element);}
+        },
         Resizable : function(target, props){
             var element = js2xixElementResult(target);
             if( element && element.length > 0 ){return new js2uixToolResize(element, props);}
@@ -4068,10 +4096,6 @@
         Tree : function(target, props){
             var element = js2xixElementResult(target);
             if( element && element.length > 0 ){return new js2uixToolTree(element, props);}
-        },
-        Grid : function(target){
-            var element = js2xixElementResult(target);
-            if( element && element.length > 0 ){return new js2uixToolGrid(element);}
         }
     });
 
