@@ -5,7 +5,7 @@
  * Email       : deshineplus@icloud.com
  * language    : Javascript(ES5)
  * StartDate   : 2018.02.01
- * BuildDate   : 2018.05.17
+ * BuildDate   : 2018.05.23
  * Copyright   : YJH-js2uix
  * License     : Released under the MIT license
  * -------------------------------------------------------------------------------------- /
@@ -74,6 +74,9 @@
                     isString = DOC.createTextNode(isString);
                     item.push(isString);
                 }
+            } else if (typeof arg[i] === 'number' ){
+                isString = DOC.createTextNode(String(arg[i]));
+                item.push(isString);
             }
         }
         return item;
@@ -173,13 +176,11 @@
         }
     };
 
-    /** --------------------------------------------------------------- */
     /** js2uix-control create object ( js2uix control 을 정의한다 )
      * TODO : 가장 기본적인 기능을 먼저 활성화 하며, 추후 ui 기능을 확장한다.
-     * info : NodeList 객체를 새롭게 해석하여 module 화 한다.
-     *       새로운 Node 객체를 만들고 기능을 확장/상속 시킨다.
+     * info : NodeList 객체를 새롭게 해석하여 module 화 한며, 새로운 Node 객체를 만들고 기능을 확장/상속 시킨다.
      * */
-    /** --------------------------------------------------------------- */
+
     /** TODO : extend prototype, 상속을 구현한다.
      * Object.setPrototypeOf 기본 사용 / 불가능 : __proto__ 를 이용하여 상속.
      * */
@@ -314,15 +315,31 @@
         },
         isNumber : function ( number ){
             return typeof number === 'number';
+        },
+        replaceAll   : function( strTemp, strValue1, strValue2 ){
+            while(1){
+                if( strTemp.indexOf(strValue1) != -1 ){
+                    strTemp = strTemp.replace(strValue1, strValue2);
+                } else {
+                    break;
+                }
+            }
+            return strTemp;
+        },
+        codeToString : function( string ){
+            if( string ){
+                return decodeURI(this.replaceAll(string, "\\", "%"));
+            }
+        },
+        stringToCode : function( string ){
+            if( string ){
+                return encodeURI(this.replaceAll(string, "\\", "%"));
+            }
         }
     });
 
-    /** --------------------------------------------------------------- */
-    /** TODO : 추가적인 기능을 확장한다
-     * 추가기능은 단계적으로 control 에 필요한 기능을 추가한다.
-     * */
-    /** --------------------------------------------------------------- */
-    /** js2uix-control-attribute method */
+    /** TODO : 추가적인 기능을 확장한다. 추가기능은 단계적으로 control 에 필요한 기능을 추가한다. */
+    /** js2uix-control-attribute method : js2uix 의 공통 속성 모듈을 확장한다. */
     js2uix.extend({
         /** control attribute[id] name */
         addId : function ( item, name ){
@@ -381,11 +398,17 @@
         },
         /** control attribute[*] name */
         setAttr : function ( item, name, value ){
-            if( item && name && value && typeof name === 'string' && typeof value === 'string' ){
-                item.setAttribute(name, value);
-            } else if( typeof name === 'object'){
-                for ( var key in name ){
-                    item.setAttribute(key, name[key]);
+            if( item ){
+                if( typeof name === 'object' ){
+                    for ( var key in name ){
+                        this.setAttr(item, key, name[key])
+                    }
+                } else if ( typeof name === 'string'){
+                    if( !value ){ value = ''; }
+                    if( typeof value === 'number' ){
+                        value = String(value);
+                    }
+                    item.setAttribute(name, value);
                 }
             }
         },
@@ -463,8 +486,7 @@
         }
     });
 
-    /** --------------------------------------------------------------- */
-    /** js2uix-control-basic method */
+    /** js2uix-control-basic method : js2uix 의 공통 기본 모듈을 확장한다. */
     js2uix.extend({
         loop : function ( item, callback ){
             var length, i = 0;
@@ -761,11 +783,23 @@
             if( this.length > 0 ){
                 if( !value && value !== '' ){
                     return this[0].innerText;
-                } else if( typeof value === 'string' || value === '' ) {
+                } else if( typeof value === 'string' || typeof value === 'number'  || value === '' ) {
                     for( var i = 0; i < this.length; i++ ){ this[i].innerText = value; }
                 }
             }
             return this;
+        },
+        value : function( value ){
+            if( !value ){
+                return this[0].value;
+            } else {
+                if( typeof value !== 'object' || typeof value !== 'function' ){
+                    for(var i=0; i<this.length; i++){
+                        this[i].value = value;
+                    }
+                }
+                return this;
+            }
         },
         empty : function (){
             this.html();
@@ -807,8 +841,7 @@
         }
     });
 
-    /** --------------------------------------------------------------- */
-    /** js2uix-control-style method */
+    /** js2uix-control-style method : js2uix 의 공통 style 모듈을 확장한다. */
     var js2uixDomStyleParse = function (name, value){
         var i;
         var type;
@@ -950,8 +983,7 @@
         }
     });
 
-    /** --------------------------------------------------------------- */
-    /** js2uix-control-event method */
+    /** js2uix-control-event method : js2uix 만의 dom event handler 모듈을 확장한다. */
     var js2uixFxAddEventHandler = function (item, param){
         var eventNameArray = param[0].split('.');
         var eventKeyName = eventNameArray[1];
@@ -1099,9 +1131,8 @@
         }
     });
 
-    /** --------------------------------------------------------------- */
-    /** js2uix-ajax method
-     * TODO : xhr 을 이용한 ajax 통신 구현
+    /** js2uix-ajax method : xhr 을 이용한 js2uix 만의 ajax 통신 모듈을 확장한다.
+     * TODO : xhr 을 이용한 ajax 통신 구현 추후 고도화 필요
      * */
     var js2uixAjax = function(form, option){
         this._target = form;
@@ -1310,8 +1341,7 @@
     };
     js2uixAjax.prototype.constructor = js2uixAjax;
 
-    /** --------------------------------------------------------------- */
-    /** js2uix-component method */
+    /** js2uix-component method : js2uix 의 컴포넌트 생성 모듈을 확장한다. */
     var js2uixRouter = function(){
         this.location = null;
         this.hash = null;
@@ -1539,8 +1569,6 @@
             }
         }
     };
-
-    /** --------------------------------------------------------------- */
     js2uix.extend({
         Ajax : function(opt){
             return new js2uixAjax(null, opt);
@@ -1630,13 +1658,11 @@
         }
     });
 
-    /** --------------------------------------------------------------- */
-    /** js2uix-ui-module method
-     *  TODO : D3.js를 이용한 그래프 모듈 제작 중.
+    /** js2uix-ui-module method : js2uix 의 UI 모듈 기능을 확장한다.
+     *  TODO : D3.js를 이용한 그래프 모듈 확장 및 고도화 필요.
      *  */
-    /** --------------------------------------------------------------- */
     var ROOT = js2uix('html');
-    /** js2uix-chart */
+    /** js2uix-chart : D3.js 를 이용한 차트 객체 생성 모듈 */
     var js2uixD3Style = function(target, props){
         target.append('<style class="js2uixD3">\n' +
             props.svgId+' .js2uix_g .grid_x,\n' +
@@ -2455,7 +2481,7 @@
     };
     js2uixToolChart.prototype.constructor = js2uixToolChart;
 
-    /** js2uix-grid */
+    /** js2uix-grid : 테이블(리스트형) 게시판의 객체 생성 모듈 */
     var js2xixElementResult = function(target){
         if( target ){
             if( typeof target === 'string' ){
@@ -2959,7 +2985,7 @@
     };
     js2uixToolGrid.prototype.constructor = js2uixToolGrid;
 
-    /** js2uix-combo */
+    /** js2uix-combo : 일반 select 박스 및 검색형 select 박스의 객체 생성 모듈 */
     var js2uixToolCombo = function(element, props){
         this.element = element;
         this.props = {
@@ -3257,7 +3283,7 @@
     };
     js2uixToolCombo.prototype.constructor = js2uixToolCombo;
 
-    /** js2uix-drag */
+    /** js2uix-drag : 드래그 가능 객체 생성 모듈 */
     var js2uixUICommon = {
         setLimitPosition : function(parent, target){
             var opt = this.state;
@@ -3622,7 +3648,7 @@
     js2uix.extend(js2uixToolDrag.prototype, js2uixUICommon);
     js2uixToolDrag.prototype.constructor = js2uixToolDrag;
 
-    /** js2uix-resize */
+    /** js2uix-resize : 리사이즈 가능 객체 생성 모듈 */
     var js2uixToolResize = function(element, props){
         this.element = element;
         this.props = {
@@ -3931,7 +3957,7 @@
     js2uix.extend(js2uixToolResize.prototype, js2uixUICommon);
     js2uixToolResize.prototype.constructor = js2uixToolResize;
 
-    /** js2uix-tree */
+    /** js2uix-tree : 확장형 트리 메뉴 UI 의 기본 객체 생성 모듈 */
     var js2uixToolTree = function(element, props){
         this.element = element;
         this.props = {
@@ -4046,31 +4072,626 @@
     };
     js2uixToolTree.prototype.constructor = js2uixToolTree;
 
-    /** js2uix-Calendar */
-    var js2uixToolCalendar = function(element, props){
-        this.element = element;
-        this.props = {};
-        this.state = {};
-        this.init(props);
+    /** js2uix-calendar : 달력 UI 의 달력 객체 생성 모듈 */
+    var js2uixCalendar;
+    var js2uixCalendarCommon = {getDateCheckUserObject : function(y, m, d){
+            var date = new Date();
+            if( y && m && d ){ date = new Date(y, m-1, d); } else if( y && m && !d ){ date = new Date(y, m-1); } else if( y && !m && !d ){ if(y === "number" ){ date = new Date(y); } else if( y === "string" ){ date = new Date(y); } }
+            var weekStrArray = ["SU","MO","TU","WE","TH","FR","SA"];
+            var year = date.getFullYear();
+            var month = date.getMonth()+1;
+            var day = date.getDate();
+            var weekNumber = date.getDay();
+            var weekString = weekStrArray[weekNumber];
+            var firstDay = new Date(year, month-1, 1);
+            var lastDay = new Date(year, month, 0);
+            var prevSearchYear = year;
+            var prevSearchMonth = month-1;
+            var nextSearchYear = year;
+            var nextSearchMonth = month+1;
+            var nextFirstDay;
+            var prevLastDay;
+            try {
+                if( month === 1 ){
+                    prevSearchYear = year-1;
+                    prevSearchMonth = 12;
+                }
+                if( month === 12 ){
+                    nextSearchYear = year+1;
+                    nextSearchMonth = 1;
+                }
+                nextFirstDay = new Date(nextSearchYear, nextSearchMonth-1, 1);
+                prevLastDay = new Date(prevSearchYear, prevSearchMonth, 0);
+                return {
+                    current_year            : year,
+                    current_month           : month,
+                    current_day             : day,
+                    current_weekString      : weekString,
+                    current_weekNumber      : weekNumber,
+                    current_firstDay        : firstDay.getDate(),
+                    current_firstWeekNumber : firstDay.getDay(),
+                    current_lastDay         : lastDay.getDate(),
+                    current_lastWeekNumber  : lastDay.getDay(),
+                    next_year               : nextSearchYear,
+                    next_month              : nextSearchMonth,
+                    next_firstDay           : nextFirstDay.getDate(),
+                    next_firstWeekNumber    : nextFirstDay.getDay(),
+                    prev_year               : prevSearchYear,
+                    prev_month              : prevSearchMonth,
+                    prev_lastDay            : prevLastDay.getDate(),
+                    prev_lastWeekNumber     : prevLastDay.getDay()
+                }
+            } finally {
+                date = null;
+                weekStrArray = null;
+                year = null;
+                month = null;
+                day = null;
+                weekNumber = null;
+                weekString = null;
+                firstDay = null;
+                lastDay = null;
+                prevSearchYear = null;
+                prevSearchMonth = null;
+                nextSearchYear = null;
+                nextSearchMonth = null;
+                nextFirstDay = null;
+                prevLastDay = null;
+            }
+        }};
+    var js2uixToolCalendar = function(){
+        this.dom = {};
+        this.props = {
+            languageKor : {
+                weekArray   : ["%EC%9D%BC","%EC%9B%94","%ED%99%94","%EC%88%98","%EB%AA%A9","%EA%B8%88","%ED%86%A0"],
+                monthArray  : [1,2,3,4,5,6,7,8,9,10,11,12],
+                yearString  : "%EB%85%84",
+                monthString : "%EC%9B%94"
+            },
+            languageEng : {
+                weekArray   : ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"],
+                monthArray  : ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"],
+                yearString  : null,
+                monthString : null
+            }
+        };
+        this.state = {
+            active : false,
+            target : null,
+            dateFormat : "yyyy-mm-dd",
+            dateRange : null,
+            language : "eng",
+            onChangeDate : null,
+            setDate : null,
+            untilToday : false,
+            zIndex : 99999
+        };
+        this.init();
         return {
-            name : this.js2uixName
+            name : this.js2uixName,
+            setCalendar : this.setCalendar.bind(this)
         }
     };
     js2uixToolCalendar.prototype = {
         js2uixName : 'js2uix-calendar',
-        init : function(props){
-            if( props && typeof props === 'object' ){
-                js2uix.extend(this.props, props);
+        /** basic calendar element */
+        setCalendarStateChange : function(){
+            if( this.state.language === 'eng' ){
+                this.dom.headEng[0].style.display = this.dom.contentEng[0].style.display = 'block';
+                this.dom.headKor[0].style.display = this.dom.contentKor[0].style.display = 'none';
+            } else {
+                this.dom.headEng[0].style.display = this.dom.contentEng[0].style.display = 'none';
+                this.dom.headKor[0].style.display = this.dom.contentKor[0].style.display = 'block';
+            }
+        },
+        setCalendarLayoutChange : function(target){
+            if( target ){
+                var layout = target.getBoundingClientRect();
+                var scrollTop = parseInt(ROOT[0].scrollTop);
+                var scrollLeft = parseInt(ROOT[0].scrollLeft);
+                var calendarTop = (layout.top+scrollTop)+layout.height+3;
+                var calendarLeft = (layout.left+scrollLeft)+(layout.width*0.5)-(this.dom.js2uixCalendar.width()*0.5);
+                if( layout.left <= 0 ){ calendarLeft = layout.left; }
+                try {
+                    this.state.active = true;
+                    this.dom.monthBox[0].style.display = 'none';
+                    this.dom.js2uixCalendar[0].style.display = 'none';
+                    this.dom.js2uixCalendar.css({"top"  : calendarTop, "left" : calendarLeft, 'display':'block'})
+                } finally {
+                    layout = null;
+                    scrollTop = null;
+                    scrollLeft = null;
+                    calendarTop = null;
+                    calendarLeft = null;
+                }
+            } else {
+                this.dom.js2uixCalendar.css({"top"  : -99999, "left" : -99999, 'display':'none'})
+            }
+        },
+        setCreateHeaderMiddleWrap : function(){
+            var controlWrap =  js2uix.createDom('div', {
+                'className': 'js2uix-date-wrap'
+            }, true);
+            this.dom.headEng = js2uix.createDom('div', {
+                'className': 'js2uix-date-eng',
+                'content': '<div class="js2uix-month-string"><span></span></div><div class="js2uix-year-string"><span></span></div>'
+            }, true);
+            this.dom.headKor = js2uix.createDom('div', {
+                'className': 'js2uix-date-kor',
+                'content': '<div class="js2uix-year-string"><span></span></div>' +
+                '<div class="js2uix-date-common js2uix-date-month"><span>'+(js2uix.codeToString(this.props.languageKor.yearString))+'</span></div>' +
+                '<div class="js2uix-month-string"><span></span></div>' +
+                '<div class="js2uix-date-common js2uix-date-day"><span>'+(js2uix.codeToString(this.props.languageKor.monthString))+'</span></div>'
+            },true );
+            return controlWrap.append(this.dom.headEng, this.dom.headKor);
+        },
+        setCreateContentTable : function(){
+            var tableNode = js2uix.createDom('div', {'className' : 'js2uix-calendar-table'}, true);
+            this.dom.contentHead = js2uix.createDom('div', {'className' : 'js2uix-table-head'}, true);
+            this.dom.contentBody = js2uix.createDom('div', {'className' : 'js2uix-table-body'}, true);
+            this.dom.contentEng = js2uix.createDom('ul', {'className':'js2uix-head-eng'}, true);
+            this.dom.contentKor = js2uix.createDom('ul', {'className':'js2uix-head-kor'}, true);
+            js2uix.loop(this.props.languageEng.weekArray, function(key, value){this.dom.contentEng.append('<li><span>'+value+'</span></li>');}.bind(this));
+            js2uix.loop(this.props.languageKor.weekArray, function(key, value){this.dom.contentKor.append('<li><span>'+js2uix.codeToString(value)+'</span></li>');}.bind(this));
+            this.dom.contentHead.append(this.dom.contentEng, this.dom.contentKor);
+            tableNode.append(this.dom.contentHead, this.dom.contentBody);
+            try {
+                return tableNode
+            } finally {
+                tableNode = null;
+            }
+        },
+        setCreateMonthBoxNode : function(){
+            var index = 1;
+            var result = js2uix.createDom('div', {'className':'js2uix-calendar-select'}, true);
+            var yearBox = js2uix.createDom('div', {
+                'className':'js2uix-select-year',
+                'content' : '<div class="js2uix-select-prev"><span></span></div>' +
+                '<div class="js2uix-select-input"><input type="text" min="1000" max="9999" maxlength="4" /></div>' +
+                '<div class="js2uix-select-next"><span></span></div>'
+            });
+            var monthBox = js2uix.createDom('div', {'className':'js2uix-select-month', 'content' : '<table><tbody><tr></tr><tr></tr><tr></tr></tbody></table>'});
+            var tableNode = monthBox.firstChild.firstChild;
+            try {
+                result.append(yearBox, monthBox);
+                js2uix.loop((this.state.language === "kor")?this.props.languageKor.monthArray:this.props.languageEng.monthArray, function(num, value){
+                    tableNode.children[index-1].innerHTML += '<td data-month="'+(num+1)+'">'+value+'</td>';
+                    if((num+1)%4 === 0){index++;}
+                });
+                return result;
+            } finally {
+                result = null;
+                yearBox = null;
+                monthBox = null;
+                tableNode = null;
+            }
+        },
+        setCreateDefaultElement : function(){
+            this.dom.js2uixCalendar = js2uix.createDom('div', {'className' : this.js2uixName, 'idName' : this.js2uixName, 'attributes' : {'data-language':this.props.language}}, true);
+            this.dom.header = js2uix.createDom('div', {'className':'js2uix-calendar-header'}, true);
+            this.dom.headerLeft = js2uix.createDom('div', {'className':'js2uix-control-left', 'content' : '<span class="js2uix-year-prev"></span><span class="js2uix-month-prev"></span>'});
+            this.dom.headerMiddle = js2uix.createDom('div', {'className': 'js2uix-control-mid', 'content' : this.setCreateHeaderMiddleWrap()}, true);
+            this.dom.headerRight = js2uix.createDom('div', {'className':'js2uix-control-right', 'content' : '<span class="js2uix-month-next"></span><span class="js2uix-year-next"></span>'});
+            this.dom.header.append(this.dom.headerLeft, this.dom.headerMiddle, this.dom.headerRight);
+            this.dom.content = js2uix.createDom('div', {'className':'js2uix-calendar-body'}, true);
+            this.dom.content.append(this.setCreateContentTable());
+            this.dom.monthBox = js2uix.createDom('div', {'className':'js2uix-calendar-hidden'}, true);
+            this.dom.monthBox.append(this.setCreateMonthBoxNode());
+            this.dom.arrow = js2uix.createDom('span', {'className':'js2uix-calendar-arrow'}, true);
+            this.dom.js2uixCalendar.append(this.dom.header, this.dom.content, this.dom.monthBox, this.dom.arrow);
+            js2uix('body').append(this.dom.js2uixCalendar);
+        },
+        setParseMinMaxDateFormat : function(){
+            var minDate = null;
+            var maxDate = null;
+            if( this.state.dateRange && Array.isArray(this.state.dateRange) && this.state.dateRange.length > 0 ){
+                var rangeMin = (this.state.dateRange[0])?(this.state.dateRange[0]).replace(/[^0-9]/gi, ''):null;
+                var rangeMax = (this.state.dateRange[1])?this.state.dateRange[1].replace(/[^0-9]/gi, ''):null;
+                if( (rangeMin && rangeMin.length === 8) || (rangeMax && rangeMax.length === 8) ){
+                    if( rangeMin ){minDate = {year : parseInt(rangeMin.substr(0,4)), month : parseInt(rangeMin.substr(4,2)), day : parseInt(rangeMin.substr(6,2))};}
+                    if( rangeMax ){maxDate = {year : parseInt(rangeMax.substr(0,4)), month : parseInt(rangeMax.substr(4,2)), day : parseInt(rangeMax.substr(6,2))};}
+                }
+            }
+            return {
+                min : minDate,
+                max : maxDate
+            }
+        },
+        setCalendarDateCalculation : function(target, param){
+            if( !target ){ return false; }
+            var year = this.dom.header.find('.js2uix-year-string span');
+            var month = this.dom.header.find('.js2uix-month-string span');
+            var newObject = [];
+            var current = false;
+            var nowDate = new Date();
+            var nowYear = nowDate.getFullYear();
+            var nowMonth = nowDate.getMonth()+1;
+            var nowDay = nowDate.getDate();
+            var totalDayNumberLoop = Math.ceil((param.current_firstWeekNumber+param.current_lastDay)/7);
+            var insertStartDay= parseInt(param.prev_lastDay-param.prev_lastWeekNumber);
+            var minMax = this.setParseMinMaxDateFormat();
+            if( param.prev_lastWeekNumber >= 6 ){insertStartDay = 1;}
+            this.state.selectYear = parseInt(target.getAttribute('data-year'));
+            this.state.selectMonth = parseInt(target.getAttribute('data-month'));
+            this.state.selectDay = parseInt(target.getAttribute('data-day'));
+            for(var i=1; i<=totalDayNumberLoop; i++){
+                var trNode = js2uix.createDom('ul',{},true);
+                for(var j=1; j<=7; j++){
+                    if( i <= 2 && insertStartDay > param.prev_lastDay ){
+                        insertStartDay = 1;
+                        current = true;
+                    }
+                    if( i === totalDayNumberLoop && insertStartDay > param.current_lastDay ){
+                        insertStartDay = 1;
+                        current = false;
+                    }
+                    var tdNode = js2uix.createDom('li', {
+                        'attributes' : {
+                            "data-day"   :insertStartDay,
+                            "data-month" :param.current_month,
+                            "data-year"  :param.current_year
+                        }, 'content' : '<span>'+insertStartDay+'</span>'
+                    }, true);
+                    if( i === 1 && j <= param.current_firstWeekNumber ){
+                        tdNode.addClass("js2uix-calendar-prev").setAttr({"data-year"  : param.prev_year, "data-month" : param.prev_month});
+                    } else if( (i === totalDayNumberLoop) && (j > param.current_lastWeekNumber+1) ){
+                        tdNode.addClass("js2uix-calendar-next").setAttr({"data-year"  : param.next_year, "data-month" : param.next_month});
+                    } else {
+                        if( insertStartDay === nowDay && current && nowYear === param.current_year && nowMonth === param.current_month ){ tdNode.addClass("js2uix-calendar-today"); }
+                        if( this.state.selectDay === insertStartDay && this.state.selectYear === param.current_year && this.state.selectMonth === param.current_month ){ tdNode.addClass("js2uix-calendar-select"); }
+                    }
+                    if( this.state.dateRange ){
+                        if( minMax.min.year !== param.current_year || minMax.min.month !== param.current_month || minMax.min.day > insertStartDay ){tdNode.addClass("js2uix-date-disabled");}
+                        if( minMax.max.year !== param.current_year || minMax.max.month !== param.current_month || minMax.max.day < insertStartDay ){tdNode.addClass("js2uix-date-disabled");}
+                    }
+                    if( this.state.untilToday ){
+                        if( (nowYear < param.current_year) || ((nowYear === param.current_year) && ((nowMonth < param.current_month) || (nowMonth === param.current_month && ((insertStartDay > nowDay) || (i === totalDayNumberLoop && j > param.current_lastWeekNumber+1))))) ){
+                            tdNode.addClass("js2uix-date-disabled");
+                        }
+                    }
+                    trNode.append(tdNode);
+                    insertStartDay++;
+                }
+                newObject.push(trNode[0]);
+            }
+            try {
+                year.text(param.current_year);
+                if( this.state.language === "eng" ){ month.text(this.props.languageEng.monthArray[param.current_month-1]); }
+                else{ month.text(param.current_month); }
+                this.dom.monthBox.find(".js2uix-select-year input")[0].value = param.current_year;
+                this.dom.monthBox.find(".js2uix-select-month td").removeClass("on");
+                this.dom.monthBox.find(".js2uix-select-month td[data-month='"+param.current_month+"']").addClass("on");
+                this.dom.js2uixCalendar.setAttr({"data-year" : param.current_year, "data-month" : param.current_month });
+                /** append Node & bind event */
+                this.setAddEventDateItem(false);
+                this.dom.contentBody.html(js2uix(newObject));
+                this.setAddEventDateItem(true);
+            } finally {
+                year = null;
+                month = null;
+                newObject = null;
+                current = null;
+                nowDate = null;
+                nowYear = null;
+                nowMonth = null;
+                nowDay = null;
+                totalDayNumberLoop = null;
+                insertStartDay = null;
+                minMax = null;
+            }
+        },
+        setCalendar : function(target, props, state){
+            js2uix.extend(this.state, props);
+            this.state.target = target;
+            this.setCalendarStateChange();
+            this.setCalendarDateCalculation(target, this.getDateCheckUserObject(state.year, state.month, state.day));
+            this.setCalendarLayoutChange(target);
+        },
+        /** basic control */
+        getSwitchDateNumber : function(type, select){
+            var year = parseInt(this.dom.js2uixCalendar.getAttr("data-year"));
+            var month = parseInt(this.dom.js2uixCalendar.getAttr("data-month"));
+            switch(type){
+                case "nextMonth" :
+                    month++;
+                    if( month > 12 ){
+                        year = year+1;
+                        if( year >= 9999 ){
+                            year = 9999;
+                        }
+                        month = 1;
+                    }
+                    break;
+                case "nextYear"  :
+                    year++;
+                    if( year >= 9999 ){
+                        year = 9999;
+                    }
+                    break;
+                case "prevMonth" :
+                    month--;
+                    if( month < 1 ){
+                        year = year-1;
+                        if( year <= 1000 ){
+                            year = 1000
+                        }
+                        month = 12;
+                    }
+                    break;
+                case "prevYear"  :
+                    year--;
+                    if( year <= 1000 ){
+                        year = 1000
+                    }
+                    break;
+                case "selectDate" :
+                    year = select.select_input;
+                    month = select.select_number;
+                    break;
+            }
+            return {
+                year : year,
+                month : month
+            };
+        },
+        setChangeDateHandler : function(item){
+            this.state.selectYear = item.getAttr('data-year');
+            this.state.selectMonth = item.getAttr('data-month');
+            this.state.selectDay = item.getAttr('data-day');
+        },
+        setCommonEventHandler : function(){
+            if(this.state.active){
+                this.state.active = false;
+                this.setCalendarLayoutChange(false);
+                js2uix('.js2uix-calendar-target').removeClass('js2uix-calendar-target');
+            }
+        },
+        setCommonControlHandler : function(type, select){
+            var target = this.state.target;
+            if( target ){
+                var result = this.getSwitchDateNumber(type, select);
+                var param = this.getDateCheckUserObject(result.year, result.month);
+                this.setCalendarDateCalculation(target, param);
+            }
+        },
+        setAddEventDateItem : function(type){
+            if(!type){
+                this.dom.contentBody.find('li').removeEvent('all');
+            } else {
+                var module = this;
+                this.dom.contentBody.find('li:not(.js2uix-date-disabled)').addEvent('click.js2uix-calendar-item', function(){
+                    module.setChangeDateHandler(js2uix(this));
+                    module.onChangeDate();
+                    module.setCommonEventHandler();
+                });
+            }
+        },
+        setAddEventWindowControl : function(){
+            var module = this;
+            ROOT.addEvent('mousedown.js2uix-calendar', function(){
+                module.setCommonEventHandler();
+            });
+            window.addEventListener("scroll", function(){
+                module.setCommonEventHandler();
+            });
+            window.addEventListener("resize", function(){
+                module.setCommonEventHandler();
+            });
+        },
+        setAddEventCalendar : function(){
+            var module = this;
+            var num_inputVal = js2uix(".js2uix-select-input input");
+            /** calendar node event block */
+            this.dom.js2uixCalendar.addEvent('mousedown.js2uix-calendar', function(e){
+                e.stopPropagation();
+            });
+            js2uix(".js2uix-month-next").addEvent("click.js2uix-calendar", function(){
+                module.setCommonControlHandler("nextMonth");
+            });
+            js2uix(".js2uix-year-next").addEvent("click.js2uix-calendar", function(){
+                module.setCommonControlHandler("nextYear");
+            });
+            js2uix(".js2uix-month-prev").addEvent("click.js2uix-calendar", function(){
+                module.setCommonControlHandler("prevMonth");
+            });
+            js2uix(".js2uix-year-prev").addEvent("click.js2uix-calendar", function(){
+                module.setCommonControlHandler("prevYear");
+            });
+            /** bind select month box */
+            js2uix(".js2uix-control-mid").addEvent("click", ".js2uix-date-wrap", function(){
+                module.dom.monthBox[0].style.display = 'block';
+            });
+            this.dom.monthBox.find('.js2uix-select-prev').addEvent("click.js2uix-calendar", function(){
+                num_inputVal[0].value = parseInt(num_inputVal[0].value)-1;
+            });
+            this.dom.monthBox.find('.js2uix-select-next').addEvent("click.js2uix-calendar", function(){
+                num_inputVal[0].value = parseInt(num_inputVal[0].value)+1;
+            });
+            this.dom.monthBox.addEvent("click.js2uix-calendar", "td", function(){
+                module.setCommonControlHandler("selectDate",  {
+                    select_input  : parseInt( module.dom.monthBox.find("input")[0].value ),
+                    select_number : parseInt( js2uix(this).getAttr("data-month") )
+                });
+                module.dom.monthBox[0].style.display = 'none'
+            });
+            this.dom.monthBox.find('input').addEvent("keyup.js2uix-calendar", function(){
+                this.value = this.value.replace(/[^0-9]/g,'');
+            });
+        },
+        init : function(){
+            this.setCreateDefaultElement();
+            this.setAddEventWindowControl();
+            this.setAddEventCalendar();
+        },
+        onChangeDateParse : function(state){
+            var year = state.selectYear;
+            var month = state.selectMonth;
+            var day = state.selectDay;
+            var monthStr = '0'+month;
+            var dayStr = '0'+day;
+            monthStr = monthStr.substr(monthStr.length-2, 2);
+            dayStr = dayStr.substr(dayStr.length-2, 2);
+            return {
+                date : year+'-'+monthStr+'-'+dayStr,
+                year : year,
+                month : month,
+                day : day
+            };
+        },
+        onChangeDate : function(){
+            if( this.state.onChangeDate && typeof this.state.onChangeDate === 'function' ){
+                var newDate = this.onChangeDateParse(this.state);
+                js2uix(this.state.target).setAttr({'data-year' : newDate.year, 'data-month' : newDate.month, 'data-day' : newDate.day}).value(newDate.date);
+                this.state.onChangeDate(newDate, this.state.target);
             }
         }
     };
+    js2uix.extend(js2uixToolCalendar.prototype, js2uixCalendarCommon);
     js2uixToolCalendar.prototype.constructor = js2uixToolCalendar;
 
-    /** --------------------------------------------------------------- */
+    /** js2uix-calendar-input : 달력 UI의 Input Dom 의 객체 생성 모듈 */
+    var js2uixToolCalendarInput = function(element, props){
+        this.element = element;
+        this.props = {
+            dateFormat : "yyyy-mm-dd",
+            dateRange : null,
+            language : "eng",
+            onChangeDate : null,
+            setDate : null,
+            untilToday : false,
+            zIndex : 99999
+        };
+        this.state = {
+            year : null,
+            month : null,
+            day : null
+        };
+        this.init(props);
+        return {
+            name : this.js2uixName,
+            setDate : this.setCalendarDate.bind(this)
+        }
+    };
+    js2uixToolCalendarInput.prototype = {
+        js2uixName : 'js2uix-calendar',
+        /** this input Element */
+        setDefaultStateFormCalendar : function(){
+            this.element.addClass("js2uix-calendar-input");
+        },
+        getChangeDateTypeUserDate : function(f_year, f_month, f_day){
+            return this.props.dateFormat.replace(/(yyyy|yy|MM|dd)/gi, function(str) {
+                switch(str){
+                    case "yyyy" : return f_year; break;
+                    case "yy"   : return f_year.toString().substring(2); break;
+                    case "mm"   : if( f_month < 10 ){ f_month = "0"+f_month; } return f_month; break;
+                    case "dd"   : if( f_day < 10 ){ f_day = "0"+f_day; } return f_day; break;
+                    default     : return str; break;
+                }
+            });
+        },
+        setCalendarInputAttrDate : function(target, dataArray){
+            target.setAttr({
+                "data-year"  : dataArray.current_year,
+                "data-month" : dataArray.current_month,
+                "data-day"   : dataArray.current_day
+            });
+        },
+        setCalendarInputStateDate : function(item){
+            this.state.year = item.getAttr('data-year');
+            this.state.month = item.getAttr('data-month');
+            this.state.day = item.getAttr('data-day');
+        },
+        setInputNodeDefaultEvent : function(){
+            var module = this;
+            this.element.removeEvent("mouseup.js2uix-calendar-input");
+            this.element.addEvent("mouseup.js2uix-calendar-input", function(e){
+                var item = js2uix(this);
+                if( !item.hasClass('js2uix-calendar-target') ){
+                    module.setCalendarInputStateDate(item);
+                    js2uix(".js2uix-calendar-target").removeClass("js2uix-calendar-target");
+                    js2uix(this).addClass("js2uix-calendar-target");
+                    js2uixCalendar.setCalendar(this, module.props, module.state);
+                }
+                e.stopPropagation();
+            });
+            this.element.addEvent("mousedown.js2uix-calendar-input", function(e){
+                e.stopPropagation();
+            });
+        },
+        setCalendarDefaultInputDate : function(userDate){
+            var target = this.element;
+            var date = (userDate)?new Date(userDate):new Date();
+            var year = this.state.year = date.getFullYear();
+            var month = this.state.month = date.getMonth()+1;
+            var day = this.state.day = date.getDate();
+            var dateArray = this.getDateCheckUserObject(year, month, day);
+            var switchStartDate = this.getChangeDateTypeUserDate(year, month, day);
+            try {
+                this.setCalendarInputAttrDate(target, dateArray);
+                target[0].value = switchStartDate;
+            } finally {
+                target = null;
+                date = null;
+                year = null;
+                month = null;
+                day = null;
+                dateArray = null;
+                switchStartDate = null;
+            }
+        },
+        setCalendarLastDateCheck : function(type, number){
+            var today = new Date();
+            switch (type){
+                case 'day'  : today.setDate(today.getDate() + number); break;
+                case 'week' : today.setDate(today.getDate() + (number*7)); break;
+                case 'month': today.setMonth(today.getMonth() + number); break;
+                case 'year' : today.setMonth(today.getMonth() + (number*12)); break;
+            }
+            var year = today.getFullYear();
+            var month = ('0'+(today.getMonth()+1));
+            var date = ('0'+(today.getDate()));
+            month = month.substr(month.length-2, 2);
+            date = date.substr(date.length-2, 2);
+            return {
+                lastDateValue : today,
+                lastDateString : year+'-'+month+'-'+date
+            }
+        },
+        setCalendarDate : function(){
+            var arg = arguments;
+            var typeRange = ['day','week','month','year'];
+            if( !arg[0] || (arg.length === 1 && arg[0] === 0) ){
+                this.setCalendarDefaultInputDate();
+            } else if( arg.length === 1 && (typeof arg[0] === 'string' && arg[0].indexOf('-') !== -1) ){
+                this.setCalendarDefaultInputDate(arg[0]);
+            } else if(  arg.length === 2 && ((typeof arg[0] === 'string' && typeRange.indexOf(arg[0]) !== -1 ) && (arg[1] && typeof arg[1] === 'number')) ){
+                this.setCalendarDefaultInputDate(this.setCalendarLastDateCheck(arg[0], arg[1]).lastDateString);
+            }
+        },
+        init : function(props){
+            if( this.element[0].nodeName.toLowerCase() !== "input" ){ return; }
+            if( props && typeof props === 'object' ){ js2uix.extend(this.props, props); }
+            if( !js2uixCalendar) { js2uixCalendar = new js2uixToolCalendar(); }
+            var propsDate = this.props.setDate;
+            this.setDefaultStateFormCalendar();
+            this.setInputNodeDefaultEvent();
+            if( propsDate ){
+                if( typeof propsDate === 'string' ){
+                    this.setCalendarDate(propsDate);
+                } else if ( Array.isArray(propsDate) && propsDate.length === 2 ){
+                    this.setCalendarDate(propsDate[0], propsDate[1]);
+                }
+            } else {
+                this.setCalendarDate();
+            }
+        }
+    };
+    js2uix.extend(js2uixToolCalendarInput.prototype, js2uixCalendarCommon);
+    js2uixToolCalendarInput.prototype.constructor = js2uixToolCalendarInput;
     js2uix.extend({
         Calendar : function(target, props){
             var element = js2xixElementResult(target);
-            if( element && element.length > 0 ){ return new js2uixToolCalendar(element, props); }
+            if( element && element.length > 0 ){ return new js2uixToolCalendarInput(element, props); }
         },
         Chart : function(target, props){
             if( !window.d3 ){ alert('please check! d3.js api'); return; }
@@ -4099,13 +4720,8 @@
         }
     });
 
-    /** --------------------------------------------------------------- */
-    /** ZUI Set Define For Module */
-    if ( typeof define === "function" && define.amd ) {
-        define( "js2uix", [], function() {
-            return js2uix;
-        });
-    }
-    if ( !noGlobal ) {window.js2uix = js2uix;}
+    /** js2uix set define for module */
+    if ( typeof define === "function" && define.amd ) {define( ModuleName, [], function() {return js2uix;});}
+    if ( !noGlobal ) { window.js2uix = js2uix; }
     return js2uix;
 });
