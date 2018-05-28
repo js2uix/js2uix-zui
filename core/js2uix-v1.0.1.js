@@ -1706,7 +1706,11 @@
             duration : 200,
             gridLine : true,
             groupInfoBox : true,
-            shadeColor : ''
+            shadeColor : '',
+            topPos: 40,
+            rightPos: 30,
+            bottomPos: 30,
+            leftPos: 30
         };
         this.state = {
             autoMode    : false,
@@ -1716,7 +1720,7 @@
             idName      : "",
             max_width   : 1740,
             min_width   : 300,
-            min_height  : 200,
+            min_height  : 100,
             resize      : false,
             uniqueId    : '',
             uniqueName  : '',
@@ -1832,20 +1836,20 @@
                 .selectAll("g").data(keys)
                 .enter().append("g")
                 .attr("transform", function(d, i) {
-                    return "translate(0," + ((i * 20)-30) + ")";
+                    return "translate(0," + ((i * 20)-20) + ")";
                 });
             try {
                 legend.append("rect")
-                    .attr("x", svg.width - 0)
-                    .attr("width", 19)
-                    .attr("height", 19)
+                    .attr("x", svg.width - 15)
+                    .attr("width", 15)
+                    .attr("height", 15)
                     .attr("fill", function(d){
                         return color(d);
                     });
                 legend.append("text").attr("style", "font-size:12px")
-                    .attr("x", svg.width-5)
-                    .attr("y", 9.5)
-                    .attr("dy", "0.32em")
+                    .attr("x", svg.width-20)
+                    .attr("y", 8)
+                    .attr("dy", "0.22em")
                     .text(function(d) { return d; });
                 legend.exit().remove();
             } finally {
@@ -2117,9 +2121,11 @@
             var keyY = "axisY";
             var currentData = param.map( function( dt ) {return {axisX : dt[this.axis.axisX], axisY : dt[this.axis.axisY]};}.bind(this));
             var axisYArr = currentData.map(function(dt) {return dt[keyY];});
+            var minMaxX = window.d3.extent(currentData.map(function(dt) {return dt[keyX];}), function(dt) {return js2uixChangeDateType(dt);});
             var minMaxY = window.d3.extent(axisYArr, function(dt) {return parseInt(dt);});
             var rectNode;
             try {
+                if( this.axis.typeAxisX === "date" ){this.d3.x2 = window.d3.scaleTime().domain([new Date(minMaxX[0]), new Date(minMaxX[1])]).rangeRound([0, this.d3.width]);}
                 this.d3.x = window.d3.scaleBand().padding(0.1).domain(currentData.map(function(dt) {return dt[keyX];})).rangeRound([0, this.d3.width]);
                 this.d3.y = window.d3.scaleLinear().domain([0, minMaxY[1]]).rangeRound([this.d3.height, 0]);
                 if( !this.state.update ){
@@ -2142,7 +2148,7 @@
                         .attr("data-value", function(dt) {return dt[keyY];});
                     this.nodes.rectNode = this.d3.g.select('g.graphBox').selectAll("rect.ui-chart-bar");
                     this.axis.typeAxisX === "date"
-                        ?this.nodes.axisX_g.call( window.d3.axisBottom(this.d3.x).ticks( window.d3[this.axis.timeAxisX[0]].every(this.axis.timeAxisX[1])).tickFormat(function(dt){return timeFormat(js2uixChangeDateType(dt));}) )
+                        ?this.nodes.axisX_g.call( window.d3.axisBottom(this.d3.x2).ticks( window.d3[this.axis.timeAxisX[0]].every(this.axis.timeAxisX[1])).tickFormat(function(dt){return timeFormat(dt);}))
                         :this.nodes.axisX_g.call( window.d3.axisBottom(this.d3.x));
                     this.setCommonChartInfoString("basic");
                     this.setCommonChartAxisXNode();
@@ -2250,7 +2256,7 @@
                     var chartSizeH = this.target[0].clientHeight;
                     this.d3.width = chartSizeW;
                     this.d3.height = chartSizeH;
-                    this.state.radius = Math.min(chartSizeW, chartSizeH)/2-30;
+                    this.state.radius = Math.min(chartSizeW, chartSizeH)/2-15;
                     this.state.arc1 = window.d3.arc().outerRadius(this.state.radius*0.9).innerRadius(this.state.radius*(1-this.props.circleThickNum));
                     this.state.outerArc = window.d3.arc().innerRadius(this.state.radius).outerRadius(this.state.radius*0.9);
                     this.state.pie = window.d3.pie().sort(null).value( function(d) { return d[self.axis.axisY]; });
@@ -2269,10 +2275,11 @@
                     polyLine = this.d3.g.select(".lines").selectAll("polyline")
                         .data(this.state.pie(param), this.state.axisXFnc).enter()
                         .append("polyline").attr("opacity", 0.3).attr("stroke", 'black').attr("stroke-width", '1px').attr("fill", 'none').attr("stroke-opacity", 1);
+
                     if( this.props.groupInfoBox ){
                         legendNode = this.d3.g.append("g").attr("class", "infoBox").attr("text-anchor", "end").selectAll("g").data(param.map(function(dt){ return d3.values(dt)[0]; })).enter().append("g").attr("transform", function(d, i) { return "translate(0," + ((i * 20)) + ")"; });
-                        legendNode.append("rect").attr("x", -this.d3.width*0.5+10).attr("y", -this.d3.height*0.5+10).attr("width", 19).attr("height", 19).attr("fill", color);
-                        legendNode.append("text").attr("style", "font-size:12px").attr("text-anchor", "start").attr("x", -this.d3.width*0.5+35).attr("y", -this.d3.height*0.5+20).attr("dy", "0.32em").text(function(d) {return d;});
+                        legendNode.append("rect").attr("x", -this.d3.width*0.5+10).attr("y", -this.d3.height*0.5+30).attr("width", 15).attr("height", 15).attr("fill", color);
+                        legendNode.append("text").attr("style", "font-size:12px").attr("text-anchor", "start").attr("x", -this.d3.width*0.5+35).attr("y", -this.d3.height*0.5+38).attr("dy", "0.32em").text(function(d) {return d;});
                         legendNode.exit().remove();
                     }
 
@@ -2440,7 +2447,12 @@
                         title : ""
                     };
                     this.d3.svg = window.d3.select("#"+str_chartId).append("svg:svg").attr('id', this.state.uniqueName).attr("width", num_chartSizeW).attr("height", num_chartSizeH);
-                    this.d3.margin = {top: 40, right: 30, bottom: 30, left: 30};
+                    this.d3.margin = {
+                        top : this.props.topPos,
+                        right : this.props.rightPos,
+                        bottom : this.props.bottomPos,
+                        left : this.props.leftPos
+                    };
                     this.d3.width = num_chartSizeW - this.d3.margin.left - this.d3.margin.right;
                     this.d3.height = num_chartSizeH - this.d3.margin.top - this.d3.margin.bottom;
                     this.d3.g = this.d3.svg.append("g").attr("class", "js2uix_g").attr("transform", "translate(" + this.d3.margin.left + "," + this.d3.margin.top + ")");
@@ -2687,7 +2699,6 @@
             this.state.displayItem[0].innerText = this.state.displayItemNum;
             this.state.totalPage[0].innerText = this.state.totalPageNum;
             this.state.currentPage[0].value = this.state.currentPageNum;
-            console.log(param)
         },
         /** create element */
         setGridHeadElement : function(){
@@ -3023,14 +3034,14 @@
             var width = this.state.width = this.props.comboFixWidth || this.element.width();
             var height = this.state.height = this.state.comboBoxNode.height();
             var designWidth = ( this.props.comboFixWidth === 'parent' || typeof this.props.comboFixWidth !== 'number' )?'100%':width+height;
-            this.element.css({'width' : designWidth, 'height' : height});
-            this.state.comboBoxNode.css({'width' : designWidth, 'height' : height});
+            this.element.css({'width' : width, 'height' : height});
+            this.state.comboBoxNode.css({'width' : width, 'height' : height});
             this.state.titleNode.css('padding-right', 25);
             this.state.arrowNode.css({'width' : 25, 'height' : height});
             if( this.props.searchCombo ){
                 this.state.comboBoxNode.addClass('js2uix-search');
-                this.state.titleNode.css({'width' : designWidth, 'height' : height});
-                this.state.searchOptionNode.css({'width' : designWidth, 'top' : height-1});
+                this.state.titleNode.css({'width' : width, 'height' : height});
+                this.state.searchOptionNode.css({'width' : width, 'top' : height-1});
                 this.element[0].style.display = 'none';
             }
         },
@@ -3209,23 +3220,25 @@
         },
         setComboBoxSearchControl : function(remove){
             /** new search list box mousedown event */
-            var findItems = this.state.searchOptionNode.find('li');
-            if( remove ){
-                findItems.removeEvent('all');
-            } else {
-                var module = this;
-                findItems.addEvent('mouseup.'+this.js2uixName, function(e){
-                    if( this && !this.hasAttribute('data-disabled') ){
-                        if( module.element[0].value !== this.getAttribute('data-value') ){
-                            module.element[0].value = this.getAttribute('data-value') || '';
-                            module.setComboBoxOptionState(true);
-                            module.onChangeCallBack();
+            if(this.state.searchOptionNode){
+                var findItems = this.state.searchOptionNode.find('li');
+                if( remove ){
+                    findItems.removeEvent('all');
+                } else {
+                    var module = this;
+                    findItems.addEvent('mouseup.'+this.js2uixName, function(e){
+                        if( this && !this.hasAttribute('data-disabled') ){
+                            if( module.element[0].value !== this.getAttribute('data-value') ){
+                                module.element[0].value = this.getAttribute('data-value') || '';
+                                module.setComboBoxOptionState(true);
+                                module.onChangeCallBack();
+                            }
                         }
-                    }
-                    js2uix(this).addClass('on').siblingNodes().removeClass('on');
-                    module.state.searchOptionNode[0].style.display = 'none';
-                    e.stopPropagation();
-                });
+                        js2uix(this).addClass('on').siblingNodes().removeClass('on');
+                        module.state.searchOptionNode[0].style.display = 'none';
+                        e.stopPropagation();
+                    });
+                }
             }
         },
         /** default event */
@@ -3458,6 +3471,7 @@
             this.state.mouseX = event.pageX;
             this.state.mouseY = event.pageY ;
             if( !disableBool || disableBool === "false" || typeof disableBool === "undefined" ){this.state.isDrag = true;}
+            if( !this.props.handle ){ this.state.isHandle = true; }
             if( this.state.destroy || this.state.disable || disableBool === "true" || !this.state.isHandle ){this.state.isDrag = false;}
             if( this.state.isDrag ){
                 if( this.props.containment !== "parent" && this.props.containment !== "" && this.props.containment ){
@@ -4698,7 +4712,7 @@
             var element = js2xixElementResult(target);
             if( element && element.length > 0 ){ return new js2uixToolChart(element, props); }
         },
-        Combo : function(target, props){
+        ComboBox : function(target, props){
             var element = js2xixElementResult(target);
             if( element && element.length > 0 ){ return new js2uixToolCombo(element, props); }
         },
@@ -4706,7 +4720,7 @@
             var element = js2xixElementResult(target);
             if( element && element.length > 0 ){return new js2uixToolDrag(element, props);}
         },
-        Grid : function(target){
+        GridBox : function(target){
             var element = js2xixElementResult(target);
             if( element && element.length > 0 ){return new js2uixToolGrid(element);}
         },
