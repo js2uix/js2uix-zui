@@ -1,3 +1,14 @@
+/**
+ * ModuleName  : js2uix
+ * Version     : 1.0.1
+ * GitHub      : https://github.com/js2uix/js2uix
+ * Developer   : js2uix - JH.Yu
+ * Email       : deshineplus@icloud.com
+ * language    : Javascript(ES5)
+ * Copyright   : js2uix - JH.Yu
+ * FullSource  : https://github.com/js2uix/js2uix
+ * License     : https://github.com/js2uix/js2uix/blob/master/LICENSE
+ */
 /** js2uix - default */
 body.disableSelection * {  -webkit-user-select: none;  -moz-user-select: -moz-none;  -o-user-select: none;  user-select: none; }
 
