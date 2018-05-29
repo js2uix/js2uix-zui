@@ -9,10 +9,7 @@
  * FullSource  : https://github.com/js2uix/js2uix
  * License     : https://github.com/js2uix/js2uix/blob/master/LICENSE
  */
-/** js2uix - default */
 body.disableSelection * {  -webkit-user-select: none;  -moz-user-select: -moz-none;  -o-user-select: none;  user-select: none; }
-
-/** js2uix-grid */
 .js2uix-grid{ position: relative; display: block; width: 100%; min-width: 330px; height: 100%; font-size: 13px; border: 1px solid #ddd; overflow: hidden; -webkit-box-sizing: border-box;  -moz-box-sizing: border-box;  box-sizing: border-box; }
 .js2uix-grid.disableSelection * {  -webkit-user-select: none;  -moz-user-select: -moz-none;  -o-user-select: none;  user-select: none; }
 .js2uix-grid *{ -webkit-box-sizing: border-box;  -moz-box-sizing: border-box;  box-sizing: border-box; }
@@ -86,7 +83,6 @@ body.disableSelection * {  -webkit-user-select: none;  -moz-user-select: -moz-no
 .js2uix-grid .js2uix-grid-load{ display: none; position: absolute; top:0; left:0; bottom: 0; right: 0; width: 100%; height: 100%; background-color: rgba(255, 255, 255, 0.8); z-index: 1; }
 .js2uix-grid .js2uix-grid-load .innerBox{ position: absolute; width: 200px; height: 30px; top:calc(50% - 15px);  left: calc(50% - 100px); border: 1px solid #ccc; background-color: #fff; border-radius: 2px; text-align: center; padding: 5px;  -webkit-box-shadow: 0 2px 3px -1px rgba(0,0,0,0.23);  -moz-box-shadow: 0 2px 3px -1px rgba(0,0,0,0.23);  box-shadow: 0 2px 3px -1px rgba(0,0,0,0.23);}
 .js2uix-grid ul.js2uix-body-row li button{ display: inline-block; height: 22px; border: 1px solid #ddd; border-radius: 2px; margin: 0 2px; font-size: 12px; background-color: #efefef; cursor: pointer; }
-/** availableMini mode */
 .js2uix-grid{ min-width: 330px !important; }
 .js2uix-grid.availableMini .js2uix-grid-body{ height: calc(100% - 105px);  }
 .js2uix-grid.availableMini .js2uix-grid-foot{ height: 72px;  }
@@ -95,8 +91,6 @@ body.disableSelection * {  -webkit-user-select: none;  -moz-user-select: -moz-no
 .js2uix-grid.availableMini .js2uix-grid-foot .js2uix-grid-total{ position: absolute; bottom: 0; right: 0; }
 .js2uix-grid.availableMini .js2uix-grid-foot .js2uix-grid-page{ position: absolute; width: 100%; top: 0; left: 0; border-bottom: 1px solid #ddd; }
 .js2uix-grid.availableMini .js2uix-grid-foot .js2uix-grid-page ul{ text-align: center; }
-
-/** js2uix-combo */
 .js2uix-combo, .js2uix-combo *{ -webkit-box-sizing: border-box;  -moz-box-sizing: border-box;  box-sizing: border-box; }
 .js2uix-combo{position: relative; display: block; width: auto; height: 28px; }
 .js2uix-combo label.title{ position: absolute; display: block; top:0; left: 0; font-size: 12px; width: 100%; height: 100%; overflow: hidden; padding: 5px 0 5px 5px; text-align: left; border: 1px solid #ddd;  z-index:1; background-color: #fff; text-overflow: ellipsis; white-space: nowrap;}
@@ -113,8 +107,6 @@ body.disableSelection * {  -webkit-user-select: none;  -moz-user-select: -moz-no
 .js2uix-combo.js2uix-search .js2uix-option li:hover,
 .js2uix-combo.js2uix-search .js2uix-option li.on{ background-color: rgba(0, 175, 255, 0.1); }
 .js2uix-combo.js2uix-search .js2uix-option li[data-disabled='true']{ background-color: #efefef; cursor: default; }
-
-/** js2uix-draggable, js2uix-resizable */
 .js2uix-draggable { position: absolute; z-index: 9; }
 .js2uix-drag-handle{ cursor: pointer; }
 .js2uix-resize-handle { position: absolute; background-color: rgba(255, 0, 0, 0); }
@@ -131,8 +123,6 @@ body.disableSelection * {  -webkit-user-select: none;  -moz-user-select: -moz-no
 .js2uix-resize-ne:after { content: ""; position: absolute; width: 10px; height: 10px; right: 10px; top: 10px; background-position: -83px -228px; transform: rotate(270deg); }
 .js2uix-resize-sw:after { content: ""; position: absolute; width: 10px; height: 10px; left: 10px; bottom: 10px; background-position: -83px -228px; transform: rotate(90deg); }
 .js2uix-resize-nw:after { content: ""; position: absolute; width: 10px; height: 10px; left: 10px; top: 10px; background-position: -83px -228px; transform: rotate(180deg); }
-
-/** js2uix-tree */
 .js2uix-tree, .js2uix-tree *{ -webkit-box-sizing: border-box;  -moz-box-sizing: border-box;  box-sizing: border-box; }
 .js2uix-tree .js2uix-tree-content *{ display: block; }
 .js2uix-tree .js2uix-tree-content .js2uix-tree-group .js2uix-tree-group{ padding-left: 17px; }
@@ -145,18 +135,12 @@ body.disableSelection * {  -webkit-user-select: none;  -moz-user-select: -moz-no
 .js2uix-tree .js2uix-tree-content .js2uix-tree-title .js2uix-tree-icon{ width: 15px; height: 15px; margin-right: 3px; }
 .js2uix-tree .js2uix-tree-content .js2uix-tree-title .js2uix-tree-text{ font-size: 14px; }
 .js2uix-tree .js2uix-tree-content .js2uix-tree-child{ display: none; }
-
-/** js2uix-calendar */
 #js2uix-calendar, #js2uix-calendar * { -webkit-box-sizing: border-box;  -moz-box-sizing: border-box;  box-sizing: border-box; }
 #js2uix-calendar{display: none; position: absolute; width: 250px; height: auto; top:-9999px; left:-9999px; min-height: 150px; background-color: #fff; border: 1px solid #bbb; color: #4f4f4f; z-index: 9999; }
 #js2uix-calendar .js2uix-calendar-header .js2uix-control-left span,
 #js2uix-calendar .js2uix-calendar-header .js2uix-control-right span,
 #js2uix-calendar .js2uix-calendar-hidden .js2uix-select-year .js2uix-select-prev span,
 #js2uix-calendar .js2uix-calendar-hidden .js2uix-select-year .js2uix-select-next span{ background: url(images/uix-calendar.png) no-repeat;}
-
-
-
-
 #js2uix-calendar .js2uix-calendar-header{ position: relative; width: 100%; height: 35px; padding: 3px; vertical-align: top; background-color: #f9f9f9; font-size: 12px; border-bottom: 1px solid #ccc; overflow: hidden; }
 #js2uix-calendar .js2uix-calendar-header *{ display: inline-block; }
 #js2uix-calendar .js2uix-calendar-header .js2uix-control-left{ text-align: left;}
@@ -228,6 +212,5 @@ body.disableSelection * {  -webkit-user-select: none;  -moz-user-select: -moz-no
 #js2uix-calendar .js2uix-calendar-hidden .js2uix-select-month td{ width: 25%; text-align: center; font-size: 12px; border-radius: 3px; background-color: #fff; vertical-align: middle}
 #js2uix-calendar .js2uix-calendar-hidden .js2uix-select-month td:hover{ background-color: #f9f9f9; cursor: pointer; }
 #js2uix-calendar .js2uix-calendar-hidden .js2uix-select-month td.on{ background-color: #00abff !important; color: #fff; }
-/* js2uix-calendar input 설정 */
 input.js2uix-calendar-input[data-design=true]{ position: relative; min-height: 26px;  font-size: 12px; color: #4e4e4e; border: 1px solid #ccc; overflow: hidden; padding: 3px 5px; vertical-align: top; outline-style: none; border-radius: 3px; }
 input.js2uix-calendar-target[data-design=true]{ outline : 2px solid rgba(0, 157, 255, 0.2); background-color: rgba(0, 157, 255, 0.03); }
