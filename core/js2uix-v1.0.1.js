@@ -903,10 +903,10 @@
             return js2uixDomStyleApply(this, 'left', value);
         },
         width : function (value){
-            return js2uixDomStyleApply(this, 'width', value);
+            if( this ){return js2uixDomStyleApply(this, 'width', value);}
         },
         height : function (value){
-            return js2uixDomStyleApply(this, 'height', value);
+            if( this ){return js2uixDomStyleApply(this, 'height', value);}
         },
         offset : function () {
             if ( !this[0] ) {return;}
@@ -934,7 +934,7 @@
                 elm.style.opacity = 0;
                 var last = +new Date();
                 (function tick() {
-                    elm.style.opacity = +elm.style.opacity+((new Date()-last)/(speed |300));
+                    elm.style.opacity = +elm.style.opacity+((new Date()-last)/(speed||300));
                     last = +new Date();
                     if (+elm.style.opacity < 1) {
                         if( window.requestAnimationFrame ){
@@ -973,6 +973,24 @@
                     }
                 }());
             });
+            return this;
+        },
+        show : function(){
+            if(this && this.length > 0 ){
+                for(var i=0; i<this.length; i++){
+                    var result = window.getComputedStyle(this[i],null).getPropertyValue("display");
+                    if( result === '' || result !== 'inline-block'){result = 'block';}
+                    this[i].style.display = result;
+                }
+            }
+            return this;
+        },
+        hide : function(){
+            if(this && this.length > 0 ){
+                for(var i=0; i<this.length; i++){
+                    this[i].style.display = 'none';
+                }
+            }
             return this;
         }
     });
