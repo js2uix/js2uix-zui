@@ -1713,7 +1713,7 @@
             dataLength  : 0,
             idName      : "",
             max_width   : 1740,
-            min_width   : 300,
+            min_width   : 200,
             min_height  : 100,
             resize      : false,
             uniqueId    : '',
@@ -2395,8 +2395,15 @@
             var opts = this.props;
             var str_chartId = chart[0].id;
             var parentWrap = chart.parent().offset();
-            var num_chartSizeW = (parentWrap.width)-(parentWrap.paddingL+parentWrap.paddingR);
-            var num_chartSizeH = (parentWrap.height)-(parentWrap.paddingT+parentWrap.paddingB);
+            var num_chartSizeW;
+            var num_chartSizeH;
+            if( !parentWrap ){
+                num_chartSizeW = '100%';
+                num_chartSizeH = '100%';
+            } else {
+                num_chartSizeW = (parentWrap.width)-(parentWrap.paddingL+parentWrap.paddingR);
+                num_chartSizeH = (parentWrap.height)-(parentWrap.paddingT+parentWrap.paddingB);
+            }
             var axis = this.axis = {
                 axisX       : opts.nameAxisX,
                 axisY       : opts.nameAxisY,
