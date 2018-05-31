@@ -171,7 +171,6 @@
         }
     };
 
-
     js2uix = function (select){return new js2uix.fx.init(select);};
     js2uix.fx = js2uix.prototype = {
         js2uix : ModuleVersion,
@@ -320,7 +319,6 @@
             }
         }
     });
-
     js2uix.extend({
         addId : function ( item, name ){
             if( item && name && typeof name === 'string' ){
