@@ -5,19 +5,19 @@ js2uix 는 Dom Control 기능과 Component 제작 기능을 결합한 새로운 
 
 ## js2uix (js2uix-dom-control)
 <pre>
- * ModuleName  : js2uix-dom-control(js2uix)
- * GitHub      : https://github.com/js2uix/js2uix
- * Developer   : YJH-js2uix
+ * Name        : js2uix
+ * Version     : <%= version %>
+ * Developer   : JH.Yu
  * Email       : deshineplus@icloud.com
- * language    : Javascript(ES5)
- * StartDate   : 2018.02.01
- * Copyright   : YJH-js2uix
- * License     : Released under the MIT license
+ * Language    : Javascript(ES5)
+ * Copyright   : 2018 JH.Yu (js2uix)
+ * GitHub      : https://github.com/js2uix/js2uix
+ * License     : https://github.com/js2uix/js2uix/blob/master/LICENSE
  
- * Create Dom Control Module (html 의 dom 을 컨트롤 할 수 있는 모듈을 제작) 단계적으로 아래와 같은 기능을 개발한다.
- 1. ES5 를 이용한 Dom Select 및 Control 기능 구현.
- 2. 간단한 Dom Select/Control 을 통해 기능 확장.
- 3. 기본 기능 완료 후 javascript component 기능 추가.
+ * Create Dom Control Module (html 의 dom control, component, ui 제작 툴)
+ 1. js2uix()
+ 2. js2uix.Component()
+ 3. js2uix.UI
 </pre>
 
 
