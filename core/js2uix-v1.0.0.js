@@ -1,14 +1,14 @@
 /**
- * ModuleName  : js2uix
+ * Name        : js2uix
  * Version     : 1.0.0
- * GitHub      : https://github.com/js2uix/js2uix
- * Developer   : js2uix - JH.Yu
+ * Developer   : JH.Yu
  * Email       : deshineplus@icloud.com
- * language    : Javascript(ES5)
- * Copyright   : js2uix - JH.Yu
- * FullSource  : https://github.com/js2uix/js2uix
+ * Language    : Javascript(ES5)
+ * Copyright   : 2018 JH.Yu (js2uix)
+ * GitHub      : https://github.com/js2uix/js2uix
  * License     : https://github.com/js2uix/js2uix/blob/master/LICENSE
  * build       : gulp.js
+ * npm-install : npm install js2uix
  */
 (function( global, factory ){
     "use strict";

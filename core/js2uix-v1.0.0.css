@@ -1,15 +1,16 @@
 /**
- * ModuleName  : js2uix
+ * Name        : js2uix
  * Version     : 1.0.0
- * GitHub      : https://github.com/js2uix/js2uix
- * Developer   : js2uix - JH.Yu
+ * Developer   : JH.Yu
  * Email       : deshineplus@icloud.com
- * language    : Javascript(ES5)
- * Copyright   : js2uix - JH.Yu
- * FullSource  : https://github.com/js2uix/js2uix
+ * Language    : Javascript(ES5)
+ * Copyright   : 2018 JH.Yu (js2uix)
+ * GitHub      : https://github.com/js2uix/js2uix
  * License     : https://github.com/js2uix/js2uix/blob/master/LICENSE
  * build       : gulp.js
+ * npm-install : npm install js2uix
  */
+/* js2uix start */
 body.disableSelection * {  -webkit-user-select: none;  -moz-user-select: -moz-none;  -o-user-select: none;  user-select: none; }
 .js2uix-grid{ position: relative; display: block; width: 100%; min-width: 330px; height: 100%; font-size: 13px; border: 1px solid #ddd; overflow: hidden; -webkit-box-sizing: border-box;  -moz-box-sizing: border-box;  box-sizing: border-box; }
 .js2uix-grid.disableSelection * {  -webkit-user-select: none;  -moz-user-select: -moz-none;  -o-user-select: none;  user-select: none; }
