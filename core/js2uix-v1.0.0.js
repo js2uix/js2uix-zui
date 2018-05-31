@@ -1,6 +1,6 @@
 /**
  * ModuleName  : js2uix
- * Version     : 1.0.1
+ * Version     : 1.0.0
  * GitHub      : https://github.com/js2uix/js2uix
  * Developer   : js2uix - JH.Yu
  * Email       : deshineplus@icloud.com
@@ -27,7 +27,7 @@
     'use strict';
     var js2uix,
         ModuleName = 'js2uix',
-        ModuleVersion = 'v1.0.1';
+        ModuleVersion = 'v1.0.0';
     var DOC = window.document,
         SetProtoType = Object.setPrototypeOf,
         GetProtoType = Object.getPrototypeOf;
