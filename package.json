@@ -1,8 +1,8 @@
 {
   "name": "js2uix",
-  "version": "1.0.1",
+  "version": "1.0.0",
   "description": "js2uix dom control and ui module",
-  "main": "core/js2uix-v1.0.1.js",
+  "main": "js2uix-v1.0.0.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -10,14 +10,13 @@
     "type": "git",
     "url": "git+https://github.com/js2uix/js2uix.git"
   },
-  "keywords": ["js2uix"],
+  "keywords": [
+    "js2uix"
+  ],
   "author": "js2uix",
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/js2uix/js2uix/issues"
   },
-  "homepage": "https://github.com/js2uix/js2uix#readme",
-  "devDependencies": {
-    "js2uix-test": "file:js2uix"
-  }
+  "homepage": "https://github.com/js2uix/js2uix#readme"
 }
