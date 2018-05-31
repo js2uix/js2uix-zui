@@ -1,6 +1,6 @@
 /**
  * ModuleName  : js2uix
- * Version     : 1.0.1
+ * Version     : 1.0.0
  * GitHub      : https://github.com/js2uix/js2uix
  * Developer   : js2uix - JH.Yu
  * Email       : deshineplus@icloud.com
