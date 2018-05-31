@@ -10,9 +10,7 @@
     "type": "git",
     "url": "git+https://github.com/js2uix/js2uix.git"
   },
-  "keywords": [
-    "js2uix"
-  ],
+  "keywords": ["js2uix"],
   "author": "js2uix",
   "license": "MIT",
   "bugs": {
