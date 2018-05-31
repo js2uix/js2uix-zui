@@ -3398,6 +3398,7 @@
             this.state.isCancel = false;
         },
         setMouseDownNodeEventHandler : function( event ){
+            if( event.target.classList[0] === 'js2uix-resize-handle' ){return;}
             var nodeX, nodeY;
             var disableBool = this.element.getAttr("data-disable");
             var parent = this.element.parent();
@@ -3519,15 +3520,8 @@
         setDragCancelControl : function(){
             if( this.props.cancel && this.props.cancel !== ""){
                 var cancel = this.element.find(this.props.cancel).addClass(this.uiDragCancelClass);
-                var dragCancel = this.element.find('.js2uix-resize-handle');
                 if( cancel.length > 0 ){
                     cancel.addEvent({
-                        'mousedown.js2uix-drag-cancel' : this.setMouseDownCancelEventHandler.bind(this),
-                        'mouseup.js2uix-drag-cancel' : this.setMouseUpCancelEventHandler.bind(this)
-                    });
-                }
-                if( dragCancel.length > 0 ){
-                    dragCancel.addEvent({
                         'mousedown.js2uix-drag-cancel' : this.setMouseDownCancelEventHandler.bind(this),
                         'mouseup.js2uix-drag-cancel' : this.setMouseUpCancelEventHandler.bind(this)
                     });
@@ -3535,7 +3529,6 @@
             }else{
                 this.state.isCancel = false;
                 cancel = null;
-                dragCancel = null;
             }
         },
         setDragNodeControl : function(){
