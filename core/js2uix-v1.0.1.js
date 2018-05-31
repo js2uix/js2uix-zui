@@ -8,6 +8,7 @@
  * Copyright   : js2uix - JH.Yu
  * FullSource  : https://github.com/js2uix/js2uix
  * License     : https://github.com/js2uix/js2uix/blob/master/LICENSE
+ * build       : gulp.js
  */
 (function( global, factory ){
     "use strict";
@@ -170,14 +171,7 @@
         }
     };
 
-    /** js2uix-control create object ( js2uix control 을 정의한다 )
-     * TODO : 가장 기본적인 기능을 먼저 활성화 하며, 추후 ui 기능을 확장한다.
-     * info : NodeList 객체를 새롭게 해석하여 module 화 한며, 새로운 Node 객체를 만들고 기능을 확장/상속 시킨다.
-     * */
 
-    /** TODO : extend prototype, 상속을 구현한다.
-     * Object.setPrototypeOf 기본 사용 / 불가능 : __proto__ 를 이용하여 상속.
-     * */
     js2uix = function (select){return new js2uix.fx.init(select);};
     js2uix.fx = js2uix.prototype = {
         js2uix : ModuleVersion,
@@ -201,12 +195,7 @@
     };
     js2uix.fx.init = function (select){
         if ( !select ) { return this; }
-        /** TODO : Dom Query
-         * ES5 를 이용한 Dom Query Select 를 구현한다.
-         * 예외처리를 통해 Error 상황에 대응한다.
-         * */
         if ( typeof select === 'string' ){
-            // TODO : id or class 타입의 string - 보완 필요
             var tagName;
             var virtualDom;
             var isType = js2uixCheckValidation(select);
@@ -332,10 +321,7 @@
         }
     });
 
-    /** TODO : 추가적인 기능을 확장한다. 추가기능은 단계적으로 control 에 필요한 기능을 추가한다. */
-    /** js2uix-control-attribute method : js2uix 의 공통 속성 모듈을 확장한다. */
     js2uix.extend({
-        /** control attribute[id] name */
         addId : function ( item, name ){
             if( item && name && typeof name === 'string' ){
                 item.id = name;
@@ -355,7 +341,6 @@
             }
             return result;
         },
-        /** control attribute[class] name */
         addClass : function ( item, name ){
             if( item && name && typeof name === 'string' ){
                 name = name.split(' ');
@@ -390,7 +375,6 @@
             }
             return result;
         },
-        /** control attribute[*] name */
         setAttr : function ( item, name, value ){
             if( item ){
                 if( typeof name === 'object' ){
@@ -422,7 +406,6 @@
         }
     });
     js2uix.fx.extend({
-        /** control attribute[id] name */
         addId : function ( name ){
             js2uix.addId( this[0], name );
             return this;
@@ -434,7 +417,6 @@
         hasId : function ( name ){
             return js2uix.hasId( this[0], name );
         },
-        /** control attribute[class] name */
         addClass : function ( name ){
             for( var i=0; i < this.length; i++ ){
                 js2uix.addClass( this[i], name );
@@ -450,7 +432,6 @@
         hasClass : function ( name ){
             return js2uix.hasClass( this[0], name );
         },
-        /** control attribute[*] name */
         setAttr : function ( name, value ){
             for ( var i=0; i < this.length; i++ ){
                 js2uix.setAttr(this[i], name, value);
@@ -480,7 +461,6 @@
         }
     });
 
-    /** js2uix-control-basic method : js2uix 의 공통 기본 모듈을 확장한다. */
     js2uix.extend({
         loop : function ( item, callback ){
             var length, i = 0;
@@ -570,7 +550,6 @@
         uiComponent : new js2uixConstModule()
     });
     js2uix.fx.extend({
-        /** control basic method - utility */
         loop : function ( callback ){
             return js2uix.loop( this, callback );
         },
@@ -579,7 +558,6 @@
                 js2uix.loaded( this, callback );
             }
         },
-        /** control basic query - dom select */
         find : function ( name ){
             var result = [];
             if( name && typeof name === 'string' ){
@@ -703,7 +681,6 @@
                 }
             }
         },
-        /** control basic method - dom change */
         append : function (){
             var arg = arguments;
             if( arg.length > 0 ){
@@ -835,7 +812,6 @@
         }
     });
 
-    /** js2uix-control-style method : js2uix 의 공통 style 모듈을 확장한다. */
     var js2uixDomStyleParse = function (name, value){
         var i;
         var type;
@@ -995,7 +971,6 @@
         }
     });
 
-    /** js2uix-control-event method : js2uix 만의 dom event handler 모듈을 확장한다. */
     var js2uixFxAddEventHandler = function (item, param){
         var eventNameArray = param[0].split('.');
         var eventKeyName = eventNameArray[1];
@@ -1036,7 +1011,6 @@
         }
     };
     var js2uixFxRemoveEventHandler = function (item, param){
-        /** document node event remove */
         js2uix.loop(item, function(){
             var key;
             var i;
@@ -1090,7 +1064,6 @@
                 }
             }
         });
-        /** module node event remove */
         js2uix.loop(item, function(){
             var key;
             var i;
@@ -1143,9 +1116,6 @@
         }
     });
 
-    /** js2uix-ajax method : xhr 을 이용한 js2uix 만의 ajax 통신 모듈을 확장한다.
-     * TODO : xhr 을 이용한 ajax 통신 구현 추후 고도화 필요
-     * */
     var js2uixAjax = function(form, option){
         this._target = form;
         this._onceMemory = {
@@ -1159,7 +1129,6 @@
             try {
                 return new window.XMLHttpRequest();
             } catch ( e ) {
-                /** error */
                 throw error;
             }
         },
@@ -1250,20 +1219,16 @@
             var _module = this;
             var request = this._xhr();
 
-            /** ajax request set */
             request.open( option.method, option.url, option.async);
 
-            /** ajax content type set */
             if( option.data && !option.upload){
                 request.setRequestHeader("Content-type", option.contentType);
             }
 
-            /** ajax uploadMode type set */
             if ( request.upload && option.upload ) {
                 this._setUploadHandler(request, option);
             }
 
-            /** ajax onLoad set */
             request.onload = function(evt) {
                 if ( (request.status >= 200 && request.status < 400) && request.readyState == 4 ) {
                     var returnValue = request.responseText;
@@ -1286,7 +1251,6 @@
                 }
             };
 
-            /** ajax onError set */
             request.onerror = function() {
                 if( option.error && typeof option.success == "function" ){
                     option.error();
@@ -1295,7 +1259,6 @@
                 }
             };
 
-            /** ajax send set */
             request.send(dataQuery);
         },
         _setAjaxData : function(form, option){
@@ -1353,7 +1316,6 @@
     };
     js2uixAjax.prototype.constructor = js2uixAjax;
 
-    /** js2uix-component method : js2uix 의 컴포넌트 생성 모듈을 확장한다. */
     var js2uixRouter = function(){
         this.location = null;
         this.hash = null;
@@ -1439,7 +1401,6 @@
             this.setUpdateState();
         },
         setUpdateState : function (){
-            /** TODO : 추가적인 개발 필요 */
             this.setRender();
             if (typeof this.onStateWillChange === 'function' ){
                 this.onStateWillChange();
@@ -1477,7 +1438,6 @@
                 this.domState[name] = value;
             }.bind(this));
         },
-        /** TODO : component 기능 임시 모듈 */
         setForceUpdate : function (isRenderObject){
             if (this.render && typeof this.render === 'function'){
                 if (isRenderObject && isRenderObject[0]){
@@ -1670,11 +1630,7 @@
         }
     });
 
-    /** js2uix-ui-module method : js2uix 의 UI 모듈 기능을 확장한다.
-     *  TODO : D3.js를 이용한 그래프 모듈 확장 및 고도화 필요.
-     *  */
     var ROOT = js2uix('html');
-    /** js2uix-chart : D3.js 를 이용한 차트 객체 생성 모듈 */
     var js2uixD3Style = function(target, props){
         target.append('<style class="js2uixD3">\n' +
             props.svgId+' .js2uix_g .grid_x,\n' +
@@ -1747,7 +1703,6 @@
     };
     js2uixToolChart.prototype = {
         uiChartClass : 'js2uix-chart',
-        /** Create js2uix D3 Chart Info */
         renderChartDefaultSetting : function(elm){
             if( elm.length > 0 ){
                 this.state.uniqueId = js2uixUniqueId();
@@ -1869,7 +1824,6 @@
                 keys = null;
             }
         },
-        /** Crate js2uix D3 Chart Type */
         js2uixSingleAreaType : function(param){
             var keyX = "axisX";
             var keyY = "axisY";
@@ -1907,7 +1861,6 @@
                 }
                 this.nodes.pathArea.datum(parseData).transition().duration(this.props.duration).attr('d', this.state.d3_area);
                 this.nodes.pathArea.exit().remove();
-                /** common axis type */
                 this.setCommonChartAxisYNode();
                 this.setCommonChartAxisXYGrid();
             } finally {
@@ -2000,7 +1953,6 @@
 
                 this.nodes.pathNode.exit().remove();
                 this.nodes.lineNode.exit().remove();
-                /** common axis type */
                 this.setCommonChartAxisYNode();
                 this.setCommonChartAxisXYGrid();
             } finally {
@@ -2047,7 +1999,6 @@
                 }
                 this.nodes.pathArea.datum(parseData).transition().duration(this.props.duration).attr('d', this.state.d3_line);
                 this.nodes.pathArea.exit().remove();
-                /** common axis type */
                 this.setCommonChartAxisYNode();
                 this.setCommonChartAxisXYGrid();
             } finally {
@@ -2117,7 +2068,6 @@
                 }
                 pathArea.transition().duration(this.props.duration).attr('d', this.state.d3_line);
                 pathArea.exit().remove();
-                /** common axis type */
                 this.setCommonChartAxisYNode();
                 this.setCommonChartAxisXYGrid();
             } finally {
@@ -2175,7 +2125,6 @@
                     .attr("y", function(dt) {return self.d3.y(dt[keyY]);})
                     .attr("height", function(dt) {return self.d3.height - self.d3.y(dt[keyY]);});
                 rectNode.exit().remove();
-                /** common axis type */
                 this.setCommonChartAxisYNode();
                 this.setCommonChartAxisXYGrid();
             } finally {
@@ -2248,7 +2197,6 @@
                     .attr("y", function(){ return self.d3.height-window.d3.select(this).attr("data-height"); })
                     .attr("height", function(dt, dv) { if(dv === 0 ){ boxIdx++; } return self.d3.height - self.d3.y(boxValueArray[boxIdx-1][dv]); });
                 rectNode.exit().remove();
-                /** common axis type */
                 this.setCommonChartAxisYNode();
                 this.setCommonChartAxisXYGrid();
             } finally {
@@ -2279,7 +2227,6 @@
                     this.d3.g.append("g").attr("class", "lines");
                     this.nodes.title_g = this.d3.g.append("g").attr("class", "titleBox").append("text");
 
-                    /** TODO : 노드 정의 */
                     sliceNode = this.d3.g.append("g").attr("class", "slices ui-"+this.state.uniqueId).selectAll("path.slice").data(this.state.pie(param), this.state.axisXFnc).enter().insert("path").style("fill", function(d) { return color(d.data[self.axis.axisX]); }).attr("class", "slice").attr('fill-opacity', this.props.colorAlpha);
                     circleText = this.d3.g.select(".labels").selectAll("text")
                         .data(this.state.pie(param), this.state.axisXFnc).enter()
@@ -2295,7 +2242,6 @@
                         legendNode.exit().remove();
                     }
 
-                    /** DOM select */
                     this.nodes.slice = this.d3.g.selectAll("path.slice");
                     this.nodes.circleText = this.d3.g.select(".labels").selectAll("text");
                     this.nodes.polyLine = this.d3.g.select(".lines").selectAll("polyline");
@@ -2353,7 +2299,6 @@
                 legendNode = null;
             }
         },
-        /** Create Default Setting */
         setSwitchChartDomType : function (param){
             switch(this.props.chartType){
                 case "line-s" : this.js2uixSingleLineType(param); break;
@@ -2512,7 +2457,6 @@
     };
     js2uixToolChart.prototype.constructor = js2uixToolChart;
 
-    /** js2uix-grid : 테이블(리스트형) 게시판의 객체 생성 모듈 */
     var js2xixElementResult = function(target){
         if( target ){
             if( typeof target === 'string' ){
@@ -2664,7 +2608,6 @@
             }
         },
         setAdjustStyleLayout : function(){
-            /** TODO : 추후 기능을 바꿀 필요 있음 */
             this.state.gridAdjustGap = this.state.contentBody.width() - this.state.contentBodyList.width();
             this.state.contentHead[0].children[0].style.paddingRight = this.state.gridAdjustGap+'px';
             if( this.state.contentBodyList ){
@@ -2675,12 +2618,10 @@
             }
         },
         setDefaultOptionState : function(){
-            /** checkbox */
             if( this.state.optionCheckbox ){
                 this.state.optionCheckbox[0].firstChild.checked = false;
             }
         },
-        /** set state */
         setGridDefaultState : function(){
             var calcWidth = 0;
             this.idName = ( !this.element[0].id )?this.idName = ModuleName+'Grid'+js2uixUniqueId():this.element[0].id;
@@ -2701,7 +2642,6 @@
             }
         },
         setGridRenderState : function(param){
-            /** set state-value */
             this.state.totalCountNum = parseInt(param.totalCount);
             this.state.currentPageNum = parseInt(param.pageCount);
             this.state.listCountNum = parseInt(param.listCount || this.state.listCountNum);
@@ -2713,13 +2653,11 @@
             this.gridData = param.data;
         },
         setGridFootState : function(param){
-            /** set node-value*/
             this.state.totalItem[0].innerText = this.state.totalCountNum;
             this.state.displayItem[0].innerText = this.state.displayItemNum;
             this.state.totalPage[0].innerText = this.state.totalPageNum;
             this.state.currentPage[0].value = this.state.currentPageNum;
         },
-        /** create element */
         setGridHeadElement : function(){
             if( this.props.fieldTitle && this.props.fieldName ){
                 var headContentUl = js2uix.createDom('ul', {className : 'js2uix-grid-head-wrap js2uix-head-row'}, true);
@@ -2854,7 +2792,6 @@
             this.setGridBodyControl(true);
             this.element[0].innerHTML = '';
         },
-        /** create element event */
         setGridHeadControl : function(target){
             var module = this;
             target.find('li.field').addEvent('click.js2uix-grid', function(){
@@ -2894,7 +2831,6 @@
         },
         setGridFootControl : function(target){
             var module = this;
-            /** first page search */
             target.find('.first').addEvent('click.js2uix-grid', function(){
                 if( module.state.currentPageNum !== 1 && module.state.isControl ){
                     module.state.currentPageNum = 1;
@@ -2902,7 +2838,6 @@
                 }
                 return false;
             });
-            /** prev page search */
             target.find('.prev').addEvent('click.js2uix-grid', function(){
                 if( module.state.currentPageNum !== 1  && module.state.isControl ){
                     module.state.currentPageNum = (module.state.currentPageNum-1 !== 0 )?module.state.currentPageNum-1:1;
@@ -2910,7 +2845,6 @@
                 }
                 return false;
             });
-            /** next page search */
             target.find('.next').addEvent('click.js2uix-grid', function(){
                 if( (module.state.currentPageNum < module.state.totalPageNum) && module.state.isControl ){
                     module.state.currentPageNum = (module.state.currentPageNum+1 <= module.state.totalPageNum )?module.state.currentPageNum+1:module.state.totalPageNum;
@@ -2918,7 +2852,6 @@
                 }
                 return false;
             });
-            /** last page search */
             target.find('.last').addEvent('click.js2uix-grid', function(){
                 if( (module.state.currentPageNum < module.state.totalPageNum) && module.state.isControl ){
                     module.state.currentPageNum = module.state.totalPageNum;
@@ -2926,14 +2859,12 @@
                 }
                 return false;
             });
-            /** reload page */
             target.find('.reload').addEvent('click.js2uix-grid', function(){
                 if( module.state.isControl ){
                     module.onChangeStateEvent();
                 }
                 return false;
             });
-            /** user page search */
             target.find('.crtPage').addEvent('keyup.js2uix-grid', function(e){
                 var thisValue = this.value;
                 thisValue = thisValue.replace(/[^0-9]/gi,"");
@@ -2951,7 +2882,6 @@
                 }
                 return false;
             });
-            /** select list change */
             target.find('select').addEvent('change.js2uix-grid', function(e){
                 if( module.state.isControl ){
                     module.state.currentPageNum = 1;
@@ -2961,7 +2891,6 @@
                 return false;
             });
         },
-        /** default fnc */
         setGridCreateElement : function(){
             this.setGridDefaultElement();
             this.setGridHeadElement();
@@ -3015,7 +2944,6 @@
     };
     js2uixToolGrid.prototype.constructor = js2uixToolGrid;
 
-    /** js2uix-combo : 일반 select 박스 및 검색형 select 박스의 객체 생성 모듈 */
     var js2uixToolCombo = function(element, props){
         this.element = element;
         this.props = {
@@ -3161,17 +3089,14 @@
                 comboSelect[0].scrollTop = scroll+((itemIndex*itemHeight)-(comboBoxHeight+scroll));
             }
         },
-        /** bind control event */
         setComboBoxDefaultControl : function(){
             var module = this;
             if( this.props.searchCombo ){
-                /** input keyup event */
                 this.state.titleNode.addEvent('keyup.'+this.js2uixName, function(e){
                     if( (e.keyCode < 37 || e.keyCode > 40) && e.keyCode !== 13 ){
                         module.onSearchCallBack(this, this.value);
                     }
                 });
-                /** input keydown event */
                 this.state.titleNode.addEvent('keydown.'+this.js2uixName, function(e){
                     var thisKeyCode = e.keyCode;
                     if( thisKeyCode === 38 || thisKeyCode === 40 || thisKeyCode === 13){
@@ -3212,21 +3137,17 @@
                         }
                     }
                 });
-                /** input mousedown event */
                 this.state.titleNode.addEvent('mousedown.'+this.js2uixName, function(e){
                     module.state.searchOptionNode[0].style.display = 'block';
                     e.stopPropagation();
                 });
-                /** input mousedown event */
                 this.state.arrowNode.addEvent('mousedown.'+this.js2uixName, function(e){
                     module.state.searchOptionNode[0].style.display = (module.state.searchOptionNode[0].style.display !== 'block')?'block':'none';
                     e.stopPropagation();
                 });
-                /** new search list box mousedown event */
                 this.state.searchOptionNode.addEvent('mousedown.'+this.js2uixName, function(e){
                     e.stopPropagation();
                 });
-                /** body mousedown event */
                 js2uix('body').addEvent('mousedown.'+this.js2uixName, function(){
                     module.state.searchOptionNode[0].style.display = 'none';
                 });
@@ -3238,7 +3159,6 @@
             }
         },
         setComboBoxSearchControl : function(remove){
-            /** new search list box mousedown event */
             if(this.state.searchOptionNode){
                 var findItems = this.state.searchOptionNode.find('li');
                 if( remove ){
@@ -3260,7 +3180,6 @@
                 }
             }
         },
-        /** default event */
         setOption : function(param){
             if( param && Array.isArray(param) ){
                 var i;
@@ -3315,7 +3234,6 @@
     };
     js2uixToolCombo.prototype.constructor = js2uixToolCombo;
 
-    /** js2uix-drag : 드래그 가능 객체 생성 모듈 */
     var js2uixUICommon = {
         setLimitPosition : function(parent, target){
             var opt = this.state;
@@ -3587,7 +3505,6 @@
                 dropTarget  : obj_dropInfo
             });
         },
-        /** default control event */
         setDragHandleControl : function(){
             if(this.props.handle && this.props.handle !== ""){
                 var userHandle = this.element.find(this.props.handle).addClass(this.uiDragHandleClass);
@@ -3624,7 +3541,6 @@
             ROOT.addEvent('mousemove.js2uix-'+this.state.dataId, this.setMouseMoveWindowEventHandler.bind(this));
             ROOT.addEvent('mouseup.js2uix-'+this.state.dataId, this.setMouseUpWindowEventHandler.bind(this));
         },
-        /** default event */
         setCallBackCreate: function(){
             if( typeof this.props.create === 'function' ){
                 this.props.create({
@@ -3681,7 +3597,6 @@
     js2uix.extend(js2uixToolDrag.prototype, js2uixUICommon);
     js2uixToolDrag.prototype.constructor = js2uixToolDrag;
 
-    /** js2uix-resize : 리사이즈 가능 객체 생성 모듈 */
     var js2uixToolResize = function(element, props){
         this.element = element;
         this.props = {
@@ -3990,7 +3905,6 @@
     js2uix.extend(js2uixToolResize.prototype, js2uixUICommon);
     js2uixToolResize.prototype.constructor = js2uixToolResize;
 
-    /** js2uix-tree : 확장형 트리 메뉴 UI 의 기본 객체 생성 모듈 */
     var js2uixToolTree = function(element, props){
         this.element = element;
         this.props = {
@@ -4105,7 +4019,6 @@
     };
     js2uixToolTree.prototype.constructor = js2uixToolTree;
 
-    /** js2uix-calendar : 달력 UI 의 달력 객체 생성 모듈 */
     var js2uixCalendar;
     var js2uixCalendarCommon = {getDateCheckUserObject : function(y, m, d){
             var date = new Date();
@@ -4172,6 +4085,23 @@
                 prevLastDay = null;
             }
         }};
+    var js2uixCheckScroll = function(target) {
+        var rootElem = target;
+        var overflowStyle;
+        if (typeof rootElem.currentStyle !== 'undefined'){
+            overflowStyle = rootElem.currentStyle.overflow;
+        }
+        overflowStyle = overflowStyle || window.getComputedStyle(rootElem, '').overflow;
+        var overflowYStyle;
+        if (typeof rootElem.currentStyle !== 'undefined'){
+            overflowYStyle = rootElem.currentStyle.overflowY;
+        }
+        overflowYStyle = overflowYStyle || window.getComputedStyle(rootElem, '').overflowY;
+        var contentOverflows = rootElem.scrollHeight > rootElem.clientHeight;
+        var overflowShown    = /^(visible|auto)$/.test(overflowStyle) || /^(visible|auto)$/.test(overflowYStyle)
+        var alwaysShowScroll = overflowStyle === 'scroll' || overflowYStyle === 'scroll';
+        return (contentOverflows && overflowShown) || (alwaysShowScroll)
+    };
     var js2uixToolCalendar = function(){
         this.dom = {};
         this.props = {
@@ -4207,7 +4137,6 @@
     };
     js2uixToolCalendar.prototype = {
         js2uixName : 'js2uix-calendar',
-        /** basic calendar element */
         setCalendarStateChange : function(){
             if( this.state.language === 'eng' ){
                 this.dom.headEng[0].style.display = this.dom.contentEng[0].style.display = 'block';
@@ -4374,8 +4303,22 @@
                         if( this.state.selectDay === insertStartDay && this.state.selectYear === param.current_year && this.state.selectMonth === param.current_month ){ tdNode.addClass("js2uix-calendar-select"); }
                     }
                     if( this.state.dateRange ){
-                        if( minMax.min.year !== param.current_year || minMax.min.month !== param.current_month || minMax.min.day > insertStartDay ){tdNode.addClass("js2uix-date-disabled");}
-                        if( minMax.max.year !== param.current_year || minMax.max.month !== param.current_month || minMax.max.day < insertStartDay ){tdNode.addClass("js2uix-date-disabled");}
+                        if( param.current_year < minMax.min.year || param.current_year > minMax.max.year){
+                            tdNode.addClass("js2uix-date-disabled");
+                        } else {
+                            if( param.current_year === minMax.min.year && param.current_month < minMax.min.month ){
+                                tdNode.addClass("js2uix-date-disabled");
+                            }
+                            if( param.current_year === minMax.min.year && param.current_month === minMax.min.month && insertStartDay < minMax.min.day ){
+                                tdNode.addClass("js2uix-date-disabled");
+                            }
+                            if( param.current_year === minMax.max.year && param.current_month > minMax.max.month ){
+                                tdNode.addClass("js2uix-date-disabled");
+                            }
+                            if( param.current_year === minMax.max.year && param.current_month === minMax.max.month && insertStartDay > minMax.max.day  ){
+                                tdNode.addClass("js2uix-date-disabled");
+                            }
+                        }
                     }
                     if( this.state.untilToday ){
                         if( (nowYear < param.current_year) || ((nowYear === param.current_year) && ((nowMonth < param.current_month) || (nowMonth === param.current_month && ((insertStartDay > nowDay) || (i === totalDayNumberLoop && j > param.current_lastWeekNumber+1))))) ){
@@ -4395,7 +4338,6 @@
                 this.dom.monthBox.find(".js2uix-select-month td").removeClass("on");
                 this.dom.monthBox.find(".js2uix-select-month td[data-month='"+param.current_month+"']").addClass("on");
                 this.dom.js2uixCalendar.setAttr({"data-year" : param.current_year, "data-month" : param.current_month });
-                /** append Node & bind event */
                 this.setAddEventDateItem(false);
                 this.dom.contentBody.html(js2uix(newObject));
                 this.setAddEventDateItem(true);
@@ -4420,7 +4362,6 @@
             this.setCalendarDateCalculation(target, this.getDateCheckUserObject(state.year, state.month, state.day));
             this.setCalendarLayoutChange(target);
         },
-        /** basic control */
         getSwitchDateNumber : function(type, select){
             var year = parseInt(this.dom.js2uixCalendar.getAttr("data-year"));
             var month = parseInt(this.dom.js2uixCalendar.getAttr("data-month"));
@@ -4501,20 +4442,31 @@
         },
         setAddEventWindowControl : function(){
             var module = this;
-            ROOT.addEvent('mousedown.js2uix-calendar', function(){
-                module.setCommonEventHandler();
-            });
-            window.addEventListener("scroll", function(){
-                module.setCommonEventHandler();
-            });
-            window.addEventListener("resize", function(){
-                module.setCommonEventHandler();
-            });
+            var all = document.querySelectorAll('body, body *');
+            try {
+                ROOT.addEvent('mousedown.js2uix-calendar', function(){
+                    module.setCommonEventHandler();
+                });
+                window.addEventListener("scroll", function(){
+                    module.setCommonEventHandler();
+                });
+                window.addEventListener("resize", function(){
+                    module.setCommonEventHandler();
+                });
+                for(var i=0; i<all.length; i++){
+                    if( js2uixCheckScroll(all[i]) ){
+                        all[i].addEventListener("scroll", function(){
+                            module.setCommonEventHandler();
+                        });
+                    }
+                }
+            } finally {
+                all = null;
+            }
         },
         setAddEventCalendar : function(){
             var module = this;
             var num_inputVal = js2uix(".js2uix-select-input input");
-            /** calendar node event block */
             this.dom.js2uixCalendar.addEvent('mousedown.js2uix-calendar', function(e){
                 e.stopPropagation();
             });
@@ -4530,7 +4482,6 @@
             js2uix(".js2uix-year-prev").addEvent("click.js2uix-calendar", function(){
                 module.setCommonControlHandler("prevYear");
             });
-            /** bind select month box */
             js2uix(".js2uix-control-mid").addEvent("click", ".js2uix-date-wrap", function(){
                 module.dom.monthBox[0].style.display = 'block';
             });
@@ -4572,9 +4523,9 @@
             };
         },
         onChangeDate : function(){
+            var newDate = this.onChangeDateParse(this.state);
+            js2uix(this.state.target).setAttr({'data-year' : newDate.year, 'data-month' : newDate.month, 'data-day' : newDate.day}).value(newDate.date);
             if( this.state.onChangeDate && typeof this.state.onChangeDate === 'function' ){
-                var newDate = this.onChangeDateParse(this.state);
-                js2uix(this.state.target).setAttr({'data-year' : newDate.year, 'data-month' : newDate.month, 'data-day' : newDate.day}).value(newDate.date);
                 this.state.onChangeDate(newDate, this.state.target);
             }
         }
@@ -4582,7 +4533,6 @@
     js2uix.extend(js2uixToolCalendar.prototype, js2uixCalendarCommon);
     js2uixToolCalendar.prototype.constructor = js2uixToolCalendar;
 
-    /** js2uix-calendar-input : 달력 UI의 Input Dom 의 객체 생성 모듈 */
     var js2uixToolCalendarInput = function(element, props){
         this.element = element;
         this.props = {
@@ -4607,7 +4557,6 @@
     };
     js2uixToolCalendarInput.prototype = {
         js2uixName : 'js2uix-calendar',
-        /** this input Element */
         setDefaultStateFormCalendar : function(){
             this.element.addClass("js2uix-calendar-input");
         },
@@ -4753,7 +4702,6 @@
         }
     });
 
-    /** js2uix set define for module */
     if ( typeof define === "function" && define.amd ) {define( ModuleName, [], function() {return js2uix;});}
     if ( !noGlobal ) { window.js2uix = js2uix; }
     return js2uix;
