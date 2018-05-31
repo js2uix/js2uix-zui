@@ -1,8 +1,8 @@
 {
   "name": "js2uix",
-  "version": "1.1.1",
+  "version": "1.0.1",
   "description": "js2uix dom control and ui module",
-  "main": "core/js2uix-v1.1.1.js",
+  "main": "core/js2uix-v1.0.1.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
