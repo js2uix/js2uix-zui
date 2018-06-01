@@ -4331,14 +4331,14 @@
                 sortItems = null;
             }
         },
-        setCallBackCreate: function(elm){
+        setCallBackCreate: function(item){
             if( typeof this.props.create === 'function' ){
                 this.props.create({
-                    target    : elm[0],
-                    width     : elm.width(),
-                    height    : elm.height(),
-                    positionX : parseInt(elm.css('left')),
-                    positionY : parseInt(elm.css('top'))
+                    target    : item[0],
+                    width     : item.width(),
+                    height    : item.height(),
+                    positionX : parseInt(item.css('left')),
+                    positionY : parseInt(item.css('top'))
                 });
             }
         },
@@ -4408,7 +4408,7 @@
             this.setSortItemControlEvent(null, true);
             this.setSortCancelControl(null, true);
             this.setObserveChild();
-            this.setCallBackCreate();
+            this.setCallBackCreate(this.element);
         }
     };
     js2uix.extend(js2uixToolSortable.prototype, js2uixUICommon);
