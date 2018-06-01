@@ -558,8 +558,20 @@
         },
         find : function ( name ){
             var result = [];
-            if( name && typeof name === 'string' ){
-                result = this[0].querySelectorAll(name);
+            if( name ){
+                if( typeof name === 'string' ){
+                    result = this[0].querySelectorAll(name);
+                } else if ( typeof name === 'object' && name.name === ModuleName ){
+                    js2uix.loop(this, function(){
+                        var allChild = this.querySelectorAll("*");
+                        for(var i=0; i<allChild.length; i++){
+                            var findChild = allChild[i];
+                            js2uix.loop(name, function(){
+                                if( this === findChild ){result.push(this);}
+                            });
+                        }
+                    });
+                }
             }
             return js2uix(result);
         },
@@ -771,7 +783,7 @@
             }
         },
         empty : function (){
-            this.html();
+            return this.html();
         },
         replace : function ( item ){
             var result = this;
@@ -806,6 +818,15 @@
                         parent.removeChild( current );
                     }
                 }
+            }
+        },
+        clone : function(deep){
+            var findElement = [];
+            try {
+                js2uix.loop(this, function(){ findElement.push( this.cloneNode(deep||true) ); });
+                return js2uix(findElement);
+            } finally {
+                findElement = null;
             }
         }
     });
@@ -997,10 +1018,12 @@
                 if( find.length > 0 ){ js2uixFxAddEventHandler(find, param); }
                 js2uixDomObserver(this, function(change){
                     if( change.type === "childList" || change.type === "attributes" ) {
-                        for(var i=0; i<change.addedNodes.length; i++){
-                            var addNode = change.addedNodes[i];
-                            if( addNode.nodeType === 1 ){
-                                js2uixFxAddEventObserverHandler(item, param);
+                        if( change.addedNodes.length > 0 || change.removedNodes.length > 0 ){
+                            for(var i=0; i<change.addedNodes.length; i++){
+                                var addNode = change.addedNodes[i];
+                                if( addNode.nodeType === 1 ){
+                                    js2uixFxAddEventObserverHandler(item, param);
+                                }
                             }
                         }
                     }
@@ -3905,6 +3928,492 @@
     js2uix.extend(js2uixToolResize.prototype, js2uixUICommon);
     js2uixToolResize.prototype.constructor = js2uixToolResize;
 
+
+    var js2uixToolSortable = function(element, props){
+        this.element = element;
+        this.props = {
+            axis              : false,
+            addClass          : null,
+            handle            : null,
+            cancel            : null,
+            connectWith       : null,
+            cursor            : null,
+            dropTarget        : null,
+            create            : null,
+            start             : null,
+            sort              : null,
+            stop              : null,
+            revert            : false,
+            scroll            : false,
+            scrollSensitivity : 15,
+            scrollSpeed       : 15,
+            zIndex            : 0
+        };
+        this.state = {
+            sortArea        : null,
+            sortItem        : null,
+            connectNode     : null,
+            placeholder     : null,
+            sortItemsFloat  : false,
+            targetX         : 0,
+            targetY         : 0,
+            targetRect      : null,
+            parent          : null,
+            parentRect      : null,
+            limitX          : 0,
+            maxX            : 0,
+            limitY          : 0,
+            maxY            : 0,
+            mouseX          : 0,
+            mouseY          : 0,
+            isDown          : false,
+            isSort          : false,
+            isMove          : false,
+            isCancel        : false,
+            isHandle        : false,
+            enable          : true,
+            disable         : false,
+            destroy         : false,
+            dataId          : null
+        };
+        this.init(props);
+        return {
+            enable  : this.enable.bind(this),
+            destroy : this.destroy.bind(this),
+            disable : this.destroy.bind(this)
+        }
+    };
+    js2uixToolSortable.prototype = {
+        uiBodyNode : null,
+        setDefaultSortItem : function(sortItem){
+            var module = this;
+            var strFloat = sortItem.css("float");
+            if( strFloat === "left" || strFloat === "right" ){ this.state.sortItemsFloat = true; }
+            sortItem.addClass('js2uix-sortItem');
+            js2uix.loop(sortItem, function(){
+                var sortItem = js2uix(this);
+                var posString = sortItem.css("position");
+                if( posString !== "static" && posString !== "relative" ){
+                    sortItem.css("position", "relative");
+                }
+                if( module.props.handle ){
+                    var handler = sortItem.find(module.props.handle);
+                    if( handler.length > 0 ){
+                        if(module.props.cursor && module.props.cursor !== ""){
+                            handler.css("cursor", module.props.cursor);
+                        }
+                    }
+                }
+                if( module.props.zIndex && typeof module.props.zIndex === "number" ){
+                    sortItem.css("z-index", parseInt(module.props.zIndex));
+                }
+            });
+        },
+        setDefaultState : function(item){
+            var sortItem = item.children();
+            var strParentPos = item.css("position");
+            this.uiBodyNode = (!this.uiBodyNode)?js2uix('body'):this.uiBodyNode;
+            item.addClass('js2uix-sortable').removeAttr("data-disable");
+            if( this.props.addClass ){ item.addClass(this.props.addClass); }
+            if( !this.props.userSelect ){ item.setAttr("data-selectable", 'false'); }
+            if( strParentPos === "static"){item.css("position", "relative");}
+            this.setDefaultSortItem(sortItem);
+        },
+        setMouseDownEventHandler : function(event){
+            this.state.sortItem = js2uix(js2uix(event.target).parents('.js2uix-sortItem')[0]);
+            this.state.isHandle = true;
+        },
+        setMouseUpEventHandler : function(){
+            this.state.isHandle = false;
+        },
+        setSortHandleControl : function(item, addEvent){
+            var sortItems = item || this.element.find('.js2uix-sortItem');
+            if(this.props.handle && this.props.handle !== ""){
+                var userHandle = sortItems.find(this.props.handle);
+                if( userHandle.length > 0 ){
+                    if( addEvent ){
+                        userHandle.addClass('js2uix-sort-handle');
+                        userHandle.addEvent({
+                            "mousedown.js2uix-sort-handle" : this.setMouseDownEventHandler.bind(this),
+                            "mouseup.js2uix-sort-handle" : this.setMouseUpEventHandler.bind(this)
+                        });
+                    } else {
+                        sortItems.removeEvent('mousedown.js2uix-sort-handle');
+                        sortItems.removeEvent('mouseup.js2uix-sort-handle');
+                    }
+                }
+            }else{
+                this.state.isHandle = true;
+            }
+        },
+        setCancelMouseDownEventHandler : function(){
+            this.state.isCancel = true;
+        },
+        setCancelMouseUpEventHandler : function(){
+            this.state.isCancel = false;
+        },
+        setSortCancelControl : function(item, addEvent){
+            if( this.props.cancel && this.props.cancel !== ""){
+                var sortItems = item || this.element.find('.js2uix-sortItem');
+                var cancel = sortItems.find(this.props.cancel);
+                if( cancel.length > 0 ){
+                    if( addEvent ){
+                        cancel.addClass('js2uix-sort-cancel');
+                        cancel.addEvent({
+                            "mousedown.js2uix-sort-cancel" : this.setCancelMouseDownEventHandler.bind(this),
+                            "mouseup.js2uix-sort-cancel" : this.setCancelMouseUpEventHandler.bind(this)
+                        });
+                    } else {
+                        cancel.removeEvent("mousedown.js2uix-sort-cancel");
+                        cancel.removeEvent("mouseup.js2uix-sort-cancel");
+                    }
+                }
+            }else{
+                this.state.isCancel = false;
+            }
+        },
+        setSortItemMouseDownHandler : function(event){
+            var nodeX, nodeY;
+            var target = this.state.sortItem = js2uix(event.target);
+            if( !target.hasClass('js2uix-sortItem') ){ target = this.state.sortItem = target.parents('.js2uix-sortItem'); }
+            var parent = this.state.sortArea = js2uix(target.parents('.js2uix-sortable')[0]);
+            var disableBool = parent.getAttr("data-disable");
+            if( !this.state.placeholder ){ this.state.placeholder = target.clone(false).empty().removeAttr("class").addClass('js2uix-placeholder'); }
+            this.state.isSort = true;
+            this.state.mouseX = event.pageX;
+            this.state.mouseY = event.pageY;
+            this.uiBodyNode.addClass("disableSelection");
+            if( this.state.destroy || this.state.disable || disableBool === "true" ){ this.state.isSort = false; }
+            if( !disableBool || disableBool === "false" || typeof disableBool === "undefined" ){ this.state.isSort = true; }
+            if(this.state.isSort && this.state.enable ){
+                this.state.targetRect = target[0].getBoundingClientRect();
+                this.state.parentRect = parent[0].getBoundingClientRect();
+                this.state.placeholder.css({
+                    'width' : this.state.targetRect.width,
+                    'height' : this.state.targetRect.height
+                });
+                target.css({
+                    "position" : "absolute",
+                    "width"    : this.state.targetRect.width,
+                    "height"   : this.state.targetRect.height,
+                    "left"     : this.state.targetRect.left - this.state.parentRect.left,
+                    "top"      : this.state.targetRect.top - this.state.parentRect.top,
+                    "z-index"  : 1000
+                }).after(this.state.placeholder);
+                nodeX = target.css("left");
+                nodeY = target.css("top");
+                if( nodeX === "auto" ){ nodeX = parseInt(target[0].offsetLeft); }
+                if( nodeY === "auto" ){ nodeY = parseInt(target[0].offsetTop); }
+                this.setLimitedAreaForUserCommand(parent, target, nodeX, nodeY);
+                if( !this.state.isCancel ){ this.setSortWindowControl(true); }
+                 this.setCallBackStart({
+                     sortArea  : this.state.sortArea[0],
+                     sortItem  : this.state.sortItem[0],
+                     index     : target.index(),
+                     prevNode  : target.prevNode()[0],
+                     nextNode  : target.nextNode()[0]
+                 });
+            }
+        },
+        setSortItemMouseUpHandler : function(){
+            this.state.isCancel = false;
+        },
+        setSortItemControlEvent : function(item, addEvent){
+            var sortItems = item || this.element.find('.js2uix-sortItem');
+            if( sortItems.length > 0 ){
+                if( addEvent ){
+                    sortItems.addEvent("mousedown.js2uix-sort-move", this.setSortItemMouseDownHandler.bind(this) );
+                    sortItems.addEvent("mouseup.js2uix-sort-move", this.setSortItemMouseUpHandler.bind(this) );
+                } else {
+                    sortItems.removeEvent("mousedown.js2uix-sort-move");
+                    sortItems.removeEvent("mouseup.js2uix-sort-move");
+                }
+            }
+        },
+        checkMouseMoveLimitAreaCheck : function(mouseX, mouseY){
+            if( this.props.axis && this.props.axis === "y" ){
+                if( mouseX <= this.state.limitX  ){mouseX = this.state.limitX ;}
+                if( mouseX >= this.state.maxX ){mouseX = this.state.maxX ;}
+            }
+            if( this.props.axis && this.props.axis === "x" ){
+                if( mouseY <= this.state.limitY  ){mouseY = this.state.limitY ;}
+                if( mouseY >= this.state.maxY ){mouseY = this.state.maxY ;}
+            }
+            return {
+                mouseX : mouseX,
+                mouseY : mouseY
+            }
+        },
+        sortConnectWidthHandler : function(elm){
+            var connectNode;
+            var targetRect;
+            var parentNode = null;
+            try {
+                if( this.props.connectWith ){
+                    connectNode = js2uix(this.props.connectWith);
+                    if( connectNode.length > 0 ){
+                        targetRect = elm[0].getBoundingClientRect();
+                        js2uix.loop(connectNode, function(){
+                            var target = js2uix(this);
+                            if( !target.hasClass("js2uix-sortable") ){ target = target.find(".js2uix-sortable") }
+                            if( target.length !== 0 ){
+                                var dropRect = this.getBoundingClientRect();
+                                if( ((targetRect.right > dropRect.left+(targetRect.width*0.5) ) && (targetRect.left< dropRect.right-(targetRect.width*0.5) )) &&  ((targetRect.bottom > dropRect.top) && (targetRect.top < dropRect.bottom))  ){
+                                    parentNode = this;
+                                }
+                            }
+                        });
+                    }
+                }
+                return parentNode;
+            } finally {
+                connectNode = null;
+                targetRect = null;
+                parentNode = null;
+            }
+        },
+        sortPlaceHolderHandler : function(elm){
+            var state = this.state;
+            var childItem = state.sortArea.find('.js2uix-sortItem');
+            var placeHolder = state.placeholder;
+            var obj_itemRect = elm[0].getBoundingClientRect();
+
+            if( childItem.length > 0 ){
+                js2uix.loop(childItem, function(){
+                    var item = js2uix(this);
+                    var itemsRect = this.getBoundingClientRect();
+                    if( obj_itemRect.top > itemsRect.top && obj_itemRect.top < itemsRect.bottom ){
+                        if( state.sortItemsFloat ){
+                            if( obj_itemRect.left > itemsRect.left && obj_itemRect.left < itemsRect.right ){
+                                item.after(placeHolder);
+                            }
+                            if( obj_itemRect.right > itemsRect.left &&  obj_itemRect.right < itemsRect.right){
+                                item.before(placeHolder);
+                            }
+                        }else{
+                            item.after(placeHolder);
+                        }
+                    }
+                    if( obj_itemRect.bottom > itemsRect.top &&  obj_itemRect.bottom < itemsRect.bottom){
+                        if( state.sortItemsFloat ){
+                            if( obj_itemRect.left > itemsRect.left && obj_itemRect.left < itemsRect.right ){
+                                item.after(placeHolder);
+                            }
+                            if( obj_itemRect.right > itemsRect.left &&  obj_itemRect.right < itemsRect.right){
+                                item.before(placeHolder);
+                            }
+                        }else{
+                            item.before(placeHolder);
+                        }
+                    }
+                });
+            }else{
+                state.sortArea.append(placeHolder)
+            }
+        },
+        setWindowMouseMoveHandler : function(evt){
+            var mouseX, mouseY, calcXY, targetX, targetY, scrollParent, checkConnectParent;
+            if( this.state.isSort && this.state.isHandle && !this.state.isCancel ){
+                mouseX = evt.pageX - this.state.mouseX;
+                mouseY = evt.pageY - this.state.mouseY;
+                calcXY = this.checkMouseMoveLimitAreaCheck(mouseX, mouseY);
+                targetX = this.state.targetX + calcXY.mouseX;
+                targetY = this.state.targetY + calcXY.mouseY;
+                checkConnectParent = this.sortConnectWidthHandler(this.state.sortItem);
+                this.state.isMove = !!(mouseX !== 0 && mouseY !== 0);
+                if( checkConnectParent ){
+                    this.state.sortArea = js2uix(checkConnectParent);
+                }
+                if( this.props.scroll ){
+                    scrollParent = this.state.sortArea[0].parentNode;
+                    if ( !this.props.axis || this.props.axis !== "x" ) {
+                        if ( ( scrollParent.offsetTop + scrollParent.offsetHeight ) - evt.pageY < this.props.scrollSensitivity ) {
+                            scrollParent.scrollTop  = scrollParent.scrollTop + this.props.scrollSpeed;
+                            targetY = targetY + scrollParent.scrollTop;
+                        } else if ( evt.pageY - scrollParent.offsetTop < this.props.scrollSensitivity ) {
+                            scrollParent.scrollTop  = scrollParent.scrollTop - this.props.scrollSpeed;
+                            targetY = targetY - scrollParent.scrollTop;
+                        } else {
+                            targetY = targetY + scrollParent.scrollTop;
+                        }
+                    }
+                    if ( !this.props.axis || this.props.axis !== "y" ) {
+                        if ( ( scrollParent.offsetLeft + scrollParent.offsetWidth ) - evt.pageX < this.props.scrollSensitivity ) {
+                            scrollParent.scrollLeft  = scrollParent.scrollLeft + this.props.scrollSpeed;
+                            targetX = targetX + scrollParent.scrollLeft;
+                        } else if ( evt.pageX - scrollParent.offsetLeft < this.props.scrollSensitivity ) {
+                            scrollParent.scrollLeft  = scrollParent.scrollLeft - this.props.scrollSpeed;
+                            targetX = targetX - scrollParent.scrollLeft;
+                        } else {
+                            targetX = targetX + scrollParent.scrollLeft;
+                        }
+                    }
+                }
+                this.state.sortItem[0].style.left = targetX+"px";
+                this.state.sortItem[0].style.top = targetY+"px";
+                this.sortPlaceHolderHandler( this.state.sortItem );
+                this.setCallBackSort({
+                    sortArea  : this.state.sortArea[0],
+                    sortItem  : this.state.sortItem[0],
+                    index     : this.state.sortItem.index(),
+                    prevNode  : this.state.sortItem.prevNode()[0],
+                    nextNode  : this.state.sortItem.nextNode()[0]
+                });
+            }
+        },
+        setWindowMouseUpHandler : function(){
+            var item = this.state.sortItem;
+            var placeHolder, prevNode, nextNode;
+            if( this.state.isSort && this.state.enable ){
+                placeHolder = js2uix(this.state.placeholder);
+                prevNode = placeHolder.prevNode();
+                nextNode = placeHolder.nextNode();
+                if( this.state.isMove ) {if (this.state.sortArea.find(item).length < 1) { this.state.sortArea.append(item); }}
+                if( prevNode.length > 0 ){ prevNode.after(item.removeAttr("style")); }
+                else{ nextNode.before(item.removeAttr("style")); }
+                placeHolder.remove();
+                var sortTarget = js2uix('.js2uix-sortable');
+                sortTarget.find('.js2uix-placeholder').remove();
+                sortTarget.find('.js2uix-sortItem').removeAttr("style");
+                this.state.placeholder = null;
+                this.state.isCancel = false;
+                this.state.isSort = false;
+                this.state.isMove = false;
+                this.setSortWindowControl(false);
+                this.setCallBackStop({
+                    sortArea : this.state.sortArea[0],
+                    sortItem : this.state.sortItem[0],
+                    index    : item.index(),
+                    prevNode : item.prevNode()[0],
+                    nextNode : item.nextNode()[0]
+                });
+            }
+        },
+        setSortWindowControl : function(addEvent){
+            if( addEvent ){
+                ROOT.addEvent('mousemove.js2uix-'+this.state.dataId, this.setWindowMouseMoveHandler.bind(this) );
+                ROOT.addEvent('mouseup.js2uix-'+this.state.dataId, this.setWindowMouseUpHandler.bind(this) );
+            } else {
+                ROOT.removeEvent('mousemove.js2uix-'+this.state.dataId);
+                ROOT.removeEvent('mouseup.js2uix-'+this.state.dataId);
+            }
+        },
+        setNewItemCreateSort : function(item){
+            this.setDefaultSortItem(item);
+            this.setSortHandleControl(item, true);
+            this.setSortCancelControl(item, true);
+            this.setSortItemControlEvent(item, true);
+        },
+        setOldItemRemoveSort : function(item){
+            this.setSortHandleControl(item, false);
+            this.setSortCancelControl(item, false);
+            this.setSortItemControlEvent(item, false);
+        },
+        setRemoveSortNodeConstruct : function(item){
+            var sortHandle = item.find('.js2uix-sort-handle');
+            var sortCancel = item.find('.js2uix-sort-cancel');
+            var sortItems = item.find('.js2uix-sortItem');
+            try{
+                item[0].style.position = "";
+                item[0].style.cursor = "";
+                item[0].style.zIndex = "";
+                item.removeClass('js2uix-sortable').removeAttr("data-selectable");
+                sortHandle[0].style.cursor = "";
+                sortItems.removeAttr("style");
+                sortHandle.removeClass('js2uix-sort-handle').removeEvent("mousedown.js2uix-sort").removeEvent("mouseup.js2uix-drag");
+                sortCancel.removeClass('js2uix-sort-cancel').removeEvent("mousedown.js2uix-sort").removeEvent("mouseup.js2uix-sort");
+                sortItems.removeClass('js2uix-sortItem').removeEvent("mousedown.js2uix-sort").removeEvent("mouseup.js2uix-sort");
+                ROOT.removeEvent('mousemove.js2uix-'+this.state.dataId);
+                ROOT.removeEvent('mouseup.js2uix-'+this.state.dataId);
+            } finally {
+                sortHandle = null;
+                sortCancel = null;
+                sortItems = null;
+            }
+        },
+        setCallBackCreate: function(elm){
+            if( typeof this.props.create === 'function' ){
+                this.props.create({
+                    target    : elm[0],
+                    width     : elm.width(),
+                    height    : elm.height(),
+                    positionX : parseInt(elm.css('left')),
+                    positionY : parseInt(elm.css('top'))
+                });
+            }
+        },
+        setCallBackStart : function(data){
+            if( typeof this.props.start === 'function' ){
+                this.props.start(data);
+            }
+        },
+        setCallBackSort : function(data){
+            if( typeof this.props.sort === 'function' ){
+                this.props.sort(data);
+            }
+        },
+        setCallBackStop : function(data){
+            if( typeof this.props.stop === 'function' ){
+                this.props.stop(data);
+            }
+        },
+        setObserveChild : function(){
+            js2uixDomObserver(this.element[0], function(change){
+                if( change.type === "childList" && (change.addedNodes.length > 0 || change.removedNodes.length > 0) ){
+                    for(var i=0; i<change.addedNodes.length; i++){
+                        var addNode = change.addedNodes[i];
+                        if( addNode && !js2uix.hasClass(addNode, 'js2uix-placeholder') ){
+                            if( addNode.nodeType === 1 ){
+                                if( !addNode[ModuleName] || !js2uix.hasClass(addNode, 'js2uix-sortItem') ){
+                                    this.setNewItemCreateSort(js2uix(addNode));
+                                }
+                            }
+                        }
+                    }
+                    for(var j=0; j<change.removedNodes.length; j++){
+                        var removeNode = change.removedNodes[j];
+                        if( removeNode && !js2uix.hasClass(removeNode, 'js2uix-placeholder') ){
+                            if( removeNode.nodeType === 1 ){
+                                if( js2uix.hasClass(removeNode, 'js2uix-sortItem') ){
+                                }
+                            }
+                        }
+                    }
+                }
+            }.bind(this));
+        },
+        enable  : function(){
+            this.state.enable = true;
+            this.state.destroy = false;
+            this.state.disable = false;
+            this.element.removeAttr("data-disable");
+        },
+        destroy : function(){
+            this.state.enable = false;
+            this.state.disable = true;
+            this.state.destroy = true;
+            this.setRemoveSortNodeConstruct(this.element);
+        },
+        disable : function(){
+            this.state.enable = false;
+            this.state.destroy = false;
+            this.state.disable = true;
+            this.element.setAttr("data-disable", true);
+        },
+        init : function(props){
+            js2uix.extend(this.props, props);
+            this.state.dataId = js2uixUniqueId();
+            this.setDefaultState(this.element);
+            this.setSortHandleControl(null, true);
+            this.setSortItemControlEvent(null, true);
+            this.setSortCancelControl(null, true);
+            this.setObserveChild();
+            this.setCallBackCreate();
+        }
+    };
+    js2uix.extend(js2uixToolSortable.prototype, js2uixUICommon);
+    js2uixToolSortable.prototype.constructor = js2uixToolSortable;
+
     var js2uixToolTree = function(element, props){
         this.element = element;
         this.props = {
@@ -4695,6 +5204,10 @@
         Resizable : function(target, props){
             var element = js2xixElementResult(target);
             if( element && element.length > 0 ){return new js2uixToolResize(element, props);}
+        },
+        Sortable : function(target, props){
+            var element = js2xixElementResult(target);
+            if( element && element.length > 0 ){return new js2uixToolSortable(element, props);}
         },
         Tree : function(target, props){
             var element = js2xixElementResult(target);
