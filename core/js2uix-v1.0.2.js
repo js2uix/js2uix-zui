@@ -11,7 +11,6 @@
  * npm-install : npm install js2uix
  */
 (function( global, factory ){
-
     "use strict";
     if ( typeof module === "object" && typeof module.exports === "object" ) {
         module.exports = factory( global, true );
@@ -115,7 +114,6 @@
                 var observer = new MutationObserver(function(mutations) {
                     mutations.forEach(function(mutation) {callback(mutation);});
                 });
-
                 observer.observe( obj, {
                     childList : true,
                     subtree : true,
@@ -3946,8 +3944,8 @@
             stop              : null,
             revert            : false,
             scroll            : false,
-            scrollSensitivity : 15,
-            scrollSpeed       : 15,
+            scrollSensitivity : 5,
+            scrollSpeed       : 5,
             zIndex            : 0
         };
         this.state = {
@@ -4229,26 +4227,20 @@
                 }
                 if( this.props.scroll ){
                     if ( !this.props.axis || this.props.axis !== "x" ) {
-                        if ( ( scrollParent.offsetTop + scrollParent.offsetHeight ) - evt.pageY < this.props.scrollSensitivity ) {
+                        if ( scrollParent.offsetHeight-targetY < this.props.scrollSensitivity ) {
                             scrollParent.scrollTop  = scrollParent.scrollTop + this.props.scrollSpeed;
-                            targetY = targetY + scrollParent.scrollTop;
-                        } else if ( evt.pageY - scrollParent.offsetTop < this.props.scrollSensitivity ) {
+                        } else if ( targetY < this.props.scrollSensitivity ) {
                             scrollParent.scrollTop  = scrollParent.scrollTop - this.props.scrollSpeed;
-                            targetY = targetY - scrollParent.scrollTop;
-                        } else {
-                            targetY = targetY + scrollParent.scrollTop;
                         }
+                        targetY = targetY + scrollParent.scrollTop;
                     }
                     if ( !this.props.axis || this.props.axis !== "y" ) {
-                        if ( ( scrollParent.offsetLeft + scrollParent.offsetWidth ) - evt.pageX < this.props.scrollSensitivity ) {
+                        if ( scrollParent.offsetLeft-targetX < this.props.scrollSensitivity ) {
                             scrollParent.scrollLeft  = scrollParent.scrollLeft + this.props.scrollSpeed;
-                            targetX = targetX + scrollParent.scrollLeft;
-                        } else if ( evt.pageX - scrollParent.offsetLeft < this.props.scrollSensitivity ) {
+                        } else if ( targetX < this.props.scrollSensitivity ) {
                             scrollParent.scrollLeft  = scrollParent.scrollLeft - this.props.scrollSpeed;
-                            targetX = targetX - scrollParent.scrollLeft;
-                        } else {
-                            targetX = targetX + scrollParent.scrollLeft;
                         }
+                        targetX = targetX + scrollParent.scrollLeft;
                     }
                 }
                 this.state.sortItem[0].style.left = targetX+"px";
