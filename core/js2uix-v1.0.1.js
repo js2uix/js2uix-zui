@@ -112,8 +112,9 @@
         return function(obj, callback){
             if( MutationObserver ){
                 var observer = new MutationObserver(function(mutations) {
-                    mutations.forEach(function(mutation) { callback(mutation); });
+                    mutations.forEach(function(mutation) {callback(mutation);});
                 });
+
                 observer.observe( obj, {
                     childList : true,
                     subtree : true,
@@ -3928,7 +3929,6 @@
     js2uix.extend(js2uixToolResize.prototype, js2uixUICommon);
     js2uixToolResize.prototype.constructor = js2uixToolResize;
 
-
     var js2uixToolSortable = function(element, props){
         this.element = element;
         this.props = {
@@ -4080,8 +4080,9 @@
             var disableBool = parent.getAttr("data-disable");
             if( !this.state.placeholder ){ this.state.placeholder = target.clone(false).empty().removeAttr("class").addClass('js2uix-placeholder'); }
             this.state.isSort = true;
-            this.state.mouseX = event.pageX;
-            this.state.mouseY = event.pageY;
+            var scrollParent = this.state.sortArea[0].parentNode;
+            this.state.mouseX = event.pageX + (scrollParent.scrollLeft || 0);
+            this.state.mouseY = event.pageY + (scrollParent.scrollTop || 0);
             this.uiBodyNode.addClass("disableSelection");
             if( this.state.destroy || this.state.disable || disableBool === "true" ){ this.state.isSort = false; }
             if( !disableBool || disableBool === "false" || typeof disableBool === "undefined" ){ this.state.isSort = true; }
@@ -4217,6 +4218,7 @@
                 mouseX = evt.pageX - this.state.mouseX;
                 mouseY = evt.pageY - this.state.mouseY;
                 calcXY = this.checkMouseMoveLimitAreaCheck(mouseX, mouseY);
+                scrollParent = this.state.sortArea[0].parentNode;
                 targetX = this.state.targetX + calcXY.mouseX;
                 targetY = this.state.targetY + calcXY.mouseY;
                 checkConnectParent = this.sortConnectWidthHandler(this.state.sortItem);
@@ -4225,7 +4227,6 @@
                     this.state.sortArea = js2uix(checkConnectParent);
                 }
                 if( this.props.scroll ){
-                    scrollParent = this.state.sortArea[0].parentNode;
                     if ( !this.props.axis || this.props.axis !== "x" ) {
                         if ( ( scrollParent.offsetTop + scrollParent.offsetHeight ) - evt.pageY < this.props.scrollSensitivity ) {
                             scrollParent.scrollTop  = scrollParent.scrollTop + this.props.scrollSpeed;
