@@ -1,6 +1,6 @@
 /**
  * Name        : js2uix
- * Version     : 1.0.1
+ * Version     : 1.0.2
  * Developer   : JH.Yu
  * Email       : deshineplus@icloud.com
  * Language    : Javascript(ES5)
@@ -11,6 +11,7 @@
  * npm-install : npm install js2uix
  */
 (function( global, factory ){
+
     "use strict";
     if ( typeof module === "object" && typeof module.exports === "object" ) {
         module.exports = factory( global, true );
