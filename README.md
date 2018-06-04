@@ -6,7 +6,7 @@ js2uix 는 Dom Control 기능과 Component 제작 기능을 결합한 새로운 
 ## js2uix (js2uix-dom-control)
 <pre>
  * Name        : js2uix
- * Version     : 1.0.0
+ * Version     : 1.0.1
  * Developer   : JH.Yu
  * Email       : deshineplus@icloud.com
  * Language    : Javascript(ES5)
