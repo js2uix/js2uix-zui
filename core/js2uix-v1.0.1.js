@@ -1,6 +1,6 @@
 /**
  * Name        : js2uix
- * Version     : 1.0.0
+ * Version     : 1.0.1
  * Developer   : JH.Yu
  * Email       : deshineplus@icloud.com
  * Language    : Javascript(ES5)
