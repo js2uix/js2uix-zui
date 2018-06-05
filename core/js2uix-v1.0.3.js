@@ -1,6 +1,6 @@
 /**
  * Name        : js2uix
- * Version     : 1.0.2
+ * Version     : 1.0.3
  * Developer   : JH.Yu
  * Email       : deshineplus@icloud.com
  * Language    : Javascript(ES5)
@@ -170,7 +170,6 @@
             return new Date(result[0],result[1],result[2],result[3],result[4],result[5]);
         }
     };
-
     js2uix = function (select){return new js2uix.fx.init(select);};
     js2uix.fx = js2uix.prototype = {
         js2uix : ModuleVersion,
@@ -661,11 +660,51 @@
         hasChild : function ( name ){
             return this.find(name).length > 0 && name && typeof name === 'string';
         },
-        nextNode : function (){
-            return (this.length > 0 && this[0].nextElementSibling)?js2uix(this[0].nextElementSibling):this;
+        nextNode : function (target){
+            if( (this.length > 0 && this[0].nextElementSibling) ){
+                var next = this[0].nextElementSibling;
+                var nextDom = js2uix(next);
+                if( target && typeof target === 'string' ){
+                    if( target.indexOf('.') === 0 ){
+                        target = target.replace('.',"");
+                        if( nextDom.hasClass(target) ){
+                            return nextDom;
+                        }
+                    } else if( target.indexOf('#') === 0 ){
+                        target = target.replace('#',"");
+                        if( nextDom.hasId(target) ){
+                            return nextDom;
+                        }
+                    } else {
+                        if( next.tagName.toLowerCase() === target ){
+                            return nextDom;
+                        }
+                    }
+                } else {
+                    return nextDom;
+                }
+            }
+            return undefined;
         },
-        prevNode : function (){
-            return (this.length > 0 && this[0].previousElementSibling)?js2uix(this[0].previousElementSibling):this;
+        prevNode : function (target){
+            if( (this.length > 0 && this[0].previousElementSibling) ){
+                var prev = this[0].previousElementSibling;
+                var prevDom = js2uix(prev);
+                if( target && typeof target === 'string' ){
+                    if( target.indexOf('.') === 0 ){
+                        target = target.replace('.',"");
+                        if( prevDom.hasClass(target) ){return prevDom;}
+                    } else if( target.indexOf('#') === 0 ){
+                        target = target.replace('#',"");
+                        if( prevDom.hasId(target) ){return prevDom;}
+                    } else {
+                        if( prev.tagName.toLowerCase() === target ){return prevDom;}
+                    }
+                } else {
+                    return js2uix(prev);
+                }
+            }
+            return undefined;
         },
         firstNode : function (){
             return (this.length < 2)?this:js2uix(this[0]);
@@ -3146,7 +3185,7 @@
                                     }
                                 }
                                 if( thisKeyCode === 40 ){
-                                    if( nextItem.length === 1 ){
+                                    if( nextItem && nextItem.length === 1 ){
                                         activeItem = nextItem;
                                     }
                                 }
@@ -3987,36 +4026,47 @@
         setDefaultSortItem : function(sortItem){
             var module = this;
             var strFloat = sortItem.css("float");
-            if( strFloat === "left" || strFloat === "right" ){ this.state.sortItemsFloat = true; }
-            sortItem.addClass('js2uix-sortItem');
-            js2uix.loop(sortItem, function(){
-                var sortItem = js2uix(this);
-                var posString = sortItem.css("position");
-                if( posString !== "static" && posString !== "relative" ){
-                    sortItem.css("position", "relative");
-                }
-                if( module.props.handle ){
-                    var handler = sortItem.find(module.props.handle);
-                    if( handler.length > 0 ){
-                        if(module.props.cursor && module.props.cursor !== ""){
-                            handler.css("cursor", module.props.cursor);
+            var strInlineBlock = sortItem.css('display');
+            try {
+                if( strFloat === "left" || strFloat === "right" || strInlineBlock === 'inline-block' ){this.state.sortItemsFloat = true;}
+                sortItem.addClass('js2uix-sortItem');
+                js2uix.loop(sortItem, function(){
+                    var sortItem = js2uix(this);
+                    var posString = sortItem.css("position");
+                    if( posString !== "static" && posString !== "relative" ){
+                        sortItem.css("position", "relative");
+                    }
+                    if( module.props.handle ){
+                        var handler = sortItem.find(module.props.handle);
+                        if( handler.length > 0 ){
+                            if(module.props.cursor && module.props.cursor !== ""){
+                                handler.css("cursor", module.props.cursor);
+                            }
                         }
                     }
-                }
-                if( module.props.zIndex && typeof module.props.zIndex === "number" ){
-                    sortItem.css("z-index", parseInt(module.props.zIndex));
-                }
-            });
+                    if( module.props.zIndex && typeof module.props.zIndex === "number" ){
+                        sortItem.css("z-index", parseInt(module.props.zIndex));
+                    }
+                });
+            } finally {
+                strFloat = null;
+                strInlineBlock = null;
+            }
         },
         setDefaultState : function(item){
             var sortItem = item.children();
             var strParentPos = item.css("position");
-            this.uiBodyNode = (!this.uiBodyNode)?js2uix('body'):this.uiBodyNode;
-            item.addClass('js2uix-sortable').removeAttr("data-disable");
-            if( this.props.addClass ){ item.addClass(this.props.addClass); }
-            if( !this.props.userSelect ){ item.setAttr("data-selectable", 'false'); }
-            if( strParentPos === "static"){item.css("position", "relative");}
-            this.setDefaultSortItem(sortItem);
+            try {
+                this.uiBodyNode = (!this.uiBodyNode)?js2uix('body'):this.uiBodyNode;
+                item.addClass('js2uix-sortable').removeAttr("data-disable");
+                if( this.props.addClass ){ item.addClass(this.props.addClass); }
+                if( !this.props.userSelect ){ item.setAttr("data-selectable", 'false'); }
+                if( strParentPos === "static"){item.css("position", "relative");}
+                this.setDefaultSortItem(sortItem);
+            } finally {
+                sortItem = null;
+                strParentPos = null;
+            }
         },
         setMouseDownEventHandler : function(event){
             this.state.sortItem = js2uix(js2uix(event.target).parents('.js2uix-sortItem')[0]);
@@ -4107,11 +4157,11 @@
                 this.setLimitedAreaForUserCommand(parent, target, nodeX, nodeY);
                 if( !this.state.isCancel ){ this.setSortWindowControl(true); }
                  this.setCallBackStart({
-                     sortArea  : this.state.sortArea[0],
-                     sortItem  : this.state.sortItem[0],
+                     sortArea  : this.state.sortArea,
+                     sortItem  : this.state.sortItem,
                      index     : target.index(),
-                     prevNode  : target.prevNode()[0],
-                     nextNode  : target.nextNode()[0]
+                     prevNode  : target.prevNode(),
+                     nextNode  : target.nextNode()
                  });
             }
         },
@@ -4174,60 +4224,70 @@
         },
         sortPlaceHolderHandler : function(elm){
             var state = this.state;
+            var isFloat = this.state.sortItemsFloat;
             var childItem = state.sortArea.find('.js2uix-sortItem');
             var placeHolder = state.placeholder;
-            var obj_itemRect = elm[0].getBoundingClientRect();
+            var objRect = elm[0].getBoundingClientRect();
+            var objX = objRect.x + parseInt(objRect.width*0.5);
+            var objY = objRect.y + parseInt(objRect.height*0.5);
 
             if( childItem.length > 0 ){
-                js2uix.loop(childItem, function(){
-                    var item = js2uix(this);
-                    var itemsRect = this.getBoundingClientRect();
-                    if( obj_itemRect.top > itemsRect.top && obj_itemRect.top < itemsRect.bottom ){
-                        if( state.sortItemsFloat ){
-                            if( obj_itemRect.left > itemsRect.left && obj_itemRect.left < itemsRect.right ){
-                                item.after(placeHolder);
+                for( var i=childItem.length-1; i >= 0; i-- ){
+                    var item = js2uix(childItem[i]);
+                    var crtRect = childItem[i].getBoundingClientRect();
+                    var prtRect = childItem[i].parentNode.getBoundingClientRect();
+                    if( isFloat ){
+                        if( !(objRect.y === crtRect.y && objRect.bottom === crtRect.bottom) ){
+                            if(crtRect.x < objX && crtRect.right > objX && crtRect.y < objY && crtRect.bottom > objY ){
+                                var crtX = crtRect.x + parseInt(crtRect.width*0.5);
+                                var crtY = crtRect.y + parseInt(crtRect.height*0.5);
+                                if( crtY > objY ){
+                                    if( crtRect.x < crtRect.width){item.after(placeHolder);return false;}
+                                    item.before(placeHolder);
+                                } else {
+                                    if( crtRect.right+crtRect.width > prtRect.right ){item.before(placeHolder);return false;}
+                                    item.after(placeHolder);
+                                }
+                                if( crtX > objX ){item.before(placeHolder);} else {item.after(placeHolder);}
                             }
-                            if( obj_itemRect.right > itemsRect.left &&  obj_itemRect.right < itemsRect.right){
+                        } else {
+                            if( objRect.right > crtRect.left && objRect.right < crtRect.right ){
+                                if( objRect.right > crtRect.left+parseInt(crtRect.width/2) && objRect.left <= crtRect.right ){
+                                    item.after(placeHolder);
+                                } else {
+                                    item.before(placeHolder);
+                                }
+                            }
+                        }
+                    } else {
+                        if( objRect.bottom > crtRect.top && objRect.bottom < crtRect.bottom ){
+                            if( objRect.bottom > crtRect.top+parseInt(crtRect.height/2) && objRect.top <= crtRect.bottom  ){
+                                item.after(placeHolder);
+                            } else {
                                 item.before(placeHolder);
                             }
-                        }else{
-                            item.after(placeHolder);
                         }
                     }
-                    if( obj_itemRect.bottom > itemsRect.top &&  obj_itemRect.bottom < itemsRect.bottom){
-                        if( state.sortItemsFloat ){
-                            if( obj_itemRect.left > itemsRect.left && obj_itemRect.left < itemsRect.right ){
-                                item.after(placeHolder);
-                            }
-                            if( obj_itemRect.right > itemsRect.left &&  obj_itemRect.right < itemsRect.right){
-                                item.before(placeHolder);
-                            }
-                        }else{
-                            item.before(placeHolder);
-                        }
-                    }
-                });
+                }
             }else{
                 state.sortArea.append(placeHolder)
             }
         },
         setWindowMouseMoveHandler : function(evt){
-            var mouseX, mouseY, calcXY, targetX, targetY, scrollParent, checkConnectParent;
+            var mouseX, mouseY, calcXY, targetX, targetY, scrollParent, isConnect;
             if( this.state.isSort && this.state.isHandle && !this.state.isCancel ){
+                scrollParent = this.state.sortArea[0].parentNode;
                 mouseX = evt.pageX - this.state.mouseX;
                 mouseY = evt.pageY - this.state.mouseY;
                 calcXY = this.checkMouseMoveLimitAreaCheck(mouseX, mouseY);
-                scrollParent = this.state.sortArea[0].parentNode;
                 targetX = this.state.targetX + calcXY.mouseX;
                 targetY = this.state.targetY + calcXY.mouseY;
-                checkConnectParent = this.sortConnectWidthHandler(this.state.sortItem);
                 this.state.isMove = !!(mouseX !== 0 && mouseY !== 0);
-                if( checkConnectParent ){
-                    this.state.sortArea = js2uix(checkConnectParent);
-                }
+                isConnect = this.sortConnectWidthHandler(this.state.sortItem);
+                if( isConnect ){this.state.sortArea = js2uix(isConnect);}
                 if( this.props.scroll ){
                     if ( !this.props.axis || this.props.axis !== "x" ) {
-                        if ( scrollParent.offsetHeight-targetY < this.props.scrollSensitivity ) {
+                        if ( (scrollParent.offsetHeight-targetY)-this.state.sortItem[0].offsetHeight < this.props.scrollSensitivity ) {
                             scrollParent.scrollTop  = scrollParent.scrollTop + this.props.scrollSpeed;
                         } else if ( targetY < this.props.scrollSensitivity ) {
                             scrollParent.scrollTop  = scrollParent.scrollTop - this.props.scrollSpeed;
@@ -4235,7 +4295,7 @@
                         targetY = targetY + scrollParent.scrollTop;
                     }
                     if ( !this.props.axis || this.props.axis !== "y" ) {
-                        if ( scrollParent.offsetLeft-targetX < this.props.scrollSensitivity ) {
+                        if ( (scrollParent.offsetWidth-targetX)-this.state.sortItem[0].offsetWidth < this.props.scrollSensitivity ) {
                             scrollParent.scrollLeft  = scrollParent.scrollLeft + this.props.scrollSpeed;
                         } else if ( targetX < this.props.scrollSensitivity ) {
                             scrollParent.scrollLeft  = scrollParent.scrollLeft - this.props.scrollSpeed;
@@ -4247,11 +4307,11 @@
                 this.state.sortItem[0].style.top = targetY+"px";
                 this.sortPlaceHolderHandler( this.state.sortItem );
                 this.setCallBackSort({
-                    sortArea  : this.state.sortArea[0],
-                    sortItem  : this.state.sortItem[0],
+                    sortArea  : this.state.sortArea,
+                    sortItem  : this.state.sortItem,
                     index     : this.state.sortItem.index(),
-                    prevNode  : this.state.sortItem.prevNode()[0],
-                    nextNode  : this.state.sortItem.nextNode()[0]
+                    prevNode  : this.state.sortItem.prevNode(),
+                    nextNode  : this.state.sortItem.nextNode()
                 });
             }
         },
@@ -4263,8 +4323,13 @@
                 prevNode = placeHolder.prevNode();
                 nextNode = placeHolder.nextNode();
                 if( this.state.isMove ) {if (this.state.sortArea.find(item).length < 1) { this.state.sortArea.append(item); }}
-                if( prevNode.length > 0 ){ prevNode.after(item.removeAttr("style")); }
-                else{ nextNode.before(item.removeAttr("style")); }
+                if( prevNode && prevNode.length > 0 ){
+                    prevNode.after(item.removeAttr("style"));
+                } else {
+                    if( nextNode ){
+                        nextNode.before(item.removeAttr("style"));
+                    }
+                }
                 placeHolder.remove();
                 var sortTarget = js2uix('.js2uix-sortable');
                 sortTarget.find('.js2uix-placeholder').remove();
@@ -4275,11 +4340,11 @@
                 this.state.isMove = false;
                 this.setSortWindowControl(false);
                 this.setCallBackStop({
-                    sortArea : this.state.sortArea[0],
-                    sortItem : this.state.sortItem[0],
+                    sortArea : this.state.sortArea,
+                    sortItem : this.state.sortItem,
                     index    : item.index(),
-                    prevNode : item.prevNode()[0],
-                    nextNode : item.nextNode()[0]
+                    prevNode : item.prevNode(),
+                    nextNode : item.nextNode()
                 });
             }
         },
