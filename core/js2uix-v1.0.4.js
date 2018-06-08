@@ -1,6 +1,6 @@
 /**
  * Name        : js2uix
- * Version     : 1.0.4
+ * Version     : 1.0.3
  * Developer   : JH.Yu
  * Email       : deshineplus@icloud.com
  * Language    : Javascript(ES5)
@@ -25,13 +25,12 @@
     }
 })( typeof window !== "undefined" ? window : this, function( window, noGlobal ){
     'use strict';
-    if( !window || typeof window === 'undefined'){ return false;}
-    var js2uix;
-    var ModuleName = 'js2uix';
-    var ModuleVersion = 'v1.0.0';
-    var DOC = window.document;
-    var SetProtoType = Object.setPrototypeOf;
-    var GetProtoType = Object.getPrototypeOf;
+    var js2uix,
+        ModuleName = 'js2uix',
+        ModuleVersion = 'v1.0.0';
+    var DOC = window.document,
+        SetProtoType = Object.setPrototypeOf,
+        GetProtoType = Object.getPrototypeOf;
     var js2uixConstModule = function(){
         this.module = {};
         this.setModule = function(name, data){
