@@ -1,6 +1,6 @@
 /**
  * Name        : js2uix
- * Version     : 1.0.4
+ * Version     : 1.0.5
  * Developer   : JH.Yu
  * Email       : deshineplus@icloud.com
  * Language    : Javascript(ES5)
@@ -598,6 +598,29 @@
                 }
             }
             return js2uix(result);
+        },
+        not : function( name ){
+            if( this.length > 0 ){
+                var notNode = name;
+                if( typeof name === 'string' ){
+                    notNode = this[0].parentNode.querySelectorAll(name);
+                }
+                var findArray = [];
+                js2uix.loop(this, function(){
+                    var item = this;
+                    if( notNode && notNode.length > 0 ){
+                        js2uix.loop(notNode, function(){
+                            if( item !== this ){
+                                findArray.push(item);
+                            }
+                        });
+                    } else {
+                        findArray.push(item);
+                    }
+                });
+                return js2uix(findArray);
+            }
+            return this;
         },
         parent : function ( name ){
             var result = [];
@@ -1296,7 +1319,10 @@
             } else if ( dataType === 'text' || dataType === 'txt' ){
                 return returnValue;
             } else {
-                returnValue = option.jsonParse ? JSON.parse(returnValue) || returnValue : returnValue
+                if(  option.jsonParse ){
+                    var newStr  = returnValue.match(/(\{([^>]+)\}|\[([^>]+)\])/gi);
+                    returnValue = JSON.parse(newStr)||returnValue;
+                }
             }
             return returnValue;
         },
@@ -1352,7 +1378,7 @@
                 var inputFile = form[0].querySelectorAll('input[type=file]');
                 var etcForms = form.find("*").not('input[type=file]');
                 var appendNum = 0;
-                form.attr("enctype", "multipart/form-data");
+                form.setAttr("enctype", "multipart/form-data");
                 dataQuery = new FormData();
                 js2uix.loop(inputFile, function(){
                     var files = this.files;
@@ -1710,7 +1736,7 @@
         }
     });
     js2uix.fx.extend({
-        AjaxFrom : function(opt){
+        AjaxForm : function(opt){
             return new js2uixAjax(this, opt);
         }
     });
