@@ -1,0 +1,231 @@
+/**
+ * Name        : js2uix
+ * Version     : 1.0.5
+ * Developer   : JH.Yu
+ * Email       : deshineplus@icloud.com
+ * Language    : Javascript(ES5)
+ * Copyright   : 2018 JH.Yu (js2uix)
+ * GitHub      : https://github.com/js2uix/js2uix
+ * License     : https://github.com/js2uix/js2uix/blob/master/LICENSE
+ * build       : gulp.js
+ * npm-install : npm install js2uix
+ */
+/* js2uix start */
+body.disableSelection * {  -webkit-user-select: none;  -moz-user-select: -moz-none;  -o-user-select: none;  user-select: none; }
+.js2uix-grid{ position: relative; display: block; width: 100%; min-width: 330px; height: 100%; font-size: 13px; border: 1px solid #ddd; overflow: hidden; -webkit-box-sizing: border-box;  -moz-box-sizing: border-box;  box-sizing: border-box; }
+.js2uix-grid.disableSelection * {  -webkit-user-select: none;  -moz-user-select: -moz-none;  -o-user-select: none;  user-select: none; }
+.js2uix-grid *{ -webkit-box-sizing: border-box;  -moz-box-sizing: border-box;  box-sizing: border-box; }
+.js2uix-grid ul, .js2uix-grid ul li{ list-style: none; }
+.js2uix-grid .js2uix-grid-head{ position: relative; display: block; width: 100%; height: 36px; border-bottom: 1px solid #ccc; overflow: hidden; background-color: #f9f9f9; z-index:2; -webkit-box-shadow: 0 2px 2px -1px rgba(0,0,0,0.1);  -moz-box-shadow: 0 2px 2px -1px rgba(0,0,0,0.1);  box-shadow: 0 2px 2px -1px rgba(0,0,0,0.1);  }
+.js2uix-grid ul.js2uix-head-row{ position: relative; display: block; width: 100%; height: 100%; font-size: 0; }
+.js2uix-grid ul.js2uix-head-row li{ position: relative; display: inline-block; width: auto; height: 100%; vertical-align: top; cursor: pointer; padding: 9px 10px;  font-size: 12px;  border: 1px solid #fff;  border-right-color: #d2d2d2;  text-align: center; overflow: hidden;  text-overflow: ellipsis;  white-space: nowrap;  }
+.js2uix-grid ul.js2uix-head-row li[data-order='ASC']:after, .js2uix-grid ul.js2uix-head-row li[data-order='DESC']:after{ content: ''; display: inline-block; width: 10px; height: 10px; margin-left: 5px; opacity: 0.5; }
+.js2uix-grid ul.js2uix-head-row li[data-order='ASC']:after, .js2uix-grid ul.js2uix-head-row li[data-order='DESC']:after{background: url(images/pagination_icons.png?ver2.0) no-repeat 0 center; }
+.js2uix-grid ul.js2uix-head-row li[data-order='ASC']:after{background-position: -87px -1px;}
+.js2uix-grid ul.js2uix-head-row li[data-order='DESC']:after{background-position: -105px -1px;}
+.js2uix-grid ul.js2uix-head-row li:last-child{border-right: 0;}
+.js2uix-grid .js2uix-grid-body{ position: relative; display: block; width: 100%; height: calc(100% - 72px); background-color: #fff; overflow: hidden; overflow-x: auto; z-index:1; }
+.js2uix-grid .js2uix-grid-body .js2uix-grid-body-wrap{ position: relative; display: block; width: 100%; height: 100%; overflow: hidden; overflow-y: auto;}
+.js2uix-grid .js2uix-grid-body .js2uix-grid-body-wrap .js2uix-grid-body-list{ position: relative; display: block; width: 100%; height: auto; }
+.js2uix-grid .js2uix-grid-body .js2uix-grid-body-wrap .js2uix-grid-body-list[data-overflow='true'] ul.js2uix-body-row:last-child{ border-bottom: 0 !important;}
+.js2uix-grid ul.js2uix-body-row{ display: block; width: 100%; height: auto; font-size: 0; border-bottom: 1px dotted #d2d2d2; }
+.js2uix-grid ul.js2uix-body-row:hover, .js2uix-grid ul.js2uix-body-row.on{ background-color: rgba(0, 175, 255, 0.1); }
+.js2uix-grid ul.js2uix-body-row li{ display: inline-block; width: auto; height: 100%; min-height: 28px; vertical-align: top; padding: 7px 10px; font-size: 12px; border-right: 1px dotted #d2d2d2; cursor: default; text-align: center; overflow: hidden;  text-overflow: ellipsis;  white-space: nowrap; }
+.js2uix-grid ul.js2uix-body-row li:last-child{border-right: 0;}
+.js2uix-grid ul.js2uix-body-row li.noGridData { text-align: center; width: 100%; }
+.js2uix-grid ul.js2uix-body-row li[data-empty='true']{ padding: 0; }
+.js2uix-grid ul.js2uix-body-row li[data-option='checkbox']{ padding: 9px 10px 7px; }
+.js2uix-grid ul.js2uix-body-row li > *{ display: inline-block; vertical-align: top; }
+.js2uix-grid .js2uix-grid-foot{ position: relative; display: block; width: 100%; height: 36px; overflow: hidden;  font-size: 0;  border-top: 1px solid #ccc;  border-left: 1px solid #fff;  border-bottom: 1px solid #fff;  background-color: #f9f9f9;  z-index:2; -webkit-box-shadow: 0 -2px 2px -1px rgba(0,0,0,0.1);  -moz-box-shadow: 0 -2px 2px -1px rgba(0,0,0,0.1);  box-shadow: 0 -2px 2px -1px rgba(0,0,0,0.1); }
+.js2uix-grid .js2uix-grid-foot > *{ position: relative; display: inline-block; vertical-align: top; font-size: 12px; text-align: center; height: 36px; }
+.js2uix-grid .js2uix-grid-foot .js2uix-grid-list{ width: auto; padding: 7px 10px; }
+.js2uix-grid .js2uix-grid-foot .js2uix-grid-list select{ border: 1px solid #ddd; height: 21px; font-size: 12px; padding: 0 3px; }
+.js2uix-grid .js2uix-grid-foot .js2uix-grid-total{ position: relative; float: right; padding: 10px; }
+.js2uix-grid .js2uix-grid-foot .js2uix-grid-total ul{ display: block; width: auto; height: 100%; font-size: 0; }
+.js2uix-grid .js2uix-grid-foot .js2uix-grid-total ul li{ display: inline-block; font-size: 12px; }
+.js2uix-grid .js2uix-grid-foot .js2uix-grid-page{ width: auto; font-size: 0; padding: 5px 10px }
+.js2uix-grid .js2uix-grid-foot .js2uix-grid-page ul > * { display: inline-block; vertical-align: top; position: relative; font-size: 12px; }
+.js2uix-grid .js2uix-grid-foot .js2uix-grid-page li.first,
+.js2uix-grid .js2uix-grid-foot .js2uix-grid-page li.prev,
+.js2uix-grid .js2uix-grid-foot .js2uix-grid-page li.next,
+.js2uix-grid .js2uix-grid-foot .js2uix-grid-page li.last,
+.js2uix-grid .js2uix-grid-foot .js2uix-grid-page li.reload{ width: 25px; height: 25px; padding: 4px; cursor: pointer; }
+.js2uix-grid .js2uix-grid-foot .js2uix-grid-page li.first:before,
+.js2uix-grid .js2uix-grid-foot .js2uix-grid-page li.prev:before,
+.js2uix-grid .js2uix-grid-foot .js2uix-grid-page li.next:before,
+.js2uix-grid .js2uix-grid-foot .js2uix-grid-page li.last:before,
+.js2uix-grid .js2uix-grid-foot .js2uix-grid-page li.reload:before{ content: ''; display: block; position: absolute; top:0; left:0; width: 100%; height: 100%; }
+.js2uix-grid .js2uix-grid-foot .js2uix-grid-page li.reload:before{ left: 1px; }
+.js2uix-grid .js2uix-grid-foot .js2uix-grid-page li.first:after,
+.js2uix-grid .js2uix-grid-foot .js2uix-grid-page li.prev:after,
+.js2uix-grid .js2uix-grid-foot .js2uix-grid-page li.next:after,
+.js2uix-grid .js2uix-grid-foot .js2uix-grid-page li.last:after,
+.js2uix-grid .js2uix-grid-foot .js2uix-grid-page li.reload:after{ content: ''; opacity: 0.4; display: block; width: 16px; height: 16px; background: url(images/pagination_icons.png?ver2.0) no-repeat 0 center;}
+.js2uix-grid .js2uix-grid-foot .js2uix-grid-page li.reload:after{ opacity: 0.8; }
+.js2uix-grid .js2uix-grid-foot .js2uix-grid-page li.first:after{ background-position: 0 0;}
+.js2uix-grid .js2uix-grid-foot .js2uix-grid-page li.prev:after{ background-position: -16px 0;}
+.js2uix-grid .js2uix-grid-foot .js2uix-grid-page li.next:after{ background-position: -32px 0;}
+.js2uix-grid .js2uix-grid-foot .js2uix-grid-page li.last:after{ background-position: -48px 0;}
+.js2uix-grid .js2uix-grid-foot .js2uix-grid-page li.reload:after{ background-position: -64px 1px;}
+.js2uix-grid .js2uix-grid-foot .js2uix-grid-page li.first:hover:before,
+.js2uix-grid .js2uix-grid-foot .js2uix-grid-page li.prev:hover:before,
+.js2uix-grid .js2uix-grid-foot .js2uix-grid-page li.next:hover:before,
+.js2uix-grid .js2uix-grid-foot .js2uix-grid-page li.last:hover:before,
+.js2uix-grid .js2uix-grid-foot .js2uix-grid-page li.reload:hover:before{ border: 1px solid #ddd; border-radius: 2px; }
+.js2uix-grid .js2uix-grid-foot .js2uix-grid-page li.prev{ border-right: 1px solid #fefefe; }
+.js2uix-grid .js2uix-grid-foot .js2uix-grid-page li.next{ border-left: 1px solid #fefefe; }
+.js2uix-grid .js2uix-grid-foot .js2uix-grid-page li.last{ border-right: 1px solid #fefefe; }
+.js2uix-grid .js2uix-grid-foot .js2uix-grid-page li.reload{ border-left: 1px solid #ddd; }
+.js2uix-grid .js2uix-grid-foot .js2uix-grid-page li.page{ padding: 2px 10px; height: 25px; border-left: 1px solid #ddd; border-right: 1px solid #ddd; }
+.js2uix-grid .js2uix-grid-foot .js2uix-grid-page li.page > * { display: inline-block; vertical-align: top; margin-right: 5px; }
+.js2uix-grid .js2uix-grid-foot .js2uix-grid-page li.page span{ padding: 3px 0;}
+.js2uix-grid .js2uix-grid-foot .js2uix-grid-page li.page span.current{ padding: 1px 0;}
+.js2uix-grid .js2uix-grid-foot .js2uix-grid-page li.page span:last-child{ margin-right: 0; }
+.js2uix-grid .js2uix-grid-foot .js2uix-grid-page li.page input{ border: 1px solid #ddd; height: 20px; padding: 1px 10px; width: 50px; text-align: center;  font-size: 12px;}
+.js2uix-grid .js2uix-grid-load{ display: none; position: absolute; top:0; left:0; bottom: 0; right: 0; width: 100%; height: 100%; background-color: rgba(255, 255, 255, 0.8); z-index: 1; }
+.js2uix-grid .js2uix-grid-load .innerBox{ position: absolute; width: 200px; height: 30px; top:calc(50% - 15px);  left: calc(50% - 100px); border: 1px solid #ccc; background-color: #fff; border-radius: 2px; text-align: center; padding: 5px;  -webkit-box-shadow: 0 2px 3px -1px rgba(0,0,0,0.23);  -moz-box-shadow: 0 2px 3px -1px rgba(0,0,0,0.23);  box-shadow: 0 2px 3px -1px rgba(0,0,0,0.23);}
+.js2uix-grid ul.js2uix-body-row li button{ display: inline-block; height: 22px; border: 1px solid #ddd; border-radius: 2px; margin: 0 2px; font-size: 12px; background-color: #efefef; cursor: pointer; }
+.js2uix-grid{ min-width: 330px !important; }
+.js2uix-grid.availableMini .js2uix-grid-body{ height: calc(100% - 105px);  }
+.js2uix-grid.availableMini .js2uix-grid-foot{ height: 72px;  }
+.js2uix-grid.availableMini .js2uix-grid-foot > * { display: block !important; text-align: left; }
+.js2uix-grid.availableMini .js2uix-grid-foot .js2uix-grid-list{ position: absolute; bottom: 0; left: 0; }
+.js2uix-grid.availableMini .js2uix-grid-foot .js2uix-grid-total{ position: absolute; bottom: 0; right: 0; }
+.js2uix-grid.availableMini .js2uix-grid-foot .js2uix-grid-page{ position: absolute; width: 100%; top: 0; left: 0; border-bottom: 1px solid #ddd; }
+.js2uix-grid.availableMini .js2uix-grid-foot .js2uix-grid-page ul{ text-align: center; }
+.js2uix-combo, .js2uix-combo *{ -webkit-box-sizing: border-box;  -moz-box-sizing: border-box;  box-sizing: border-box; }
+.js2uix-combo{position: relative; display: block; width: auto; height: 28px; }
+.js2uix-combo label.title{ position: absolute; display: block; top:0; left: 0; font-size: 12px; width: 100%; height: 100%; overflow: hidden; padding: 5px 0 5px 5px; text-align: left; border: 1px solid #ddd;  z-index:1; background-color: #fff; text-overflow: ellipsis; white-space: nowrap;}
+.js2uix-combo span.arrow{ display: block; position: absolute; top:0; right: 0; border: 1px solid #ddd; z-index: 2; background-color: #f9f9f9; overflow: hidden; }
+.js2uix-combo span.arrow:after{content:''; display: block; width: 25px; height: 100%; border: 1px solid #fff;  opacity: 0.6;  background: url(images/pagination_icons.png?ver2.0) no-repeat -99px 4px; }
+.js2uix-combo select{ position: absolute; display: block; height: 28px; top:0; left:0; border:0; cursor: pointer; padding: 6px 0; font-size: 12px; opacity: 0; z-index:2 }
+.js2uix-combo.js2uix-search input.search{ position: absolute; display: block;  top:0; left: 0; font-size: 12px; width: 100%; height: 100%; overflow: hidden; padding: 5px 0 5px 5px; text-align: left; border: 1px solid #ddd;  z-index:4; background-color: #fff;  }
+.js2uix-combo.js2uix-search span.arrow{ z-index: 4; }
+.js2uix-combo.js2uix-search select{ z-index: 0;}
+.js2uix-combo.js2uix-search .js2uix-option{ position: absolute; display: none; left: 0; width: 100%; max-height: 105px; overflow: hidden; overflow-y: auto; border: 1px solid #ddd; z-index: 9; background-color: #fff; }
+.js2uix-combo.js2uix-search .js2uix-option ul{ display: block; width: 100%; height: auto; }
+.js2uix-combo.js2uix-search .js2uix-option li{ padding: 3px 6px; font-size: 11px; border-bottom: 1px dotted #ddd; cursor: pointer; }
+.js2uix-combo.js2uix-search .js2uix-option li:last-child{border-bottom:0;}
+.js2uix-combo.js2uix-search .js2uix-option li:hover,
+.js2uix-combo.js2uix-search .js2uix-option li.on{ background-color: rgba(0, 175, 255, 0.1); }
+.js2uix-combo.js2uix-search .js2uix-option li[data-disabled='true']{ background-color: #efefef; cursor: default; }
+.js2uix-draggable { position: absolute; z-index: 9; }
+.js2uix-drag-handle{ cursor: pointer; }
+.js2uix-resize-handle { position: absolute; background-color: rgba(255, 0, 0, 0); }
+.js2uix-resize-e { width: 10px; height: 100%; right: -10px; bottom: 0!important; top: 0!important; cursor: e-resize; }
+.js2uix-resize-w { width: 10px; height: 100%; left: -10px; bottom: 0!important; top: 0!important; cursor: e-resize; }
+.js2uix-resize-n { width: 100%; height: 10px; top: -10px; right: 0!important; left: 0!important; cursor: n-resize; }
+.js2uix-resize-s { width: 100%; height: 10px; bottom: -10px; right: 0!important; left: 0!important; cursor: n-resize; }
+.js2uix-resize-se { width: 10px; height: 10px; right: -10px; bottom: -10px; cursor: se-resize; }
+.js2uix-resize-ne { width: 10px; height: 10px; right: -10px; top: -10px; cursor: ne-resize; }
+.js2uix-resize-sw { width: 10px; height: 10px; left: -10px; bottom: -10px; cursor: ne-resize; }
+.js2uix-resize-nw { width: 10px; height: 10px; left: -10px; top: -10px; cursor: nw-resize; }
+.js2uix-resize-se:after, .js2uix-resize-ne:after, .js2uix-resize-sw:after, .js2uix-resize-nw:after{  background: url(images/uix-icons.png?v2) no-repeat;  }
+.js2uix-resize-se:after { content: ""; position: absolute; width: 10px; height: 10px; right: 10px; bottom: 10px; background-position: -83px -228px; }
+.js2uix-resize-ne:after { content: ""; position: absolute; width: 10px; height: 10px; right: 10px; top: 10px; background-position: -83px -228px; transform: rotate(270deg); }
+.js2uix-resize-sw:after { content: ""; position: absolute; width: 10px; height: 10px; left: 10px; bottom: 10px; background-position: -83px -228px; transform: rotate(90deg); }
+.js2uix-resize-nw:after { content: ""; position: absolute; width: 10px; height: 10px; left: 10px; top: 10px; background-position: -83px -228px; transform: rotate(180deg); }
+.js2uix-tree, .js2uix-tree *{ -webkit-box-sizing: border-box;  -moz-box-sizing: border-box;  box-sizing: border-box; }
+.js2uix-tree .js2uix-tree-content *{ display: block; }
+.js2uix-tree .js2uix-tree-content .js2uix-tree-group .js2uix-tree-group{ padding-left: 17px; }
+.js2uix-tree .js2uix-tree-content .js2uix-tree-title{vertical-align: top; font-size: 0; padding: 2px 0; cursor: pointer; }
+.js2uix-tree .js2uix-tree-content .js2uix-tree-title > * {display: inline-block; vertical-align: top; }
+.js2uix-tree .js2uix-tree-content .js2uix-tree-title .js2uix-tree-icon{ background: url(images/uix-icons2.png?v3) no-repeat; }
+.js2uix-tree .js2uix-tree-content .js2uix-tree-title[data-child='true'] .js2uix-tree-icon{ background-position: -267px -0; }
+.js2uix-tree .js2uix-tree-content .js2uix-tree-title[data-child='false'] .js2uix-tree-icon{ background-position: -290px -29px; }
+.js2uix-tree .js2uix-tree-content .js2uix-tree-item[data-open='true'] > .js2uix-tree-title .js2uix-tree-icon{ background-position: -290px -0}
+.js2uix-tree .js2uix-tree-content .js2uix-tree-title .js2uix-tree-icon{ width: 15px; height: 15px; margin-right: 3px; }
+.js2uix-tree .js2uix-tree-content .js2uix-tree-title .js2uix-tree-text{ font-size: 14px; }
+.js2uix-tree .js2uix-tree-content .js2uix-tree-child{ display: none; }
+#js2uix-calendar, #js2uix-calendar * { -webkit-box-sizing: border-box;  -moz-box-sizing: border-box;  box-sizing: border-box; }
+#js2uix-calendar{display: none; position: absolute; width: 250px; height: auto; top:-9999px; left:-9999px; min-height: 150px; background-color: #fff; border: 1px solid #bbb; color: #4f4f4f; z-index: 9999; }
+#js2uix-calendar .js2uix-calendar-header .js2uix-control-left span,
+#js2uix-calendar .js2uix-calendar-header .js2uix-control-right span,
+#js2uix-calendar .js2uix-calendar-hidden .js2uix-select-year .js2uix-select-prev span,
+#js2uix-calendar .js2uix-calendar-hidden .js2uix-select-year .js2uix-select-next span{ background: url(images/uix-calendar.png) no-repeat;}
+#js2uix-calendar .js2uix-calendar-header{ position: relative; width: 100%; height: 35px; padding: 3px; vertical-align: top; background-color: #f9f9f9; font-size: 12px; border-bottom: 1px solid #ccc; overflow: hidden; }
+#js2uix-calendar .js2uix-calendar-header *{ display: inline-block; }
+#js2uix-calendar .js2uix-calendar-header .js2uix-control-left{ text-align: left;}
+#js2uix-calendar .js2uix-calendar-header .js2uix-control-right{ text-align: right;}
+#js2uix-calendar .js2uix-calendar-header .js2uix-control-left,
+#js2uix-calendar .js2uix-calendar-header .js2uix-control-right{ width: 50px; height: 100%; padding: 3px 3px; }
+#js2uix-calendar .js2uix-calendar-header .js2uix-control-left span,
+#js2uix-calendar .js2uix-calendar-header .js2uix-control-right span{ display: block; float: left; width: 20px; height: 22px; margin: 0 1px; border-radius: 4px; opacity: 0.5; cursor: pointer;}
+#js2uix-calendar .js2uix-calendar-header .js2uix-control-left span:hover,
+#js2uix-calendar .js2uix-calendar-header .js2uix-control-right span:hover{ opacity: 1;}
+#js2uix-calendar .js2uix-calendar-header .js2uix-control-left span:active,
+#js2uix-calendar .js2uix-calendar-header .js2uix-control-right span:active{ margin-top: 1px; }
+#js2uix-calendar .js2uix-calendar-header .js2uix-control-left .js2uix-year-prev{ background-position: 1px 2px;}
+#js2uix-calendar .js2uix-calendar-header .js2uix-control-left .js2uix-month-prev{ background-position: -17px 2px;}
+#js2uix-calendar .js2uix-calendar-header .js2uix-control-right .js2uix-month-next{ background-position: -31px 2px;}
+#js2uix-calendar .js2uix-calendar-header .js2uix-control-right .js2uix-year-next{ background-position: -47px 2px;}
+#js2uix-calendar .js2uix-calendar-header .js2uix-control-mid{ width: calc(100% - 100px); text-align: center; padding: 6px 0; vertical-align: inherit; }
+#js2uix-calendar .js2uix-calendar-header .js2uix-control-mid *{ display: inline-block; cursor: pointer; }
+#js2uix-calendar .js2uix-calendar-header .js2uix-control-mid select{ border: 1px solid #bbb; border-radius: 4px; padding: 1px 4px; }
+#js2uix-calendar .js2uix-calendar-header .js2uix-year-string,
+#js2uix-calendar .js2uix-calendar-header .js2uix-month-string{ font-weight: bold; margin: 0 3px; }
+#js2uix-calendar .js2uix-calendar-header .js2uix-control-mid[data-year=string] .js2uix-year-string{ display: inline-block; }
+#js2uix-calendar .js2uix-calendar-header .js2uix-control-mid[data-month=string] .js2uix-month-string{ display: inline-block; }
+#js2uix-calendar .js2uix-calendar-header .js2uix-control-mid[data-year=select],
+#js2uix-calendar .js2uix-calendar-header .js2uix-control-mid[data-month=select]{ padding: 3px 0; }
+#js2uix-calendar .js2uix-calendar-header .js2uix-control-mid .js2uix-date-month{ margin-right: 5px;}
+#js2uix-calendar .js2uix-calendar-body{ width: 100%; height: auto; min-height: 100px; padding: 13px; background-color: #fff }
+#js2uix-calendar .js2uix-calendar-body .js2uix-calendar-table{ width: 100%; border: 0 solid #ccc; background-color: #fff;}
+#js2uix-calendar .js2uix-calendar-body .js2uix-table-head{ width: 100%;  border-bottom: 1px solid #ddd; margin-bottom: 7px; background-color: #fff; font-size: 10px !important; }
+#js2uix-calendar .js2uix-calendar-body ul li{ display: inline-block; width: 14.2222%; padding: 1px; border-right: 0 solid #ddd; text-align: center; font-size: 12px;}
+#js2uix-calendar .js2uix-calendar-body ul li span{ display: block; width: 100%; height: 100%; padding: 5px 3px; border-radius: 3px; }
+#js2uix-calendar .js2uix-calendar-body .js2uix-table-head ul li span{ font-size: 12px !important; }
+#js2uix-calendar .js2uix-calendar-body ul{ border-bottom: 0 solid #ddd; }
+#js2uix-calendar .js2uix-calendar-body ul:last-child{ border-bottom: 0;}
+#js2uix-calendar .js2uix-calendar-body ul li:nth-child(1){ color: red; }
+#js2uix-calendar .js2uix-calendar-body ul li:nth-child(7){ color: #00abff; }
+#js2uix-calendar .js2uix-calendar-body .js2uix-table-body li:hover span{ background-color: rgba(0, 166, 255, 0.1); cursor: pointer; }
+#js2uix-calendar .js2uix-calendar-body .js2uix-calendar-prev span,
+#js2uix-calendar .js2uix-calendar-body .js2uix-calendar-next span{ opacity: 0.3; }
+#js2uix-calendar .js2uix-calendar-body .js2uix-table-body li.js2uix-calendar-prev:hover span,
+#js2uix-calendar .js2uix-calendar-body .js2uix-table-body li.js2uix-calendar-next:hover span{ opacity: 1; }
+#js2uix-calendar .js2uix-calendar-body .js2uix-calendar-today span{ background-color: #27ae60 !important; color: #fff; }
+#js2uix-calendar .js2uix-calendar-body .js2uix-calendar-select span{ background-color: #5ab8ff !important; color: #fff;  }
+#js2uix-calendar .js2uix-calendar-body .js2uix-date-disabled span,
+#js2uix-calendar .js2uix-calendar-body .js2uix-date-disabled:hover span{ opacity: 0.3 !important; background: none; }
+#js2uix-calendar .js2uix-calendar-arrow { content: ""; position: absolute; width: 0; height: 0; left:calc(50% - 7px); border-style: solid; }
+#js2uix-calendar .js2uix-calendar-arrow:after { content: ""; border: solid transparent; height: 0; width: 0; position: absolute; pointer-events: none; }
+#js2uix-calendar .js2uix-calendar-arrow{ top:-10px; border-width: 0 7px 9px 7px; border-color: transparent transparent #aaa transparent; }
+#js2uix-calendar .js2uix-calendar-arrow:after{border-bottom-color: #f9f9f9; border-width: 0 6px 9px 6px; margin-top: 1px; margin-left: -6px;}
+#js2uix-calendar .js2uix-calendar-hidden{ position: absolute; display: none; top: 0; left:0; width: 100%; height: 100%; background-color: rgba(255, 255, 255, 0.5); }
+#js2uix-calendar .js2uix-calendar-hidden .js2uix-calendar-select{ position: relative; width: 100%; height: calc(100% - 35px); margin-top: 35px; background-color: #fff; }
+#js2uix-calendar .js2uix-calendar-hidden .js2uix-select-year{ text-align: center; padding: 20px 0 5px; height: 50px;}
+#js2uix-calendar .js2uix-calendar-hidden .js2uix-select-year *{ display: inline-block; text-align: center;}
+#js2uix-calendar .js2uix-calendar-hidden .js2uix-select-year .js2uix-select-prev,
+#js2uix-calendar .js2uix-calendar-hidden .js2uix-select-year .js2uix-select-next{ width: 20px; height:22px; margin-top: 2px; cursor: pointer; }
+#js2uix-calendar .js2uix-calendar-hidden .js2uix-select-year .js2uix-select-prev span,
+#js2uix-calendar .js2uix-calendar-hidden .js2uix-select-year .js2uix-select-next span{ display: block; float: left; width: 100%; height: 100%; opacity: 0.5;}
+#js2uix-calendar .js2uix-calendar-hidden .js2uix-select-year .js2uix-select-prev span:hover,
+#js2uix-calendar .js2uix-calendar-hidden .js2uix-select-year .js2uix-select-next span:hover{opacity: 1;}
+#js2uix-calendar .js2uix-calendar-hidden .js2uix-select-year .js2uix-select-prev span:active,
+#js2uix-calendar .js2uix-calendar-hidden .js2uix-select-year .js2uix-select-next span:active{ margin-top: 1px; }
+#js2uix-calendar .js2uix-calendar-hidden .js2uix-select-year .js2uix-select-prev span{ background-position: -16px 2px; }
+#js2uix-calendar .js2uix-calendar-hidden .js2uix-select-year .js2uix-select-next span{ background-position: -31px 2px; }
+#js2uix-calendar .js2uix-calendar-hidden .js2uix-select-year .js2uix-select-input{ width: 60px; vertical-align: top; margin: 0 5px;}
+#js2uix-calendar .js2uix-calendar-hidden .js2uix-select-year .js2uix-select-input input{ width: 100%; border: 1px solid #ddd; border-radius: 3px; padding: 3px 5px; font-size: 13px; }
+#js2uix-calendar .js2uix-calendar-hidden .js2uix-select-month{ width: 100%; height: calc(100% - 50px); padding: 5px 15px 15px; }
+#js2uix-calendar .js2uix-calendar-hidden .js2uix-select-month table{ width: 100%; height: 100%;}
+#js2uix-calendar .js2uix-calendar-hidden .js2uix-select-month tr{ width: 100%; height: 33.333%;}
+#js2uix-calendar .js2uix-calendar-hidden .js2uix-select-month td{ width: 25%; text-align: center; font-size: 12px; border-radius: 3px; background-color: #fff; vertical-align: middle}
+#js2uix-calendar .js2uix-calendar-hidden .js2uix-select-month td:hover{ background-color: #f9f9f9; cursor: pointer; }
+#js2uix-calendar .js2uix-calendar-hidden .js2uix-select-month td.on{ background-color: #00abff !important; color: #fff; }
+input.js2uix-calendar-input[data-design=true]{ position: relative; min-height: 26px;  font-size: 12px; color: #4e4e4e; border: 1px solid #ccc; overflow: hidden; padding: 3px 5px; vertical-align: top; outline-style: none; border-radius: 3px; }
+input.js2uix-calendar-target[data-design=true]{ outline : 2px solid rgba(0, 157, 255, 0.2); background-color: rgba(0, 157, 255, 0.03); }
+
+.js2uix-slide{ position: relative; display: block; overflow: hidden; }
+.js2uix-slide .js2uix-slide-wrap{ position: relative; display: block; width: auto; height: auto; font-size: 0; }
+.js2uix-slide[data-style='horizontal'].js2uix-slide-wrap{ position: absolute; top:0; left:0; }
+.js2uix-slide[data-style='vertical'].js2uix-slide-wrap{ position: absolute; top:0; left:0; }
+.js2uix-slide .js2uix-slide-item{ display: inline-block; font-size: 12px; }
+.js2uix-slide .js2uix-slide-dot{ position: absolute; width: auto; height: auto; bottom: 15px; font-size: 0; text-align: center; }
+.js2uix-slide .js2uix-slide-dot span.js2uix-dot-item{ display: inline-block;  width: 12px; height: 12px;  border-radius: 12px; cursor: pointer;  margin: 0 5px; background-color: rgba(155, 204, 255, 0.7)  }
+.js2uix-slide .js2uix-slide-dot span.js2uix-dot-item.on{ background-color: rgba(0, 134, 255, 0.7)  }
+.js2uix-slide .js2uix-slide-prev, .js2uix-slide .js2uix-slide-next{ position: absolute; width: 27px; height: 44px; top: calc(50% - 22px); opacity: 0.2; cursor: pointer; }
+.js2uix-slide .js2uix-slide-prev:hover, .js2uix-slide .js2uix-slide-next:hover{ opacity: 0.5; }
+.js2uix-slide .js2uix-slide-prev { background-image: url("data:image/svg+xml;charset=utf-8,<svg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20viewBox%3D'0%200%2027%2044'><path%20d%3D'M0%2C22L22%2C0l2.1%2C2.1L4.2%2C22l19.9%2C19.9L22%2C44L0%2C22L0%2C22L0%2C22z'%20fill%3D'%23007aff'%2F><%2Fsvg>"); left: 10px; right: auto; }
+.js2uix-slide .js2uix-slide-next {  background-image: url("data:image/svg+xml;charset=utf-8,<svg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20viewBox%3D'0%200%2027%2044'><path%20d%3D'M27%2C22L27%2C22L5%2C44l-2.1-2.1L22.8%2C22L2.9%2C2.1L5%2C0L27%2C22L27%2C22z'%20fill%3D'%23007aff'%2F><%2Fsvg>");  right: 10px;  left: auto; }
