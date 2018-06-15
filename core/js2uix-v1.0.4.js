@@ -74,6 +74,8 @@
             } else if (typeof arg[i] === 'number' ){
                 isString = DOC.createTextNode(String(arg[i]));
                 item.push(isString);
+            } else if (typeof arg[i] === 'object' && arg.length > 0 ){
+                item = js2uix(arg[i])
             }
         }
         return item;
@@ -172,6 +174,27 @@
             return new Date(result[0],result[1],result[2],result[3],result[4],result[5]);
         }
     };
+    var js2uixVisibility = (function(){
+        var stateKey, eventKey, keys = {
+            hidden: "visibilitychange",
+            webkitHidden: "webkitvisibilitychange",
+            mozHidden: "mozvisibilitychange",
+            msHidden: "msvisibilitychange"
+        };
+        for (stateKey in keys) {
+            if (stateKey in document) {
+                eventKey = keys[stateKey];
+                break;
+            }
+        }
+        return function(c) {
+            if (c) {
+                document.addEventListener(eventKey, c);
+            }
+            return !document[stateKey];
+        }
+    })();
+
     js2uix = function (select){return new js2uix.fx.init(select);};
     js2uix.fx = js2uix.prototype = {
         js2uix : ModuleVersion,
@@ -4142,7 +4165,9 @@
                 this.state.parentRect = parent[0].getBoundingClientRect();
                 this.state.placeholder.css({
                     'width' : this.state.targetRect.width,
-                    'height' : this.state.targetRect.height
+                    'height' : this.state.targetRect.height,
+                    'background' : '#efefef',
+                    'z-index' : 0
                 });
                 target.css({
                     "position" : "absolute",
@@ -5240,6 +5265,375 @@
     };
     js2uix.extend(js2uixToolCalendarInput.prototype, js2uixCalendarCommon);
     js2uixToolCalendarInput.prototype.constructor = js2uixToolCalendarInput;
+
+    var js2uixToolSlide = function(element, props){
+        this.element = element;
+        this.props = {
+            autoSlide : false,
+            autoTimer : 5,
+            dotControl : false,
+            arrowControl : false,
+            loop : false,
+            flow : 'h',
+            sensitivity : 150,
+            duration : 0.25,
+            transitionType : 'ease',
+            create : null,
+            start : null,
+            move : null,
+            end : null
+        };
+        this.state = {
+            wrap : null,
+            dot : null,
+            arrowL : null,
+            arrowR : null,
+            isWrap : false,
+            width : 0,
+            height : 0,
+            left : 0,
+            top : 0,
+            itemNum : 0,
+            itemNum2 : 0,
+            indexNum : 0,
+            isDown : false,
+            crtX : 0,
+            crtY : 0,
+            eventX : 0,
+            eventY : 0,
+            transform :'translateX',
+            controlLock : true,
+            transitionEnd : true,
+            userControl : false,
+            visible : true
+        };
+        this.transitionTimer = null;
+        this.autoTimer = null;
+        this.init(props);
+        return {
+            name : this.js2uixName,
+            goto : this.goToPage.bind(this)
+        }
+    };
+    js2uixToolSlide.prototype = {
+        js2uixName : 'js2uix-slide',
+        setDefaultSlideDom : function(){
+            this.element.addClass('js2uix-slide');
+            this.element.setAttr('data-style',(this.props.flow === 'h')?'horizontal':'vertical');
+            this.state.width = parseInt(this.element[0].clientWidth);
+            this.state.height = parseInt(this.element[0].clientHeight);
+            this.state.itemNum = this.element[0].children.length;
+            this.state.transform = (this.props.flow === 'h')?'translateX':'translateY';
+        },
+        setChildrenDomLayout : function(item) {
+            var children = js2uix(item || this.element[0].children);
+            this.state.wrap = this.state.wrap || js2uix.createDom('div',{'className':'js2uix-slide-wrap'}, true);
+            if( children.length > 0 ){
+                this.state.wrap.append(children.addClass('js2uix-slide-item'));
+                if(!this.state.isWrap){this.element.append(this.state.wrap);}
+                this.state.isWrap = this.state.isWrap || true;
+                children.css({'width' : this.state.width, 'height' : this.state.height});
+                if( this.props.flow === 'h'){
+                    this.state.wrap.css('width', this.state.width*children.length);
+                }
+                this.state.indexNum = 1;
+            }
+        },
+        setCreateControlDom : function(){
+            if( this.props.dotControl ){
+                if( !this.state.dot ){
+                    this.state.dot = js2uix.createDom('div', {'className':'js2uix-slide-dot'}, true);
+                    var items = '';
+                    for(var i=0; i<this.state.itemNum; i++){
+                        var onClass = (i===0)?'on':'';
+                        items += '<span class="js2uix-dot-item '+onClass+'" data-idx="'+(i+1)+'"></span>'
+                    }
+                    this.state.dot.html(items);
+                    this.element.append(this.state.dot);
+                }
+                var dotBoxWidth = this.state.dot.css('width');
+                var left = parseInt(this.state.width)*0.5 - parseInt(dotBoxWidth)*0.5;
+                this.state.dot.css('left', left);
+            }
+            if( this.props.arrowControl && !this.state.arrowL && !this.state.arrowR ){
+                this.state.arrowL = js2uix.createDom('div', {'className':'js2uix-slide-prev', 'attributes' : {'data-name':'prev'}}, true);
+                this.state.arrowR = js2uix.createDom('div', {'className':'js2uix-slide-next', 'attributes' : {'data-name':'next'}}, true);
+                this.element.append(this.state.arrowL, this.state.arrowR);
+            }
+        },
+        setStateSlideLoopOrNormalType : function(){
+            var defaultSize = (this.props.flow === 'h')?this.state.width:this.state.height;
+            var defaultKey = (this.props.flow === 'h')?'width':'height';
+            var child = this.state.wrap[0].children;
+            var calcNum = 0;
+            if( this.props.loop ){
+                var first = child[0];
+                var last = child[child.length-1];
+                if( first && last ){
+                    this.state.wrap.append(first.cloneNode(true));
+                    this.state.wrap.prepend(last.cloneNode(true));
+                    calcNum = -1;
+                }
+            }
+            var movePos = (defaultSize*calcNum);
+            this.state.itemNum2 = this.state.wrap[0].children.length;
+            this.state.wrap[0].style[defaultKey] = defaultSize*this.state.itemNum2;
+            this.setSlideTranslateMove(movePos, false);
+            this.callBackCreate();
+        },
+        setSlideTransitionEffect : function(ease){
+            if(ease){
+                var wrap = this.state.wrap[0];
+                var property = 'all'
+                var allowType = ['linear', 'ease', 'ease-in', 'ease-out', 'ease-in-out'];
+                var animationType = (allowType.indexOf(this.props.transitionType) !== -1)?this.props.transitionType:'ease';
+                wrap.style['transitionProperty'] = property;
+                wrap.style['transitionDuration'] = this.props.duration+'s';
+                wrap.style['transitionTimingFunction'] = animationType;
+            }
+        },
+        setSlideTranslateMove : function(value, ease){
+            var wrap = this.state.wrap[0];
+            this.setSlideTransitionEffect(ease);
+            wrap.style['transform'] = this.state.transform+'('+value+'px)';
+            wrap.style['webkitTransform'] = this.state.transform+'('+value+'px)';
+        },
+        setGoToPageMoveByNumber : function(number, ease){
+            if( typeof number === 'number'){
+                if( this.props.loop ){
+                    if( number <= 0 ){ number = 0; }
+                    if( number >= this.state.itemNum+1 ){ number = this.state.itemNum+1; }
+                } else {
+                    if( number <= 1 ){ number = 1; }
+                    if( number >= this.state.itemNum ){ number = this.state.itemNum; }
+                }
+                var layout = ( this.props.flow === 'h' )?'width':'height';
+                var goToValue = (!this.props.loop)?(this.state[layout]*(number-1))*-1:(this.state[layout]*(number))*-1;
+                this.state.indexNum = number;
+                this.callBackStart();
+                this.setSlideTranslateMove(goToValue, ease);
+            }
+        },
+        setChangeDottedByNumber : function(number){
+            if( this.props.dotControl && typeof number === 'number' ){
+                if( this.props.loop ){
+                    if( number <= 0 ){ number = this.state.itemNum; }
+                    if( number >= this.state.itemNum+1 ){ number = 1; }
+                } else {
+                    if( number <= 1 ){ number = 1; }
+                    if( number >= this.state.itemNum ){ number = this.state.itemNum; }
+                }
+                var target = js2uix(this.state.dot[0].children[number-1]);
+                if( target.length > 0 ){
+                    target.addClass('on').siblingNodes().removeClass('on')
+                }
+
+            }
+        },
+        setSlideAutoTimerClearHandler : function(){
+            clearTimeout(this.autoTimer);
+        },
+        setSlideAutoTimerStartHandler : function(){
+            if( this.props.autoSlide ){
+                this.autoTimer = setInterval(function(){
+                    var index = this.state.indexNum;
+                    index++;
+                    this.setGoToPageMoveByNumber(index, true);
+                    this.setChangeDottedByNumber(index);
+                }.bind(this), this.props.autoTimer*1000);
+            }
+        },
+        setSlideStartEventHandler : function(event){
+            this.setSlideAutoTimerClearHandler();
+            if( !this.state.controlLock ){return false;}
+            var transform = this.state.wrap[0].style.transform.replace(/[^0-9\-.,]/g, '').split(',');
+            var stateKey = (this.props.flow === 'v')?'crtY':'crtX';
+            this.state.eventX = (event.pageX || event.pageX === 0)?event.pageX:parseInt(event['changedTouches'][0].pageX);
+            this.state.eventY = (event.pageY || event.pageY === 0)?event.pageY:parseInt(event['changedTouches'][0].pageY);
+            this.state[stateKey] = parseInt(transform[0]);
+            this.state.isDown = true;
+            this.props.userControl = true;
+            this.callBackStart();
+        },
+        setSlideMoveEventHandler : function(event){
+            if( this.state.isDown ){
+                var flowType = this.props.flow;
+                var moveType = (flowType === 'h')
+                    ?(event.pageX || event.pageX === 0)?event.pageX - this.state.eventX
+                    :parseInt(event['changedTouches'][0].pageX) - this.state.eventX
+                    :(event.pageY || event.pageY === 0)?event.pageY - this.state.eventY
+                    :parseInt(event['changedTouches'][0].pageY) - this.state.eventY;
+                var flowNum = (moveType<0)?-1:(moveType>0)?1:0;
+                var calcMovePos = (flowType === 'h')?this.state.crtX:this.state.crtY;
+                var moveCalc = (this.props.loop)?moveType:(this.state.indexNum === 1 && flowNum === 1)?1:(this.state.indexNum === this.state.itemNum && flowNum === -1)?-1:moveType;
+                var moveValue = calcMovePos+moveCalc;
+                this.setSlideTranslateMove(moveValue, false);
+                event.preventDefault();
+            }
+        },
+        setSlideEndEventHandler : function(event){
+            if( this.state.isDown ){
+                this.state.isDown = false;
+                var layout = ( this.props.flow === 'h' )?'width':'height';
+                var moveType = ( this.props.flow === 'h' )
+                    ?(event.pageX || event.pageX === 0)?event.pageX - this.state.eventX
+                    :parseInt(event['changedTouches'][0].pageX) - this.state.eventX
+                    :(event.pageY || event.pageY === 0)?event.pageY - this.state.eventY
+                    :parseInt(event['changedTouches'][0].pageY) - this.state.eventY;
+                var calcMovePos = ( this.props.flow === 'h' )?this.state.crtX:this.state.crtY;
+                var isMoveX = (moveType<0)?moveType*-1:moveType;
+                var flowNum = (moveType<0)?-1:(moveType>0)?1:0;
+                var isFlow = (this.props.loop)?true:(!(this.state.indexNum === 1 && flowNum === 1 || this.state.indexNum === this.state.itemNum && flowNum === -1));
+                if( isMoveX >= this.props.sensitivity && isFlow ){
+                    calcMovePos = calcMovePos+(this.state[layout]*flowNum);
+                    this.state.indexNum = this.state.indexNum-flowNum;
+                    this.setChangeDottedByNumber(this.state.indexNum);
+                    if( this.state.indexNum === 0 || this.state.indexNum === this.state.itemNum+1 ){this.state.controlLock = false;}
+                }
+                this.setSlideTranslateMove(calcMovePos, true);
+                this.props.userControl = false;
+            }
+            event.preventDefault();
+        },
+        setSlideTransitionEndHandler : function(event){
+            if( this.props.loop ){
+                var layout = (this.props.flow === 'h' )?'width':'height';
+                var willMovePos;
+                if( this.state.indexNum === 0 ){
+                    willMovePos = (this.state[layout]*this.state.itemNum)*-1;
+                    this.state.indexNum = this.state.itemNum;
+                }
+                if( this.state.indexNum === this.state.itemNum+1 ){
+                    willMovePos = this.state[layout]*-1;
+                    this.state.indexNum = 1;
+                }
+                if( willMovePos ){
+                    this.setSlideTranslateMove(willMovePos, false);
+                }
+            }
+            this.state.wrap.css('transition' , 'null');
+            this.state.controlLock = true;
+            this.state.transitionEnd = true;
+            this.callBackEnd();
+            event.preventDefault();
+        },
+        setDotClickEventHandler : function(event){
+            this.setSlideAutoTimerClearHandler();
+            var target = event.target;
+            var index = parseInt(js2uix.getAttr(target, 'data-idx'));
+            this.setGoToPageMoveByNumber(index, true);
+            this.setChangeDottedByNumber(index);
+        },
+        setArrowClickEventHandler : function(event){
+            this.setSlideAutoTimerClearHandler();
+            var target = event.target;
+            var name = js2uix.getAttr(target, 'data-name');
+            var index = this.state.indexNum;
+            if( name === 'prev'){
+                index--;
+                this.setGoToPageMoveByNumber(index, true);
+                this.setChangeDottedByNumber(index);
+            } else if ( name === 'next' ){
+                index++;
+                this.setGoToPageMoveByNumber(index, true);
+                this.setChangeDottedByNumber(index);
+            }
+        },
+        goToPage : function(number, ease){
+            this.setGoToPageMoveByNumber(number, (typeof ease === 'undefined')?true:ease);
+        },
+        setResizeHandler : function(){
+            var layout = ( this.props.flow === 'h')?'width':'height';
+            this.state.width = parseInt(this.element[0].clientWidth);
+            this.state.height = parseInt(this.element[0].clientHeight);
+            this.state.wrap.css(layout, this.state[layout]*this.state.itemNum2);
+            js2uix(this.state.wrap[0].children).css('width', this.state[layout]);
+            this.setCreateControlDom();
+            this.setGoToPageMoveByNumber(this.state.indexNum, false);
+        },
+        setControlEvent : function(){
+            var module = this;
+            var slideItem = this.state.wrap[0].children;
+            var whichTransitionEvent = function(){
+                var key;
+                var transitions = {
+                    'transition':'transitionend',
+                    'OTransition':'oTransitionEnd',
+                    'MozTransition':'transitionend',
+                    'WebkitTransition':'webkitTransitionEnd'
+                };
+                for(key in transitions){
+                    if( module.state.wrap[0].style[key] !== undefined ){
+                        return transitions[key];
+                    }
+                }
+            };
+            if( slideItem.length > 0 ){
+                window.addEventListener('resize', this.setResizeHandler.bind(this), true);
+                this.element.addEvent({
+                    'mouseenter.js2uix-slide' : this.setSlideAutoTimerClearHandler.bind(this),
+                    'touchstart.js2uix-slide' : this.setSlideAutoTimerClearHandler.bind(this),
+                    'mouseleave.js2uix-slide' : this.setSlideAutoTimerStartHandler.bind(this),
+                    'touchend.js2uix-slide'   : this.setSlideAutoTimerStartHandler.bind(this),
+                    'touchcancel.js2uix-slide': this.setSlideAutoTimerStartHandler.bind(this)
+                });
+                this.state.wrap.addEvent({
+                    'mousedown.js2uix-slide'  : this.setSlideStartEventHandler.bind(this),
+                    'touchstart.js2uix-slide' : this.setSlideStartEventHandler.bind(this),
+                    'mousemove.js2uix-slide'  : this.setSlideMoveEventHandler.bind(this),
+                    'touchmove.js2uix-slide'  : this.setSlideMoveEventHandler.bind(this),
+                    'mouseleave.js2uix-slide' : this.setSlideEndEventHandler.bind(this),
+                    'mouseup.js2uix-slide'    : this.setSlideEndEventHandler.bind(this),
+                    'touchend.js2uix-slide'   : this.setSlideEndEventHandler.bind(this),
+                    'touchcancel.js2uix-slide': this.setSlideEndEventHandler.bind(this)
+                });
+                var transitionEvent = whichTransitionEvent();
+                this.state.wrap.addEvent(transitionEvent, this.setSlideTransitionEndHandler.bind(this));
+            }
+            if( this.props.dotControl ){
+                this.state.dot.children().addEvent({'click.js2uix-slide'  : this.setDotClickEventHandler.bind(this)});
+            }
+            if( this.props.arrowControl ){
+                this.state.arrowL.addEvent({'click.js2uix-slide'  : this.setArrowClickEventHandler.bind(this)});
+                this.state.arrowR.addEvent({'click.js2uix-slide'  : this.setArrowClickEventHandler.bind(this)});
+            }
+            js2uixVisibility(function(){
+                if( module.state.visible ){
+                    module.state.visible = false;
+                    module.setSlideAutoTimerClearHandler();
+                } else {
+                    module.state.visible = true;
+                    module.setSlideAutoTimerStartHandler();
+                }
+            });
+        },
+        callBackCreate : function(){
+            if ( this.props.create && typeof this.props.create === 'function' ){
+                this.props.create();
+            }
+        },
+        callBackStart : function(){
+            if ( this.props.start && typeof this.props.start === 'function' ){
+                this.props.start();
+            }
+        },
+        callBackEnd : function(){
+            if ( this.props.end && typeof this.props.end === 'function' ){
+                this.props.end();
+            }
+        },
+        init : function(props){
+            if( typeof props === 'object' ){ js2uix.extend(this.props, props); }
+            this.setDefaultSlideDom();
+            this.setChildrenDomLayout();
+            this.setStateSlideLoopOrNormalType();
+            this.setCreateControlDom();
+            this.setControlEvent();
+            this.setSlideAutoTimerStartHandler();
+        }
+    };
+    js2uixToolSlide.prototype.constructor = js2uixToolSlide;
+
     js2uix.extend({
         Calendar : function(target, props){
             var element = js2xixElementResult(target);
@@ -5270,12 +5664,15 @@
             var element = js2xixElementResult(target);
             if( element && element.length > 0 ){return new js2uixToolSortable(element, props);}
         },
+        Slide : function(target, props){
+            var element = js2xixElementResult(target);
+            if( element && element.length > 0 ){return new js2uixToolSlide(element, props);}
+        },
         Tree : function(target, props){
             var element = js2xixElementResult(target);
             if( element && element.length > 0 ){return new js2uixToolTree(element, props);}
         }
     });
-
     if ( typeof define === "function" && define.amd ) {define( ModuleName, [], function() {return js2uix;});}
     if ( !noGlobal ) { window.js2uix = js2uix; }
     return js2uix;

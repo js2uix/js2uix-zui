@@ -216,3 +216,16 @@ body.disableSelection * {  -webkit-user-select: none;  -moz-user-select: -moz-no
 #js2uix-calendar .js2uix-calendar-hidden .js2uix-select-month td.on{ background-color: #00abff !important; color: #fff; }
 input.js2uix-calendar-input[data-design=true]{ position: relative; min-height: 26px;  font-size: 12px; color: #4e4e4e; border: 1px solid #ccc; overflow: hidden; padding: 3px 5px; vertical-align: top; outline-style: none; border-radius: 3px; }
 input.js2uix-calendar-target[data-design=true]{ outline : 2px solid rgba(0, 157, 255, 0.2); background-color: rgba(0, 157, 255, 0.03); }
+
+.js2uix-slide{ position: relative; display: block; overflow: hidden; }
+.js2uix-slide .js2uix-slide-wrap{ position: relative; display: block; width: auto; height: auto; font-size: 0; }
+.js2uix-slide[data-style='horizontal'].js2uix-slide-wrap{ position: absolute; top:0; left:0; }
+.js2uix-slide[data-style='vertical'].js2uix-slide-wrap{ position: absolute; top:0; left:0; }
+.js2uix-slide .js2uix-slide-item{ display: inline-block; font-size: 12px; }
+.js2uix-slide .js2uix-slide-dot{ position: absolute; width: auto; height: auto; bottom: 15px; font-size: 0; text-align: center; }
+.js2uix-slide .js2uix-slide-dot span.js2uix-dot-item{ display: inline-block;  width: 12px; height: 12px;  border-radius: 12px; cursor: pointer;  margin: 0 5px; background-color: rgba(155, 204, 255, 0.7)  }
+.js2uix-slide .js2uix-slide-dot span.js2uix-dot-item.on{ background-color: rgba(0, 134, 255, 0.7)  }
+.js2uix-slide .js2uix-slide-prev, .js2uix-slide .js2uix-slide-next{ position: absolute; width: 27px; height: 44px; top: calc(50% - 22px); opacity: 0.2; cursor: pointer; }
+.js2uix-slide .js2uix-slide-prev:hover, .js2uix-slide .js2uix-slide-next:hover{ opacity: 0.5; }
+.js2uix-slide .js2uix-slide-prev { background-image: url("data:image/svg+xml;charset=utf-8,<svg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20viewBox%3D'0%200%2027%2044'><path%20d%3D'M0%2C22L22%2C0l2.1%2C2.1L4.2%2C22l19.9%2C19.9L22%2C44L0%2C22L0%2C22L0%2C22z'%20fill%3D'%23007aff'%2F><%2Fsvg>"); left: 10px; right: auto; }
+.js2uix-slide .js2uix-slide-next {  background-image: url("data:image/svg+xml;charset=utf-8,<svg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20viewBox%3D'0%200%2027%2044'><path%20d%3D'M27%2C22L27%2C22L5%2C44l-2.1-2.1L22.8%2C22L2.9%2C2.1L5%2C0L27%2C22L27%2C22z'%20fill%3D'%23007aff'%2F><%2Fsvg>");  right: 10px;  left: auto; }
