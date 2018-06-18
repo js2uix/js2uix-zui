@@ -961,7 +961,7 @@
                 }
             }());
         };
-        for(var key in object){ js2uixTest(elm, key, object, speed); }
+        for(var key in object){ new js2uixTest(elm, key, object, speed); }
     };
     var js2uixDomStyleParse = function (name, value){
         var i;
