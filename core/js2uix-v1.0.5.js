@@ -29,7 +29,7 @@
     if( !window || typeof window === 'undefined'){ return false;}
     var js2uix;
     var ModuleName = 'js2uix';
-    var ModuleVersion = 'v1.0.4';
+    var ModuleVersion = 'v1.0.5';
     var DOC = window.document;
     var SetProtoType = Object.setPrototypeOf;
     var GetProtoType = Object.getPrototypeOf;
