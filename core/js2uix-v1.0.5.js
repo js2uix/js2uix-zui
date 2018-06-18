@@ -16,17 +16,22 @@
         module.exports = factory( global, true );
         if( !global.document ){
             module.exports = function(win) {
-                if ( !win.document ) { throw new Error( "js2uix is not support this browser!" ); }
+                if ( !win.document) {
+                    throw new Error( "js2uix is not support this browser!" );
+                }
                 return factory(win);
             }
         }
     } else {
+        if(!global.document || !global.document.addEventListener){
+            console.info( "js2uix is not support this browser!" );
+            return false;
+        }
         factory( global );
     }
 })( typeof window !== "undefined" ? window : this, function( window, noGlobal ){
     'use strict';
-
-    if( !window || typeof window === 'undefined'){ return false;}
+    if( !window || typeof window === 'undefined'){ return false; }
     var js2uix;
     var ModuleName = 'js2uix';
     var ModuleVersion = 'v1.0.5';
@@ -195,28 +200,42 @@
         }
     })();
 
-    js2uix = function (select){return new js2uix.fx.init(select);};
-    js2uix.fx = js2uix.prototype = {
+    js2uix = function (select){
+        return new js2uix.fn.init(select);
+    };
+    js2uix.fn = js2uix.prototype = {
         js2uix : ModuleVersion,
+        length: 0,
         constructor : js2uix,
-        query : function ( select, result ){
+        query : function ( select, object ){
+            var result = [];
             var argArray = Array.prototype.slice.call(arguments);
-            var newNode = js2uix.extend([], argArray.shift());
-            newNode.name = ModuleName;
-            if ( SetProtoType ){
-                newNode = SetProtoType( newNode, GetProtoType( result ) );
-            } else {
-                newNode.__proto__ = GetProtoType( result );
-            }
-            for (var i=0; i < newNode.length; i++ ){
-                if ( !newNode[i][ModuleName] ){
-                    newNode[i][ModuleName] = { events : {}, data : {} };
+            var protoObject = GetProtoType(object);
+            var i;
+            try {
+                if ( SetProtoType ){
+                    result = js2uix.extend(result, argArray.shift());
+                    result = SetProtoType( result, protoObject );
+                } else {
+                    result = js2uix.extend(result, protoObject );
+                    result.__proto__ = protoObject;
+                    for(i=0; i<select.length; i++){ result.push(select[i]); }
                 }
+                for (i=0; i < result.length; i++ ){
+                    if ( !result[i][ModuleName] ){
+                        result[i][ModuleName] = { events : {}, data : {} };
+                    }
+                }
+                result.name = ModuleName;
+                return result;
+            } finally {
+                result = null;
+                argArray = null;
+                protoObject = null;
             }
-            return newNode;
         }
     };
-    js2uix.fx.init = function (select){
+    js2uix.fn.init = function (select){
         if ( !select ) { return this; }
         if ( typeof select === 'string' ){
             var tagName;
@@ -260,10 +279,11 @@
                 select = [window];
             }
         }
-        return js2uix.fx.query( select, this );
+        return js2uix.fn.query( select, this );
     };
-    js2uix.fx.init.prototype = js2uix.fx;
-    js2uix.extend = js2uix.fx.extend = function (){
+    js2uix.fn.init.prototype = js2uix.fn;
+
+    js2uix.extend = js2uix.fn.extend = function (){
         var arg = arguments;
         var target = arg[0] || {};
         var object;
@@ -427,7 +447,7 @@
             }
         }
     });
-    js2uix.fx.extend({
+    js2uix.fn.extend({
         addId : function ( name ){
             js2uix.addId( this[0], name );
             return this;
@@ -571,7 +591,7 @@
         },
         uiComponent : new js2uixConstModule()
     });
-    js2uix.fx.extend({
+    js2uix.fn.extend({
         loop : function ( callback ){
             return js2uix.loop( this, callback );
         },
@@ -918,6 +938,31 @@
         }
     });
 
+    var js2uixFxCommon = function(elm, object, speed, fnc){
+        var optLength = Object.keys(object).length;
+        var js2uixTest = function(elm, key, object, speed){
+            var val = object[key];
+            var last = +new Date();
+            var orgStyle = parseInt(elm[0].style[key]) || elm.css(key);
+            var isPx = (key !== 'opacity')?'px':'';
+            var isTime = (key !== 'opacity')?0.005:1;
+            var isType = (orgStyle > val)?-1:(orgStyle < val)?1:0;
+            (function tick() {
+                var isCalc = ((new Date()-last)/(speed*isTime))*isType;
+                orgStyle = orgStyle+isCalc;
+                elm[0].style[key] = orgStyle+isPx;
+                last = +new Date();
+                if ( (isType === 1 && (orgStyle <= val)) || (isType === -1 && (orgStyle >= val)) ) {
+                    if( window.requestAnimationFrame ){ requestAnimationFrame(tick); } else { setTimeout(tick, 16); }
+                } else {
+                    elm[0].style[key] = val+isPx;
+                    optLength--;
+                    if( optLength === 0 ){ fnc(); }
+                }
+            }());
+        };
+        for(var key in object){ js2uixTest(elm, key, object, speed); }
+    };
     var js2uixDomStyleParse = function (name, value){
         var i;
         var type;
@@ -952,7 +997,7 @@
             return item.css(name);
         }
     };
-    js2uix.fx.extend({
+    js2uix.fn.extend({
         css : function (){
             var arg = arguments;
             var length = arg.length;
@@ -1074,6 +1119,20 @@
                 }
             }
             return this;
+        },
+        animate : function(){
+            if( this && this.length > 0  ){
+                var arg = arguments;
+                var options = arg[0] || null;
+                var speed = (typeof arg[1] === 'number')?arg[1]:250;
+                var callBack = ( typeof arg[arg.length-1] !== 'function' )?null:arg[arg.length-1];
+                if( options && speed ){
+                    js2uix.loop(this, function(){
+                        js2uixFxCommon(js2uix(this), options, speed, callBack);
+                    });
+                }
+                return this;
+            }
         }
     });
 
@@ -1185,7 +1244,7 @@
             }
         });
     };
-    js2uix.fx.extend({
+    js2uix.fn.extend({
         addEvent : function (){
             var arg = arguments;
             var length = arg.length;
@@ -1230,17 +1289,24 @@
             success : null,
             error : false
         };
-        this._init(this._target, option);
+        this.init(this._target, option);
+        return {
+            name : 'js2uix-ajax'
+        }
     };
     js2uixAjax.prototype = {
-        _xhr : function() {
+        xhr : function() {
             try {
-                return new window.XMLHttpRequest();
+                if (window.XMLHttpRequest) {
+                    return new XMLHttpRequest();
+                } else if (window.ActiveXObject) {
+                    return new ActiveXObject("Microsoft.XMLHTTP");
+                }
             } catch ( e ) {
                 throw error;
             }
         },
-        _setDataType : function(option){
+        setDataType : function(option){
             var checkUrl = option['url'].split(".");
             var matchType = /xml|html|json|js|jsp|asp|php|txt/gi;
             var type = checkUrl[checkUrl.length-1];
@@ -1254,7 +1320,7 @@
             }
             return undefined;
         },
-        _getOptionObject : function(form, option){
+        getOptionObject : function(form, option){
             var opts_obj = {
                 url   : document.location.href,
                 method  : 'POST',
@@ -1269,7 +1335,7 @@
                 contentType: "application/x-www-form-urlencoded; charset=UTF-8"
             };
             opts_obj = js2uix.extend(opts_obj, option);
-            opts_obj.dataType = this._setDataType( option ) || opts_obj.dataType;
+            opts_obj.dataType = this.setDataType( option ) || opts_obj.dataType;
             if( form ){
                 opts_obj.type = 'POST';
                 opts_obj.upload = true;
@@ -1282,7 +1348,7 @@
             }
             return opts_obj;
         },
-        _getQueryString : function(data){
+        getQueryString : function(data){
             var result =[];
             if( typeof data === 'object' ){
                 js2uix.loop(data, function(key, value){
@@ -1291,7 +1357,7 @@
             }
             return result.join("&");
         },
-        _setUploadHandler : function(request, option){
+        setUploadHandler : function(request, option){
             request.upload.addEventListener('progress', function(event) {
                 var percent = 0;
                 var position = event.loaded || event.position;
@@ -1304,7 +1370,7 @@
                 }
             }, false);
         },
-        _setJsonParseData : function(option, value){
+        setJsonParseData : function(option, value){
             var returnValue = value;
             var dataType = option.dataType;
             if( dataType === 'script' ){
@@ -1326,9 +1392,9 @@
             }
             return returnValue;
         },
-        _loadAjaxRequest : function(option, dataQuery){
+        loadAjaxRequest : function(option, dataQuery){
             var _module = this;
-            var request = this._xhr();
+            var request = this.xhr();
 
             request.open( option.method, option.url, option.async);
 
@@ -1337,14 +1403,14 @@
             }
 
             if ( request.upload && option.upload ) {
-                this._setUploadHandler(request, option);
+                this.setUploadHandler(request, option);
             }
 
             request.onload = function(evt) {
                 if ( (request.status >= 200 && request.status < 400) && request.readyState == 4 ) {
                     var returnValue = request.responseText;
                     if( option.success && typeof option.success === "function" ){
-                        returnValue = _module._setJsonParseData(option, returnValue);
+                        returnValue = _module.setJsonParseData(option, returnValue);
                         option.success(returnValue, request.responseText, request);
                         _module._onceMemory.error = false;
                         _module._onceMemory.success = {
@@ -1372,8 +1438,8 @@
 
             request.send(dataQuery);
         },
-        _setAjaxData : function(form, option){
-            var dataQuery; option = this._getOptionObject(form, option);
+        setAjaxData : function(form, option){
+            var dataQuery; option = this.getOptionObject(form, option);
             if( form ){
                 var inputFile = form[0].querySelectorAll('input[type=file]');
                 var etcForms = form.find("*").not('input[type=file]');
@@ -1394,15 +1460,15 @@
                 if( appendNum === 0 ){ return false; }
             }
             if( !form ){
-                dataQuery = this._getQueryString(option.data);
+                dataQuery = this.getQueryString(option.data);
             }
-            this._loadAjaxRequest(option, dataQuery);
+            this.loadAjaxRequest(option, dataQuery);
         },
-        _init : function(form, option){
+        init : function(form, option){
             if( form && (!form[0] || form[0].nodeName.toLowerCase() !== 'form') ){
                 return false;
             }
-            this._setAjaxData(form, option);
+            this.setAjaxData(form, option);
         },
         done : function(fnc){
             if( typeof fnc === 'function' && !this._onceMemory.error ){
@@ -1735,7 +1801,7 @@
             return new js2uixRouter();
         }
     });
-    js2uix.fx.extend({
+    js2uix.fn.extend({
         AjaxForm : function(opt){
             return new js2uixAjax(this, opt);
         }
@@ -2419,7 +2485,7 @@
                 case "bar-s"  : this.js2uixSingleBarType(param); break;
                 case "bar-c"  : this.js2uixCompareBarType(param); break;
                 case "circle" : this.js2uixCircleType(param); break;
-                default : alert("Chart type is incorrect."); break;
+                default : console.info("Chart type is incorrect."); break;
             }
         },
         setCreateChartOption : function (){
@@ -2436,7 +2502,7 @@
                     this.setUserShadeColorSetting(this.props.shadeColor);
                 }
                 if( typeof this.props.timeAxisX[0] !== "string" || typeof this.props.timeAxisX[1] !== "number" ){
-                    alert("The value of the timeAxisX is not correct.");
+                    console.info("The value of the timeAxisX is not correct.");
                     return false;
                 }
                 if(typeof this.props.circleThickNum === 'number'){
@@ -5666,7 +5732,7 @@
             if( element && element.length > 0 ){ return new js2uixToolCalendarInput(element, props); }
         },
         Chart : function(target, props){
-            if( !window.d3 ){ alert('please check! d3.js api'); return; }
+            if( !window.d3 ){ console.info('please check! d3.js api'); return; }
             var element = js2xixElementResult(target);
             if( element && element.length > 0 ){ return new js2uixToolChart(element, props); }
         },
