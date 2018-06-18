@@ -18,6 +18,8 @@ js2uix 는 Dom Control 기능과 Component 제작 기능을 결합한 새로운 
  1. js2uix()
  2. js2uix.Component()
  3. js2uix.UI
+ 
+ [Notice] Does not support IE 8 and lower versions!!
 </pre>
 
 
