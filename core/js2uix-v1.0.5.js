@@ -775,7 +775,7 @@
         firstNode : function (){
             return (this.length < 2)?this:js2uix(this[0]);
         },
-        lastINode : function (){
+        lastNode : function (){
             return (this.length < 2)?this:js2uix(this[this.length-1]);
         },
         siblingNodes : function(){
