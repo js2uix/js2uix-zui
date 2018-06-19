@@ -1800,7 +1800,7 @@
         }
     });
     js2uix.fn.extend({
-        AjaxForm : function(opt){
+        ajaxForm : function(opt){
             return new js2uixAjax(this, opt);
         }
     });
