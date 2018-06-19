@@ -106,6 +106,27 @@ js2uix('div').after('&lt;div&gt;test&lt;/div&gt;');
 js2uix('div').after('test');
 </code></pre>
 
+**ajaxForm : 선택된 form 타입의 Dom 을 이용한 ajax 통신.**
+<pre>사용 예:<code>
+js2uix('form').ajaxForm({
+    url : '/ajax/api',
+    method : 'POST',
+    data : {title : 'title'},
+    success : function(){},
+    error : function(){}
+});
+</code></pre>
+
+**animate : 선택된 Dom 을 이용한 동적 처리 효과.**
+<pre>사용 예:<code>
+js2uix('div').animate({
+    width : 100,
+    height : 200
+}, 250, function(){
+    console.log('animate end!')
+});
+</code></pre>
+
 **append : 선택된 Dom 안의 마지막에 Dom 삽입.**
 <pre>code ex :<code>
 js2uix('div').append(js2uix('.test1'));
@@ -123,6 +144,12 @@ js2uix('div').before('test');
 <pre>code ex :<code>
 js2uix('div').children();
 js2uix('div').children('.child');
+</code></pre>
+
+**clone : 선택된 Dom 을 복사.**
+<pre>code ex :<code>
+var newDiv = js2uix('div').clone();
+var deepDiv = js2uix('div').clone(true);
 </code></pre>
 
 **createDom : 새로운 Dom 생성.**
@@ -153,12 +180,29 @@ js2uix('div').css({
 });
 </code></pre>
 
+**empty : 선택된 Dom 의 자식요소 전부 삭제.**
+<pre>code ex :<code>
+js2uix('div').empty();
+</code></pre>
+
 **extend : object 를 병합/상속**
 <pre>code ex :<code>
 var object1 = {test1:1, test2:2}
 var object2 = {test1:1, test2:2}
 js2uix.extend({}, object1);
 js2uix.extend(object1, object2);
+</code></pre>
+
+**fadeIn : 선택된 Dom 의 점멸.**
+<pre>code ex :<code>
+js2uix('div').fadeIn();
+js2uix('div').fadeIn(250);
+</code></pre>
+
+**fadeOut : 선택된 Dom 의 점멸.**
+<pre>code ex :<code>
+js2uix('div').fadeOut();
+js2uix('div').fadeOut(250);
 </code></pre>
 
 **find : 선택된 Dom 안에서 특정 Dom 찾기**
@@ -205,6 +249,23 @@ var height = js2uix('div').height();
 console.log(height) //200
 </code></pre>
 
+**hide : 선택된 Dom 의 display 속성 none**
+<pre>code ex :<code>
+js2uix('div').hide();
+</code></pre>
+
+**html : 선택된 Dom 의 자식요소 설정 및 반환**
+<pre>code ex :<code>
+var html = js2uix('div').html();
+js2uix('div').html('test');
+js2uix('div').html('<div>test</div>');
+</code></pre>
+
+**index : 선택된 Dom 의 index 정보 확인**
+<pre>code ex :<code>
+js2uix('li').index();
+</code></pre>
+
 **lastINode : 선택된 Dom 중에 마지막 Dom 선택**
 <pre>code ex :<code>
 var last = js2uix('div').lastINode();
@@ -248,6 +309,12 @@ js2uix.loop(array, function(num, value){
 <pre>code ex :<code>
 var next = js2uix('div.test').nextNode();
 console.log(next);
+</code></pre>
+
+**not : 선택된 Dom 의 not 셀렉트**
+<pre>code ex :<code>
+var item = js2uix('div.test').not('.test2');
+console.log(item);
 </code></pre>
 
 **offset : 선택된 Dom 의 offset 확인**
@@ -325,6 +392,16 @@ js2uix(select).addAttr({
 });
 </code></pre>
 
+**show : 선택된 Dom 의 display 속성 block**
+<pre>code ex :<code>
+js2uix('div#test').show();
+</code></pre>
+
+**siblingNodes : 선택된 Dom 을 제외한 인접 형제 element 확인**
+<pre>code ex :<code>
+js2uix('div#test').siblingNodes();
+</code></pre>
+
 **text : 선택된 Dom 의 text 설정 및 확인**
 <pre>code ex :<code>
 js2uix('div#test').text('test');
@@ -337,6 +414,12 @@ console.log(textValue)
 var top = js2uix('div#test').top();
 console.log(top);
 js2uix('div#test').top(200);
+</code></pre>
+
+**value : 선택된 form 형식의 Dom 의 value 값 설정 및 확인**
+<pre>code ex :<code>
+var value = js2uix('input').value();
+js2uix('input').value('test');
 </code></pre>
 
 **width : 선택된 Dom 의 width 설정 및 확인**
