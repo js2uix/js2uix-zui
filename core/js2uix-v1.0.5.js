@@ -200,9 +200,7 @@
         }
     })();
 
-    js2uix = function (select){
-        return new js2uix.fn.init(select);
-    };
+    js2uix = function (select){ return new js2uix.fn.init(select); };
     js2uix.fn = js2uix.prototype = {
         js2uix : ModuleVersion,
         length: 0,
@@ -282,7 +280,6 @@
         return js2uix.fn.query( select, this );
     };
     js2uix.fn.init.prototype = js2uix.fn;
-
     js2uix.extend = js2uix.fn.extend = function (){
         var arg = arguments;
         var target = arg[0] || {};
@@ -363,6 +360,7 @@
             }
         }
     });
+
     js2uix.extend({
         addId : function ( item, name ){
             if( item && name && typeof name === 'string' ){
@@ -998,6 +996,20 @@
         }
     };
     js2uix.fn.extend({
+        animate : function(){
+            if( this && this.length > 0  ){
+                var arg = arguments;
+                var options = arg[0] || null;
+                var speed = (typeof arg[1] === 'number')?arg[1]:250;
+                var callBack = ( typeof arg[arg.length-1] !== 'function' )?null:arg[arg.length-1];
+                if( options && speed ){
+                    js2uix.loop(this, function(){
+                        js2uixFxCommon(js2uix(this), options, speed, callBack);
+                    });
+                }
+                return this;
+            }
+        },
         css : function (){
             var arg = arguments;
             var length = arg.length;
@@ -1119,20 +1131,6 @@
                 }
             }
             return this;
-        },
-        animate : function(){
-            if( this && this.length > 0  ){
-                var arg = arguments;
-                var options = arg[0] || null;
-                var speed = (typeof arg[1] === 'number')?arg[1]:250;
-                var callBack = ( typeof arg[arg.length-1] !== 'function' )?null:arg[arg.length-1];
-                if( options && speed ){
-                    js2uix.loop(this, function(){
-                        js2uixFxCommon(js2uix(this), options, speed, callBack);
-                    });
-                }
-                return this;
-            }
         }
     });
 
@@ -5760,12 +5758,13 @@
             var element = js2xixElementResult(target);
             if( element && element.length > 0 ){return new js2uixToolSlide(element, props);}
         },
-        Tree : function(target, props){
+        TreeMenu : function(target, props){
             var element = js2xixElementResult(target);
             if( element && element.length > 0 ){return new js2uixToolTree(element, props);}
         }
     });
+
     if ( typeof define === "function" && define.amd ) {define( ModuleName, [], function() {return js2uix;});}
-    if ( !noGlobal ) { window.js2uix = js2uix; }
+    if ( !noGlobal ) { window.js2uix = window.j2x = js2uix; }
     return js2uix;
 });
