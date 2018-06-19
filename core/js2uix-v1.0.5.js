@@ -1490,6 +1490,50 @@
         }
     };
     js2uixAjax.prototype.constructor = js2uixAjax;
+    js2uix.extend({
+        Ajax : function(opt){
+            return new js2uixAjax(null, opt);
+        },
+        AjaxDownLoad : function(link, name, type){
+            var arg = arguments[0];
+            var timer = arg[arg.length-1];
+            var start = 0;
+            var object = null;
+            if( typeof link === 'object' || Array.isArray(link) ){
+                if( timer && typeof timer === 'number' ){
+                    object = link;
+                    downloadFnc(object[start].link, object[start].name, object[start].type, timer);
+                } else {
+                    js2uix.loop(link, function(num, value){
+                        if( value && value.link && value.name && value.type ){
+                            downloadFnc(value.link, value.name, value.type, false);
+                        }
+                    });
+                }
+            } else {
+                downloadFnc(link, name, type, false);
+            }
+            function downloadFnc(link, name, type, timer){
+                var downClick = document.createElement('a');
+                downClick.href = link+name+"."+type;
+                downClick.download = name+"."+type;
+                document.body.appendChild(downClick);
+                downClick.click();
+                document.body.removeChild(downClick);
+                start++;
+                if( timer && start < object.length ){
+                    setTimeout(function(){
+                        downloadFnc(object[start].link, object[start].name, object[start].type, timer);
+                    }, timer);
+                }
+            }
+        }
+    });
+    js2uix.fn.extend({
+        ajaxForm : function(opt){
+            return new js2uixAjax(this, opt);
+        }
+    });
 
     var js2uixRouter = function(){
         this.location = null;
@@ -1549,22 +1593,7 @@
             on : this.setRouter.bind(this)
         }
     };
-    var js2uixComponent = function (obj){
-        this.state = {};
-        this.props = {};
-        this.domState = {
-            parent : null,
-            render : null,
-            virtual : null,
-            isMount : false,
-            uniqueId : Date.now()
-        };
-        if ( obj.super ){
-            obj.super.call(this);
-        }
-        Object.defineProperty(this, 'state', {writable : false});
-    };
-    js2uixComponent.prototype = {
+    var js2uixComponentCore = {
         setState : function (state, value){
             if (state && typeof state === 'object' && !Array.isArray(state)){
                 js2uix.loop(state, function(name, value){
@@ -1716,60 +1745,26 @@
             }
         }
     };
+    var js2uixComponent = function (props){
+        this.state = {};
+        this.props = {};
+        this.domState = {
+            parent : null,
+            render : null,
+            virtual : null,
+            isMount : false,
+            uniqueId : Date.now()
+        };
+        if( props ){props.call(this);}
+        return this.setRender();
+    };
     js2uix.extend({
-        Ajax : function(opt){
-            return new js2uixAjax(null, opt);
-        },
-        AjaxDownLoad : function(link, name, type){
-            var arg = arguments[0];
-            var timer = arg[arg.length-1];
-            var start = 0;
-            var object = null;
-            if( typeof link === 'object' || Array.isArray(link) ){
-                if( timer && typeof timer === 'number' ){
-                    object = link;
-                    downloadFnc(object[start].link, object[start].name, object[start].type, timer);
-                } else {
-                    js2uix.loop(link, function(num, value){
-                        if( value && value.link && value.name && value.type ){
-                            downloadFnc(value.link, value.name, value.type, false);
-                        }
-                    });
-                }
-            } else {
-                downloadFnc(link, name, type, false);
-            }
-            function downloadFnc(link, name, type, timer){
-                var downClick = document.createElement('a');
-                downClick.href = link+name+"."+type;
-                downClick.download = name+"."+type;
-                document.body.appendChild(downClick);
-                downClick.click();
-                document.body.removeChild(downClick);
-                start++;
-                if( timer && start < object.length ){
-                    setTimeout(function(){
-                        downloadFnc(object[start].link, object[start].name, object[start].type, timer);
-                    }, timer);
-                }
-            }
-        },
         Component : function(obj){
-            var prop;
-            var component = function(obj){
-                js2uixComponent.call(this, obj);
-                return this['setRender'].call(this);
-            };
-            component.prototype = Object.create(js2uixComponent.prototype);
-            component.prototype.constructor = component;
-            for ( prop in obj ){
-                if ( obj.hasOwnProperty(prop) ){
-                    if ( prop !== 'super' ){
-                        component.prototype[prop] = obj[prop];
-                    }
-                }
-            }
-            return new component(obj);
+            var component = Object.create(js2uixComponentCore);
+            js2uix.extend(component, obj);
+            js2uixComponent.prototype = component;
+            js2uixComponent.prototype.constructor = js2uixComponent;
+            return new js2uixComponent(obj['constructor']);
         },
         Export : function(name, data){
             js2uix.uiComponent.setModule(name, data);
@@ -1797,11 +1792,6 @@
         },
         Router : function(){
             return new js2uixRouter();
-        }
-    });
-    js2uix.fn.extend({
-        ajaxForm : function(opt){
-            return new js2uixAjax(this, opt);
         }
     });
 
