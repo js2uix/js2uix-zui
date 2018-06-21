@@ -200,6 +200,7 @@
         }
     })();
 
+
     js2uix = function (select){ return new js2uix.fn.init(select); };
     js2uix.fn = js2uix.prototype = {
         js2uix : ModuleVersion,
@@ -363,6 +364,41 @@
             if( string ){
                 return encodeURI(this.replaceAll(string, "\\", "%"));
             }
+        },
+        deviceIs : function(){
+            var currentOS = {device : 'incorrect', isMobile : true, os : null, browser : null };
+            var ratio = window['devicePixelRatio'] || 1;
+            var mobile = (/iphone|ipad|ipod|android/i.test(navigator.userAgent.toLowerCase()));
+            var userAgent = navigator.userAgent.toLowerCase();
+            currentOS.userAgent = navigator.userAgent;
+            currentOS.browser = userAgent.search("chrome")>-1?"Chrome":userAgent.search("safari")>-1?"Safari":userAgent.search("firefox")>-1?"Firefox":"None IE";
+            currentOS.ratio = {ratio : ratio, w : window.screen.width * ratio, h : window.screen.height * ratio};
+            if (mobile) {
+                currentOS.isMobile = true;
+                currentOS.os = (userAgent.search("android") > -1) ?"android": ((userAgent.search("iphone") > -1) || (userAgent.search("ipod") > -1) || (userAgent.search("ipad") > -1))?"ios":"else";
+                if( currentOS.os === 'ios'){
+                    if( currentOS.ratio.ratio === 2 && currentOS.ratio.w === 2048 && currentOS.ratio.h === 2732 ){
+                        currentOS.device = 'ipad-pro'
+                    } else if( currentOS.ratio.ratio === 2 && currentOS.ratio.w === 1536 && currentOS.ratio.h === 2048 ){
+                        currentOS.device = 'ipad'
+                    } else if( currentOS.ratio.ratio === 3 && currentOS.ratio.w === 1125 && currentOS.ratio.h === 2436 ){
+                        currentOS.device = 'iphoneX'
+                    } else if( currentOS.ratio.ratio === 3 && currentOS.ratio.w === 1242 && currentOS.ratio.h === 2208 ){
+                        currentOS.device = 'iphone-plus(6,7,8)'
+                    } else if( currentOS.ratio.ratio === 2 && currentOS.ratio.w === 750 && currentOS.ratio.h === 1334 ){
+                        currentOS.device = 'iphone(6,7,8)'
+                    } else if( currentOS.ratio.ratio === 2 && currentOS.ratio.w === 640 && currentOS.ratio.h === 1136 ){
+                        currentOS.device = 'iphone(5,SE)'
+                    } else if( currentOS.ratio.ratio === 2 && currentOS.ratio.w === 640 && currentOS.ratio.h === 960 ){
+                        currentOS.device = 'iphone4'
+                    }
+                }
+            } else {
+                currentOS.isMobile = false;
+                currentOS.os = navigator.platform;
+                if ((navigator.appName == 'Netscape' && navigator.userAgent.search('Trident') != -1) || (userAgent.indexOf("msie") != -1) ) { currentOS.browser = "IE"; }
+            }
+            return currentOS;
         }
     });
 
