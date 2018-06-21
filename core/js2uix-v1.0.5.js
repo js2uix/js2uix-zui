@@ -207,14 +207,14 @@
         constructor : js2uix,
         query : function ( select, object ){
             var i;
-            var result = js2uix.extend([], select)
+            var result = js2uix.extend([], select);
             var protoObject = GetProtoType(object);
             try {
                 if ( SetProtoType ){
                     result = SetProtoType( result, protoObject );
                 } else {
-                    result = js2uix.extend(result, protoObject );
                     result.__proto__ = protoObject;
+                    result = js2uix.extend( result, protoObject );
                 }
                 for (i=0; i < result.length; i++ ){
                     if ( !result[i][ModuleName] ){
