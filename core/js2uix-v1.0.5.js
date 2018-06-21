@@ -211,13 +211,12 @@
             var protoObject = GetProtoType(object);
             var i;
             try {
+                for(i=0; i<select.length; i++){ result.push(select[i]); }
                 if ( SetProtoType ){
-                    result = js2uix.extend(result, argArray.shift());
                     result = SetProtoType( result, protoObject );
                 } else {
                     result = js2uix.extend(result, protoObject );
                     result.__proto__ = protoObject;
-                    for(i=0; i<select.length; i++){ result.push(select[i]); }
                 }
                 for (i=0; i < result.length; i++ ){
                     if ( !result[i][ModuleName] ){
@@ -227,6 +226,7 @@
                 result.name = ModuleName;
                 return result;
             } finally {
+                select = null;
                 result = null;
                 argArray = null;
                 protoObject = null;
@@ -5407,7 +5407,7 @@
         },
         setChildrenDomLayout : function(item) {
             var children = js2uix(item || this.element[0].children);
-            this.state.wrap = this.state.wrap || js2uix.createDom('div',{'className':'js2uix-slide-wrap'}, true);
+            this.state.wrap = (!this.state.wrap)?js2uix.createDom('div',{'className':'js2uix-slide-wrap'}, true):this.state.wrap;
             if( children.length > 0 ){
                 this.state.wrap.append(children.addClass('js2uix-slide-item'));
                 if(!this.state.isWrap){this.element.append(this.state.wrap);}
