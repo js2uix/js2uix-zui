@@ -206,12 +206,10 @@
         length: 0,
         constructor : js2uix,
         query : function ( select, object ){
-            var result = [];
-            var argArray = Array.prototype.slice.call(arguments);
-            var protoObject = GetProtoType(object);
             var i;
+            var result = js2uix.extend([], select)
+            var protoObject = GetProtoType(object);
             try {
-                for(i=0; i<select.length; i++){ result.push(select[i]); }
                 if ( SetProtoType ){
                     result = SetProtoType( result, protoObject );
                 } else {
@@ -220,7 +218,7 @@
                 }
                 for (i=0; i < result.length; i++ ){
                     if ( !result[i][ModuleName] ){
-                        result[i][ModuleName] = { events : {}, data : {} };
+                        result[i][ModuleName] = {events : {}, data : {} };
                     }
                 }
                 result.name = ModuleName;
@@ -228,7 +226,6 @@
             } finally {
                 select = null;
                 result = null;
-                argArray = null;
                 protoObject = null;
             }
         }
@@ -296,9 +293,17 @@
             if( !object ){
                 continue;
             }
-            for ( var key in object ) {
-                if ( object.hasOwnProperty(key) ){
-                    target[key] = object[key];
+            if( Array.isArray(target) ){
+                for(var j=0; j<object.length; j++){
+                    if( object[j] !== undefined || typeof object[j] !== 'undefined' ){
+                        target[j] = object[j];
+                    }
+                }
+            } else {
+                for ( var key in object ) {
+                    if ( object.hasOwnProperty(key) ){
+                        target[key] = object[key];
+                    }
                 }
             }
         }
