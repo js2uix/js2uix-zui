@@ -5464,7 +5464,7 @@
         setSlideTransitionEffect : function(ease){
             if(ease){
                 var wrap = this.state.wrap[0];
-                var property = 'all'
+                var property = 'all';
                 var allowType = ['linear', 'ease', 'ease-in', 'ease-out', 'ease-in-out'];
                 var animationType = (allowType.indexOf(this.props.transitionType) !== -1)?this.props.transitionType:'ease';
                 wrap.style['transitionProperty'] = property;
@@ -5475,8 +5475,7 @@
         setSlideTranslateMove : function(value, ease){
             var wrap = this.state.wrap[0];
             this.setSlideTransitionEffect(ease);
-            wrap.style['transform'] = this.state.transform+'('+value+'px)';
-            wrap.style['webkitTransform'] = this.state.transform+'('+value+'px)';
+            wrap.style['transform'] = wrap.style['webkitTransform'] = wrap.style['mozTransform'] = wrap.style['msTransform'] = this.state.transform+'('+value+'px)';
         },
         setGoToPageMoveByNumber : function(number, ease){
             if( typeof number === 'number'){
