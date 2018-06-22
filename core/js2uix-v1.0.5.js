@@ -5430,6 +5430,7 @@
             itemNum2 : 0,
             indexNum : 0,
             isDown : false,
+            crtIdx : 0,
             crtX : 0,
             crtY : 0,
             eventX : 0,
@@ -5438,7 +5439,8 @@
             controlLock : true,
             transitionEnd : true,
             userControl : false,
-            visible : true
+            visible : true,
+            isScroll : false
         };
         this.transitionTimer = null;
         this.autoTimer = null;
@@ -5462,6 +5464,7 @@
             var children = js2uix(item || this.element[0].children);
             this.state.wrap = (!this.state.wrap)?js2uix.createDom('div',{'className':'js2uix-slide-wrap'}, true):this.state.wrap;
             if( children.length > 0 ){
+                js2uix.loop(children, function(num){js2uix.setAttr(this, 'data-idx', num+1);});
                 this.state.wrap.append(children.addClass('js2uix-slide-item'));
                 if(!this.state.isWrap){this.element.append(this.state.wrap);}
                 this.state.isWrap = this.state.isWrap || true;
@@ -5578,33 +5581,44 @@
         setSlideStartEventHandler : function(event){
             this.setSlideAutoTimerClearHandler();
             if( !this.state.controlLock ){return false;}
+            var idx = js2uix(event.target).parents('.js2uix-slide-item').getAttr('data-idx');
             var transform = this.state.wrap[0].style.transform.replace(/[^0-9\-.,]/g, '').split(',');
             var stateKey = (this.props.flow === 'v')?'crtY':'crtX';
             this.state.eventX = (event.pageX || event.pageX === 0)?event.pageX:parseInt(event['changedTouches'][0].pageX);
             this.state.eventY = (event.pageY || event.pageY === 0)?event.pageY:parseInt(event['changedTouches'][0].pageY);
             this.state[stateKey] = parseInt(transform[0]);
-            this.state.isDown = true;
+            this.state.crtIdx = idx;
             this.props.userControl = true;
             this.callBackStart();
         },
         setSlideMoveEventHandler : function(event){
-            if( this.state.isDown ){
-                var flowType = this.props.flow;
-                var moveType = (flowType === 'h')
-                    ?(event.pageX || event.pageX === 0)?event.pageX - this.state.eventX
-                    :parseInt(event['changedTouches'][0].pageX) - this.state.eventX
-                    :(event.pageY || event.pageY === 0)?event.pageY - this.state.eventY
-                    :parseInt(event['changedTouches'][0].pageY) - this.state.eventY;
-                var flowNum = (moveType<0)?-1:(moveType>0)?1:0;
-                var calcMovePos = (flowType === 'h')?this.state.crtX:this.state.crtY;
-                var moveCalc = (this.props.loop)?moveType:(this.state.indexNum === 1 && flowNum === 1)?1:(this.state.indexNum === this.state.itemNum && flowNum === -1)?-1:moveType;
-                var moveValue = calcMovePos+moveCalc;
+            var moveValue;
+            var flowType = this.props.flow;
+            var moveType = (flowType === 'h')
+                ?(event.pageX || event.pageX === 0)?event.pageX - this.state.eventX
+                :parseInt(event['changedTouches'][0].pageX) - this.state.eventX
+                :(event.pageY || event.pageY === 0)?event.pageY - this.state.eventY
+                :parseInt(event['changedTouches'][0].pageY) - this.state.eventY;
+            var moveTypeX = (event.pageX || event.pageX === 0)?event.pageX - this.state.eventX:parseInt(event['changedTouches'][0].pageX) - this.state.eventX;
+            var moveTypeY = (event.pageY || event.pageY === 0)?event.pageY - this.state.eventY:parseInt(event['changedTouches'][0].pageY) - this.state.eventY;
+            moveTypeX = (moveTypeX<0)?moveTypeX*-1:moveTypeX;
+            moveTypeY = (moveTypeY<0)?moveTypeY*-1:moveTypeY;
+            var flowNum = (moveType<0)?-1:(moveType>0)?1:0;
+            var calcMovePos = (flowType === 'h')?this.state.crtX:this.state.crtY;
+            var moveCalc = (this.props.loop)?moveType:(this.state.indexNum === 1 && flowNum === 1)?1:(this.state.indexNum === this.state.itemNum && flowNum === -1)?-1:moveType;
+            this.state.isDown = ((flowType === 'h' && !this.state.isScroll) || flowType === 'v')?true:this.state.isDown;
+            this.state.isDown = ( moveTypeX < moveTypeY + 10 )?false:this.state.isDown;
+            if( this.state.isDown && !this.state.isScroll){
+                moveValue = calcMovePos+moveCalc;
                 this.setSlideTranslateMove(moveValue, false);
-                event.preventDefault();
+            } else {
+                var idx = this.state.crtIdx;
+                moveValue = (this.state.width * idx)*-1;
+                this.setSlideTranslateMove(moveValue, false);
             }
         },
         setSlideEndEventHandler : function(event){
-            if( this.state.isDown ){
+            if( this.state.isDown && !this.state.isScroll ){
                 this.state.isDown = false;
                 var layout = ( this.props.flow === 'h' )?'width':'height';
                 var moveType = ( this.props.flow === 'h' )
@@ -5612,6 +5626,7 @@
                     :parseInt(event['changedTouches'][0].pageX) - this.state.eventX
                     :(event.pageY || event.pageY === 0)?event.pageY - this.state.eventY
                     :parseInt(event['changedTouches'][0].pageY) - this.state.eventY;
+
                 var calcMovePos = ( this.props.flow === 'h' )?this.state.crtX:this.state.crtY;
                 var isMoveX = (moveType<0)?moveType*-1:moveType;
                 var flowNum = (moveType<0)?-1:(moveType>0)?1:0;
@@ -5622,10 +5637,10 @@
                     this.setChangeDottedByNumber(this.state.indexNum);
                     if( this.state.indexNum === 0 || this.state.indexNum === this.state.itemNum+1 ){this.state.controlLock = false;}
                 }
+
                 this.setSlideTranslateMove(calcMovePos, true);
                 this.props.userControl = false;
             }
-            event.preventDefault();
         },
         setSlideTransitionEndHandler : function(event){
             if( this.props.loop ){
@@ -5670,6 +5685,11 @@
                 this.setGoToPageMoveByNumber(index, true);
                 this.setChangeDottedByNumber(index);
             }
+        },
+        setScrollContentHandler : function(){
+            this.state.isScroll = true;
+            clearTimeout(this.transitionTimer);
+            this.transitionTimer = setTimeout(function(){this.state.isScroll = false;}.bind(this), 500);
         },
         goToPage : function(number, ease){
             this.setGoToPageMoveByNumber(number, (typeof ease === 'undefined')?true:ease);
@@ -5739,6 +5759,12 @@
                 }
             });
         },
+        setControlEvent2 : function(){
+            var all = this.element.find('*');
+            for(var i=0; i<all.length; i++){
+                if( js2uixCheckScroll(all[i]) ){all[i].addEventListener("scroll", this.setScrollContentHandler.bind(this));}
+            }
+        },
         callBackCreate : function(){
             if ( this.props.create && typeof this.props.create === 'function' ){
                 this.props.create();
@@ -5761,6 +5787,7 @@
             this.setStateSlideLoopOrNormalType();
             this.setCreateControlDom();
             this.setControlEvent();
+            this.setControlEvent2();
             this.setSlideAutoTimerStartHandler();
         }
     };
