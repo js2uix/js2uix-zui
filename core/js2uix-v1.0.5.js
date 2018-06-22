@@ -5612,8 +5612,8 @@
                 moveValue = calcMovePos+moveCalc;
                 this.setSlideTranslateMove(moveValue, false);
             } else {
-                var idx = this.state.crtIdx;
-                moveValue = (this.state.width * idx)*-1;
+                var idx = (!this.props.loop)?this.state.crtIdx-1:this.state.crtIdx;
+                moveValue = (this.state.width * idx)*-1
                 this.setSlideTranslateMove(moveValue, false);
             }
         },
