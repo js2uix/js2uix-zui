@@ -4816,19 +4816,19 @@
     var js2uixCheckScroll = function(target) {
         var rootElem = target;
         var overflowStyle;
-        if (typeof rootElem.currentStyle !== 'undefined'){
-            overflowStyle = rootElem.currentStyle.overflow;
-        }
+        if (typeof rootElem.currentStyle !== 'undefined'){overflowStyle = rootElem.currentStyle.overflow;}
         overflowStyle = overflowStyle || window.getComputedStyle(rootElem, '').overflow;
         var overflowYStyle;
-        if (typeof rootElem.currentStyle !== 'undefined'){
-            overflowYStyle = rootElem.currentStyle.overflowY;
-        }
+        if (typeof rootElem.currentStyle !== 'undefined'){overflowYStyle = rootElem.currentStyle.overflowY;}
         overflowYStyle = overflowYStyle || window.getComputedStyle(rootElem, '').overflowY;
-        var contentOverflows = rootElem.scrollHeight > rootElem.clientHeight;
-        var overflowShown    = /^(visible|auto)$/.test(overflowStyle) || /^(visible|auto)$/.test(overflowYStyle)
+        var overflowXStyle;
+        if (typeof rootElem.currentStyle !== 'undefined'){overflowYStyle = rootElem.currentStyle.overflowX;}
+        overflowXStyle = overflowXStyle || window.getComputedStyle(rootElem, '').overflowX;
+        var contentOverflowsH = rootElem.scrollHeight > rootElem.clientHeight;
+        var contentOverflowsW = rootElem.scrollWidth > rootElem.clientWidth;
+        var overflowShown    = /^(visible|auto)$/.test(overflowStyle) || /^(visible|auto)$/.test(overflowYStyle) || /^(visible|auto)$/.test(overflowXStyle);
         var alwaysShowScroll = overflowStyle === 'scroll' || overflowYStyle === 'scroll';
-        return (contentOverflows && overflowShown) || (alwaysShowScroll)
+        return (contentOverflowsW && overflowShown) || (contentOverflowsH && overflowShown) || (alwaysShowScroll)
     };
     var js2uixToolCalendar = function(){
         this.dom = {};
@@ -5409,7 +5409,7 @@
             loop : false,
             flow : 'h',
             sensitivity : 150,
-            duration : 0.25,
+            duration : 0.20,
             transitionType : 'ease',
             create : null,
             start : null,
@@ -5417,32 +5417,37 @@
             end : null
         };
         this.state = {
-            wrap : null,
-            dot : null,
             arrowL : null,
             arrowR : null,
-            isWrap : false,
-            width : 0,
-            height : 0,
-            left : 0,
-            top : 0,
+            availableMove : false,
+            crtIdx : 0,
+            crtX : 0,
+            crtY : 0,
+            dot : null,
+            eventX : 0,
+            eventY : 0,
             itemNum : 0,
             itemNum2 : 0,
             indexNum : 0,
             isDown : false,
-            crtIdx : 0,
-            crtX : 0,
-            crtY : 0,
-            eventX : 0,
-            eventY : 0,
+            isEnd : false,
+            isWrap : false,
+            isScroll : false,
+            onScroll : false,
+            onControlLock : false,
+            wrap : null,
+            width : 0,
+            height : 0,
+            left : 0,
+            top : 0,
             transform :'translateX',
-            controlLock : true,
             transitionEnd : true,
-            userControl : false,
-            visible : true,
-            isScroll : false
+            visible : true
         };
-        this.transitionTimer = null;
+        this.scrollTimer = null;
+        this.trasitionTimer = null;
+        this.resetTimer = null;
+        this.slideTimer = null;
         this.autoTimer = null;
         this.init(props);
         return {
@@ -5533,6 +5538,12 @@
             this.setSlideTransitionEffect(ease);
             wrap.style['transform'] = wrap.style['webkitTransform'] = wrap.style['mozTransform'] = wrap.style['msTransform'] = this.state.transform+'('+value+'px)';
         },
+        setSlideTransitionDefault : function(){
+            this.state.wrap[0].style['transition'] = 'none';
+            this.state.wrap[0].style['webkitTransition'] = 'none';
+            this.state.wrap[0].style['mozTransition'] = 'none';
+            this.state.wrap[0].style['msTransition'] = 'none';
+        },
         setGoToPageMoveByNumber : function(number, ease){
             if( typeof number === 'number'){
                 if( this.props.loop ){
@@ -5545,6 +5556,7 @@
                 var layout = ( this.props.flow === 'h' )?'width':'height';
                 var goToValue = (!this.props.loop)?(this.state[layout]*(number-1))*-1:(this.state[layout]*(number))*-1;
                 this.state.indexNum = number;
+                this.state.isEnd = ( this.state.indexNum === 0 || this.state.indexNum === this.state.itemNum+1 );
                 this.callBackStart();
                 this.setSlideTranslateMove(goToValue, ease);
             }
@@ -5565,89 +5577,35 @@
 
             }
         },
-        setSlideAutoTimerClearHandler : function(){
-            clearTimeout(this.autoTimer);
-        },
-        setSlideAutoTimerStartHandler : function(){
-            if( this.props.autoSlide ){
-                this.autoTimer = setInterval(function(){
-                    var index = this.state.indexNum;
-                    index++;
-                    this.setGoToPageMoveByNumber(index, true);
-                    this.setChangeDottedByNumber(index);
-                }.bind(this), this.props.autoTimer*1000);
+        getControlPositionObject : function(event){
+            return {
+                pageX : (event.pageX || event.pageX === 0)?event.pageX:parseInt(event['changedTouches'][0].pageX),
+                pageY : (event.pageY || event.pageY === 0)?event.pageY:parseInt(event['changedTouches'][0].pageY)
             }
         },
-        setSlideStartEventHandler : function(event){
-            this.setSlideAutoTimerClearHandler();
-            if( !this.state.controlLock ){return false;}
-            this.state.isScroll = false;
-            this.state.isDown = true;
-            var idx = js2uix(event.target).parents('.js2uix-slide-item').getAttr('data-idx');
-            var transform = this.state.wrap[0].style.transform.replace(/[^0-9\-.,]/g, '').split(',');
-            var stateKey = (this.props.flow === 'v')?'crtY':'crtX';
-            this.state.eventX = (event.pageX || event.pageX === 0)?event.pageX:parseInt(event['changedTouches'][0].pageX);
-            this.state.eventY = (event.pageY || event.pageY === 0)?event.pageY:parseInt(event['changedTouches'][0].pageY);
-            this.state[stateKey] = parseInt(transform[0]);
-            this.state.crtIdx = idx;
-            this.props.userControl = true;
-            this.callBackStart();
+        getControlMoveTypeObject : function(event){
+            return (this.props.flow === 'h')
+                ?(event.pageX || event.pageX === 0)?event.pageX - this.state.eventX:parseInt(event['changedTouches'][0].pageX) - this.state.eventX
+                :(event.pageY || event.pageY === 0)?event.pageY - this.state.eventY:parseInt(event['changedTouches'][0].pageY) - this.state.eventY;
         },
-        setSlideMoveEventHandler : function(event){
-            if( this.state.isDown ) {
-                var moveValue;
-                var flowType = this.props.flow;
-                var moveType = (flowType === 'h')
-                    ?(event.pageX || event.pageX === 0)?event.pageX - this.state.eventX
-                    :parseInt(event['changedTouches'][0].pageX) - this.state.eventX
-                    :(event.pageY || event.pageY === 0)?event.pageY - this.state.eventY
-                    :parseInt(event['changedTouches'][0].pageY) - this.state.eventY;
-                var moveTypeX = (event.pageX || event.pageX === 0)?event.pageX - this.state.eventX:parseInt(event['changedTouches'][0].pageX) - this.state.eventX;
-                var moveTypeY = (event.pageY || event.pageY === 0)?event.pageY - this.state.eventY:parseInt(event['changedTouches'][0].pageY) - this.state.eventY;
-                moveTypeX = (moveTypeX<0)?moveTypeX*-1:moveTypeX;
-                moveTypeY = (moveTypeY<0)?moveTypeY*-1:moveTypeY;
-                var flowNum = (moveType<0)?-1:(moveType>0)?1:0;
-                var calcMovePos = (flowType === 'h')?this.state.crtX:this.state.crtY;
-                var moveCalc = (this.props.loop)?moveType:(this.state.indexNum === 1 && flowNum === 1)?1:(this.state.indexNum === this.state.itemNum && flowNum === -1)?-1:moveType;
-                this.state.isScroll = (moveTypeX < 10 && moveTypeY > 20)?true:this.state.isScroll
-                if ( !this.state.isScroll ) {
-                    moveValue = calcMovePos + moveCalc;
+        setSlideAvailableTrigger : function(type){
+            clearTimeout(this.slideTimer);
+            if( !this.props.loop ){this.state.onControlLock = false;}
+            if( type ){
+                if(this.state.onScroll){
+                    this.slideTimer = setTimeout(function(){this.state.isDown = this.state.availableMove = true;}.bind(this), 150);
                 } else {
-                    var idx = (!this.props.loop) ? this.state.crtIdx - 1 : this.state.crtIdx;
-                    moveValue = (this.state.width * idx) * -1;
+                    this.state.isDown = this.state.availableMove = true;
                 }
-                this.setSlideTranslateMove(moveValue, false);
-            }
-        },
-        setSlideEndEventHandler : function(event){
-            if( this.state.isDown  && !this.state.isScroll ){
+            } else {
                 this.state.isDown = false;
-                var layout = ( this.props.flow === 'h' )?'width':'height';
-                var moveType = ( this.props.flow === 'h' )
-                    ?(event.pageX || event.pageX === 0)?event.pageX - this.state.eventX
-                    :parseInt(event['changedTouches'][0].pageX) - this.state.eventX
-                    :(event.pageY || event.pageY === 0)?event.pageY - this.state.eventY
-                    :parseInt(event['changedTouches'][0].pageY) - this.state.eventY;
-                var calcMovePos = ( this.props.flow === 'h' )?this.state.crtX:this.state.crtY;
-                var isMoveX = (moveType<0)?moveType*-1:moveType;
-                var flowNum = (moveType<0)?-1:(moveType>0)?1:0;
-                var isFlow = (this.props.loop)?true:(!(this.state.indexNum === 1 && flowNum === 1 || this.state.indexNum === this.state.itemNum && flowNum === -1));
-                if( isMoveX >= this.props.sensitivity && isFlow ){
-                    calcMovePos = calcMovePos+(this.state[layout]*flowNum);
-                    this.state.indexNum = this.state.indexNum-flowNum;
-                    this.setChangeDottedByNumber(this.state.indexNum);
-                    if( this.state.indexNum === 0 || this.state.indexNum === this.state.itemNum+1 ){
-                        this.state.controlLock = false;
-                    }
-                }
-                this.setSlideTranslateMove(calcMovePos, true);
-                this.props.userControl = false;
-                this.state.isScroll = false;
+                this.state.availableMove = false;
             }
         },
-        setSlideTransitionEndHandler : function(event){
-            this.state.wrap.css('transition' , 'null');
-            if( this.props.loop ){
+        setLockResetPositionChange : function(){
+            clearTimeout(this.trasitionTimer);
+            clearTimeout(this.resetTimer);
+            if( this.props.loop && this.state.isEnd ){
                 var layout = (this.props.flow === 'h' )?'width':'height';
                 var willMovePos;
                 if( this.state.indexNum === 0 ){
@@ -5658,17 +5616,70 @@
                     willMovePos = this.state[layout]*-1;
                     this.state.indexNum = 1;
                 }
-                if( willMovePos ){
-                    setTimeout(function(){
+                this.resetTimer = setTimeout(function(){
+                    if( willMovePos ){
                         this.setSlideTranslateMove(willMovePos, false);
-                        this.state.controlLock = true;
-                    }.bind(this), 50);
-                }
+                    }
+                }.bind(this), 50);
+                this.trasitionTimer = setTimeout(function(){
+                    this.state.onControlLock = false;
+                }.bind(this), 100);
             } else {
-                this.state.controlLock = true;
+                this.state.onControlLock = false;
             }
-            this.state.transitionEnd = true;
+        },
+        setSlideStartEventHandler : function(event){
+            this.setSlideAutoTimerClearHandler();
+            this.setSlideAvailableTrigger(false);
+            if( !this.state.onControlLock ){
+                var transform = this.state.wrap[0].style.transform.replace(/[^0-9\-.,]/g, '').split(',');
+                var stateKey = (this.props.flow === 'v')?'crtY':'crtX';
+                var eventXY = this.getControlPositionObject(event);
+                this.state.crtIdx = js2uix(event.target).parents('.js2uix-slide-item').getAttr('data-idx');
+                this.state.eventX = eventXY.pageX;
+                this.state.eventY = eventXY.pageY;
+                this.state[stateKey] = parseInt(transform[0]);
+                this.setSlideAvailableTrigger(true);
+                this.callBackStart();
+            }
+        },
+        setSlideMoveEventHandler : function(event){
+            if( this.state.isDown && this.state.availableMove ) {
+                var moveValue;
+                var moveType = this.getControlMoveTypeObject(event);
+                var flowNum = (moveType<0)?-1:(moveType>0)?1:0;
+                var calcMovePos = (this.props.flow === 'h')?this.state.crtX:this.state.crtY;
+                var moveCalc = (this.props.loop)?moveType:(this.state.indexNum === 1 && flowNum === 1)?0:(this.state.indexNum === this.state.itemNum && flowNum === -1)?-0:moveType;
+                moveValue = (!this.state.isScroll)?calcMovePos+moveCalc:((this.state.width * ((!this.props.loop) ? this.state.crtIdx - 1 : this.state.crtIdx)) * -1);
+                this.setSlideTranslateMove(moveValue, false);
+                this.state.onControlLock = true;
+                this.state.isEnd = false;
+            }
+        },
+        setSlideEndEventHandler : function(event){
+            if( this.state.isDown && !this.state.isScroll ){
+                var layout = ( this.props.flow === 'h' )?'width':'height';
+                var moveType = this.getControlMoveTypeObject(event);
+                var calcMovePos = ( this.props.flow === 'h' )?this.state.crtX:this.state.crtY;
+                var isMoveX = (moveType<0)?moveType*-1:moveType;
+                var flowNum = (moveType<0)?-1:(moveType>0)?1:0;
+                var isFlow = (this.props.loop)?true:(!(this.state.indexNum === 1 && flowNum === 1 || this.state.indexNum === this.state.itemNum && flowNum === -1));
+                if( isMoveX >= this.props.sensitivity && isFlow ){
+                    calcMovePos = calcMovePos+(this.state[layout]*flowNum);
+                    this.state.indexNum = this.state.indexNum-flowNum;
+                    this.setChangeDottedByNumber(this.state.indexNum);
+                    this.state.isEnd = ( this.state.indexNum === 0 || this.state.indexNum === this.state.itemNum+1 );
+                }
+                this.setSlideTranslateMove(calcMovePos, true);
+            }
+        },
+        setSlideTransitionEndHandler : function(){
+            this.setSlideTransitionDefault();
+            this.setLockResetPositionChange();
+            this.state.isDown = false;
             this.state.isScroll = false;
+            this.state.onScroll = false;
+            this.state.transitionEnd = true;
             this.callBackEnd();
         },
         setDotClickEventHandler : function(event){
@@ -5695,11 +5706,24 @@
         },
         setScrollContentHandler : function(){
             this.state.isScroll = true;
-            clearTimeout(this.transitionTimer);
-            this.transitionTimer = setTimeout(function(){this.state.isScroll = false;}.bind(this), 450);
+            clearTimeout(this.scrollTimer);
+            this.scrollTimer = setTimeout(function(){
+                this.state.isScroll = false;
+                this.state.onControlLock = false;
+            }.bind(this), 450);
         },
-        goToPage : function(number, ease){
-            this.setGoToPageMoveByNumber(number, (typeof ease === 'undefined')?true:ease);
+        setSlideAutoTimerClearHandler : function(){
+            clearTimeout(this.autoTimer);
+        },
+        setSlideAutoTimerStartHandler : function(){
+            if( this.props.autoSlide ){
+                this.autoTimer = setInterval(function(){
+                    var index = this.state.indexNum;
+                    index++;
+                    this.setGoToPageMoveByNumber(index, true);
+                    this.setChangeDottedByNumber(index);
+                }.bind(this), this.props.autoTimer*1000);
+            }
         },
         setResizeHandler : function(){
             var layout = ( this.props.flow === 'h')?'width':'height';
@@ -5712,6 +5736,7 @@
         },
         setControlEvent : function(){
             var module = this;
+            var isMobile = js2uix.deviceIs().isMobile;
             var slideItem = this.state.wrap[0].children;
             var whichTransitionEvent = function(){
                 var key;
@@ -5729,32 +5754,53 @@
             };
             if( slideItem.length > 0 ){
                 window.addEventListener('resize', this.setResizeHandler.bind(this), true);
-                this.element.addEvent({
-                    'mouseenter.js2uix-slide' : this.setSlideAutoTimerClearHandler.bind(this),
-                    'touchstart.js2uix-slide' : this.setSlideAutoTimerClearHandler.bind(this),
-                    'mouseleave.js2uix-slide' : this.setSlideAutoTimerStartHandler.bind(this),
-                    'touchend.js2uix-slide'   : this.setSlideAutoTimerStartHandler.bind(this),
-                    'touchcancel.js2uix-slide': this.setSlideAutoTimerStartHandler.bind(this)
-                });
-                this.state.wrap.addEvent({
-                    'mousedown.js2uix-slide'  : this.setSlideStartEventHandler.bind(this),
-                    'touchstart.js2uix-slide' : this.setSlideStartEventHandler.bind(this),
-                    'mousemove.js2uix-slide'  : this.setSlideMoveEventHandler.bind(this),
-                    'touchmove.js2uix-slide'  : this.setSlideMoveEventHandler.bind(this),
-                    'mouseleave.js2uix-slide' : this.setSlideEndEventHandler.bind(this),
-                    'mouseup.js2uix-slide'    : this.setSlideEndEventHandler.bind(this),
-                    'touchend.js2uix-slide'   : this.setSlideEndEventHandler.bind(this),
-                    'touchcancel.js2uix-slide': this.setSlideEndEventHandler.bind(this)
-                });
-                var transitionEvent = whichTransitionEvent();
-                this.state.wrap.addEvent(transitionEvent, this.setSlideTransitionEndHandler.bind(this));
-            }
-            if( this.props.dotControl ){
-                this.state.dot.children().addEvent({'click.js2uix-slide'  : this.setDotClickEventHandler.bind(this)});
-            }
-            if( this.props.arrowControl ){
-                this.state.arrowL.addEvent({'click.js2uix-slide'  : this.setArrowClickEventHandler.bind(this)});
-                this.state.arrowR.addEvent({'click.js2uix-slide'  : this.setArrowClickEventHandler.bind(this)});
+                if(isMobile){
+                    this.element.addEvent({
+                        'touchstart.js2uix-slide' : this.setSlideAutoTimerClearHandler.bind(this),
+                        'touchend.js2uix-slide'   : this.setSlideAutoTimerStartHandler.bind(this),
+                        'touchcancel.js2uix-slide': this.setSlideAutoTimerStartHandler.bind(this)
+                    });
+                    this.state.wrap.addEvent({
+                        'touchstart.js2uix-slide' : this.setSlideStartEventHandler.bind(this),
+                        'touchmove.js2uix-slide'  : this.setSlideMoveEventHandler.bind(this),
+                        'touchend.js2uix-slide'   : this.setSlideEndEventHandler.bind(this),
+                        'touchcancel.js2uix-slide': this.setSlideEndEventHandler.bind(this)
+                    });
+                } else {
+                    ROOT.addEvent('mouseup.js2uix-slide', this.setSlideEndEventHandler.bind(this));
+                    this.element.addEvent({
+                        'mouseenter.js2uix-slide' : this.setSlideAutoTimerClearHandler.bind(this),
+                        'mouseleave.js2uix-slide' : this.setSlideAutoTimerStartHandler.bind(this)
+                    });
+                    this.state.wrap.addEvent({
+                        'mousedown.js2uix-slide'  : this.setSlideStartEventHandler.bind(this),
+                        'mousemove.js2uix-slide'  : this.setSlideMoveEventHandler.bind(this),
+                        'mouseleave.js2uix-slide' : this.setSlideEndEventHandler.bind(this),
+                        'mouseup.js2uix-slide'    : this.setSlideEndEventHandler.bind(this)
+                    });
+                }
+                if( this.props.dotControl ){
+                    this.state.dot.children().addEvent({'click.js2uix-slide'  : this.setDotClickEventHandler.bind(this)});
+                }
+                if( this.props.arrowControl ){
+                    this.state.arrowL.addEvent({'click.js2uix-slide'  : this.setArrowClickEventHandler.bind(this)});
+                    this.state.arrowR.addEvent({'click.js2uix-slide'  : this.setArrowClickEventHandler.bind(this)});
+                }
+                this.state.wrap.addEvent(whichTransitionEvent(), this.setSlideTransitionEndHandler.bind(this));
+
+                var childNodes = this.element[0].querySelectorAll('*');
+                for(var i=0; i<childNodes.length; i++){
+                    if( js2uixCheckScroll(childNodes[i]) ){
+                        var scrollNode = js2uix( childNodes[i] );
+                        childNodes[i].removeEventListener("scroll", this.setScrollContentHandler.bind(this));
+                        childNodes[i].addEventListener("scroll", this.setScrollContentHandler.bind(this), false);
+                        if(isMobile){
+                            scrollNode.addEvent({'touchstart.js2uix-slide' : function(){module.state.onScroll = true;}});
+                        } else {
+                            scrollNode.addEvent({'mousedown.js2uix-slide' : function(){module.state.onScroll = true;}});
+                        }
+                    }
+                }
             }
             js2uixVisibility(function(){
                 if( module.state.visible ){
@@ -5765,12 +5811,6 @@
                     module.setSlideAutoTimerStartHandler();
                 }
             });
-        },
-        setControlEvent2 : function(){
-            var all = this.element.find('*');
-            for(var i=0; i<all.length; i++){
-                if( js2uixCheckScroll(all[i]) ){all[i].addEventListener("scroll", this.setScrollContentHandler.bind(this));}
-            }
         },
         callBackCreate : function(){
             if ( this.props.create && typeof this.props.create === 'function' ){
@@ -5787,6 +5827,9 @@
                 this.props.end();
             }
         },
+        goToPage : function(number, ease){
+            this.setGoToPageMoveByNumber(number, (typeof ease === 'undefined')?true:ease);
+        },
         init : function(props){
             if( typeof props === 'object' ){ js2uix.extend(this.props, props); }
             this.setDefaultSlideDom();
@@ -5794,7 +5837,6 @@
             this.setStateSlideLoopOrNormalType();
             this.setCreateControlDom();
             this.setControlEvent();
-            this.setControlEvent2();
             this.setSlideAutoTimerStartHandler();
         }
     };
