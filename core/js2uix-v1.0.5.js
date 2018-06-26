@@ -5535,6 +5535,7 @@
         },
         setSlideTranslateMove : function(value, ease){
             var wrap = this.state.wrap[0];
+            this.state.onScroll = false;
             this.setSlideTransitionEffect(ease);
             wrap.style['transform'] = wrap.style['webkitTransform'] = wrap.style['mozTransform'] = wrap.style['msTransform'] = this.state.transform+'('+value+'px)';
         },
@@ -5593,9 +5594,13 @@
             if( !this.props.loop ){this.state.onControlLock = false;}
             if( type ){
                 if(this.state.onScroll){
-                    this.slideTimer = setTimeout(function(){this.state.isDown = this.state.availableMove = true;}.bind(this), 150);
+                    this.slideTimer = setTimeout(function(){
+                        this.state.isDown = true;
+                        this.state.availableMove = true;
+                    }.bind(this), 150);
                 } else {
-                    this.state.isDown = this.state.availableMove = true;
+                    this.state.isDown = true;
+                    this.state.availableMove = true
                 }
             } else {
                 this.state.isDown = false;
