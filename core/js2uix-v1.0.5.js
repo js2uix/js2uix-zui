@@ -5398,7 +5398,6 @@
     };
     js2uix.extend(js2uixToolCalendarInput.prototype, js2uixCalendarCommon);
     js2uixToolCalendarInput.prototype.constructor = js2uixToolCalendarInput;
-
     var js2uixToolSlide = function(element, props){
         this.element = element;
         this.props = {
@@ -5676,6 +5675,7 @@
                     this.state.isEnd = ( this.state.indexNum === 0 || this.state.indexNum === this.state.itemNum+1 );
                 }
                 this.setSlideTranslateMove(calcMovePos, true);
+                this.state.isDown = false;
             }
         },
         setSlideTransitionEndHandler : function(){
@@ -5772,7 +5772,6 @@
                         'touchcancel.js2uix-slide': this.setSlideEndEventHandler.bind(this)
                     });
                 } else {
-                    ROOT.addEvent('mouseup.js2uix-slide', this.setSlideEndEventHandler.bind(this));
                     this.element.addEvent({
                         'mouseenter.js2uix-slide' : this.setSlideAutoTimerClearHandler.bind(this),
                         'mouseleave.js2uix-slide' : this.setSlideAutoTimerStartHandler.bind(this)
@@ -5783,6 +5782,7 @@
                         'mouseleave.js2uix-slide' : this.setSlideEndEventHandler.bind(this),
                         'mouseup.js2uix-slide'    : this.setSlideEndEventHandler.bind(this)
                     });
+                    ROOT.addEvent('mouseup.js2uix-slide', this.setSlideEndEventHandler.bind(this));
                 }
                 if( this.props.dotControl ){
                     this.state.dot.children().addEvent({'click.js2uix-slide'  : this.setDotClickEventHandler.bind(this)});
