@@ -5398,6 +5398,7 @@
     };
     js2uix.extend(js2uixToolCalendarInput.prototype, js2uixCalendarCommon);
     js2uixToolCalendarInput.prototype.constructor = js2uixToolCalendarInput;
+
     var js2uixToolSlide = function(element, props){
         this.element = element;
         this.props = {
@@ -5574,7 +5575,6 @@
                 if( target.length > 0 ){
                     target.addClass('on').siblingNodes().removeClass('on')
                 }
-
             }
         },
         getControlPositionObject : function(event){
