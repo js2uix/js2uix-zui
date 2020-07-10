@@ -6,7 +6,6 @@ Simple implementation of the existing Dom Control function, and additional compo
 ## js2uix (js2uix-dom-control)
 <pre>
  * Name        : js2uix
- * Version     : 1.0.5
  * Developer   : JH.Yu
  * Email       : deshineplus@icloud.com
  * Language    : Javascript(ES5)
