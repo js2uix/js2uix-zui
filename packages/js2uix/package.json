@@ -10,7 +10,7 @@
   "author": "yujh <yujh@wemakeprice.com>",
   "homepage": "js2uix",
   "license": "MIT",
-  "main": "lib/index.js",
+  "main": "dist/index.js",
   "directories": {
     "lib": "lib",
     "dist": "dist",

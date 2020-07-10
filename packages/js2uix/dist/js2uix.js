@@ -1,6 +1,5 @@
 /**
  * Name        : js2uix
- * Version     : 1.0.5
  * Developer   : JH.Yu
  * Email       : deshineplus@icloud.com
  * Language    : Javascript(ES5)
@@ -13,23 +12,20 @@
 
 (function( global, factory ){
     "use strict";
+
     if ( typeof module === "object" && typeof module.exports === "object" ) {
-        module.exports = factory( global, true );
-        if( !global.document ){
-            module.exports = function(win) {
-                if ( !win.document) {
-                    throw new Error( "js2uix is not support this browser!" );
-                }
-                return factory(win);
-            }
-        }
+      module.exports = global.document ?
+        factory( global, true ) :
+        function( w ) {
+          if ( !w.document ) {
+            throw new Error( "js2uix requires a window with a document" );
+          }
+          return factory( w );
+        };
     } else {
-        if(!global.document || !global.document.addEventListener){
-            console.info( "js2uix is not support this browser!" );
-            return false;
-        }
-        factory( global );
+      factory( global );
     }
+  
 })( typeof window !== "undefined" ? window : this, function( window, noGlobal ){
     'use strict';
     if( !window || typeof window === 'undefined'){ return false; }

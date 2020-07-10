@@ -1,0 +1,14 @@
+{
+  "name": "jquery",
+  "main": "dist/js2uix.js",
+  "license": "MIT",
+  "ignore": [
+    "package.json"
+  ],
+  "keywords": [
+    "js2uix",
+    "javascript",
+    "browser",
+    "library"
+  ]
+}
