@@ -31,7 +31,6 @@
     if( !window || typeof window === 'undefined'){ return false; }
     var js2uix;
     var ModuleName = 'js2uix';
-    var ModuleVersion = 'v1.0.5';
     var DOC = window.document;
     var SetProtoType = Object.setPrototypeOf;
     var GetProtoType = Object.getPrototypeOf;
@@ -200,7 +199,6 @@
 
     js2uix = function (select){ return new js2uix.fn.init(select); };
     js2uix.fn = js2uix.prototype = {
-        js2uix : ModuleVersion,
         length: 0,
         constructor : js2uix,
         query : function ( select, object ){
