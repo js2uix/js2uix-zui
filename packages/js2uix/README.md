@@ -26,6 +26,11 @@ Simple implementation of the existing Dom Control function, and additional compo
 ### 1. js2uix('selector'): default selector
 **js2uix(param): The value of the parameter is'string','object','function'**
 <pre>Example of use:<code>
+import js2uix from 'js2uix';
+or
+const js2uix = require('js2uix');
+
+
 js2uix('div') : Select the entire div tag.
 js2uix('.class') : Select Node with class name.
 js2uix('#id') : Select Npde with id name.
