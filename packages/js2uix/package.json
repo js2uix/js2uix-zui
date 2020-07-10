@@ -1,0 +1,33 @@
+{
+  "name": "js2uix",
+  "version": "1.0.5",
+  "description": "js2uix DOM module",
+  "keywords": [
+    "javascript",
+    "js2uix",
+    "libray"
+  ],
+  "author": "yujh <yujh@wemakeprice.com>",
+  "homepage": "js2uix",
+  "license": "MIT",
+  "main": "lib/index.js",
+  "directories": {
+    "lib": "lib",
+    "dist": "dist",
+    "test": "__tests__"
+  },
+  "files": [
+    "lib",
+    "dist"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/js2uix/js2uix.git"
+  },
+  "scripts": {
+    "test": "echo \"Error: run tests from root\" && exit 1"
+  },
+  "bugs": {
+    "url": "https://github.com/js2uix/js2uix/issues"
+  }
+}
